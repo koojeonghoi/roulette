@@ -1,505 +1,453 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>온라인 이름 지정형 2단계 룰렛 추첨기 | 술자리 팩 v12.0</title>
-<style>
-:root {
---bg-color: #0b0f19;
---card-bg: #1e293b;
---primary: #f43f5e;
---secondary: #3b82f6;
---accent: #10b981;
---warning: #f59e0b;
---text: #f8fafc;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>올인원 술자리 게임 천국 | v13.0</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #1e293b;
+            --primary: #f43f5e;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --text: #f8fafc;
+            --purple: #8b5cf6;
+        }
 
-* {
-box-sizing: border-box; margin: 0; padding: 0;
-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
--webkit-tap-highlight-color: transparent; user-select: none;
-}
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
 
-body {
-background-color: var(--bg-color); color: var(--text);
-height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden;
-}
+        body { 
+            background-color: var(--bg-color); color: var(--text); 
+            height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; 
+        }
 
-/* 내비게이션 바 */
-.nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; }
-.tab-btn { flex: 1; background: #1e293b; border: none; color: #94a3b8; padding: 14px 0; font-size: 0.95rem; font-weight: bold; border-radius: 10px; text-align: center; }
-.tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
+        /* 내비게이션 상단 바 스크롤 가능 (메뉴가 많아짐에 대응) */
+        .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
 
-.main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
-.game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
-.game-panel.active { display: flex; }
+        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
+        .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .game-panel.active { display: flex; }
 
-.panel-header h2 { font-size: 1.35rem; color: #fff; margin-bottom: 2px; }
-.panel-header .desc { font-size: 0.85rem; color: #94a3b8; line-height: 1.3; min-height: 34px; display: flex; align-items: center; justify-content: center; }
+        .panel-header h2 { font-size: 1.3rem; color: #fff; margin-bottom: 2px; }
+        .panel-header .desc { font-size: 0.82rem; color: #94a3b8; line-height: 1.3; min-height: 34px; display: flex; align-items: center; justify-content: center; }
 
-.main-btn { background: var(--primary); color: white; border: none; padding: 16px; font-size: 1.15rem; font-weight: bold; border-radius: 16px; width: 100%; box-shadow: 0 4px 12px rgba(244,63,94,0.3); margin-top: auto; cursor: pointer; }
-.main-btn:active { transform: scale(0.97); }
-.main-btn:disabled { background: #475569; box-shadow: none; opacity: 0.6; }
-.sub-btn { background: #475569; color: white; border: none; padding: 12px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 12px; cursor: pointer; }
+        .main-btn { background: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 16px; width: 100%; box-shadow: 0 4px 12px rgba(244,63,94,0.3); margin-top: auto; cursor: pointer; }
+        .main-btn:active { transform: scale(0.97); }
+        .main-btn:disabled { background: #475569; box-shadow: none; opacity: 0.6; }
+        .sub-btn { background: #475569; color: white; border: none; padding: 12px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 12px; cursor: pointer; }
 
-/* --- 🎯 게임 1: 룰렛 시스템 (텍스트 크기 확대 버전) --- */
-.stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
-.stage-container.active { display: flex; }
-.stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 12px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
+        .setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 10px 14px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; }
+        .setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 6px 10px; font-weight: bold; border-radius: 8px; font-size: 0.9rem; outline: none; }
 
-.name-input-box { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.name-input-box label { font-size: 0.85rem; color: #94a3b8; font-weight: bold; padding-left: 4px; }
-.name-input-box input { background: #0b0f19; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 0.9rem; outline: none; }
+        /* --- 🎯 게임 1: 룰렛 인프라 --- */
+        .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
+        .stage-container.active { display: flex; }
+        .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 10px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
+        .roulette-container { position: relative; width: 260px; height: 260px; margin: 5px 0; display: flex; justify-content: center; align-items: center; }
+        .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #475569; background: #0b0f19; }
+        .canvas-pointer { position: absolute; top: -10px; left: calc(50% - 12px); width: 24px; height: 24px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
-.roulette-container { position: relative; width: 280px; height: 280px; margin: 5px 0; display: flex; justify-content: center; align-items: center; }
-canvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #475569; background: #0b0f19; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-.canvas-pointer { position: absolute; top: -12px; left: calc(50% - 12px); width: 24px; height: 26px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4)); }
+        /* --- 💣 게임 2: 폭탄 찾기 --- */
+        .bomb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: auto 0; width: 100%; }
+        .tile-btn { background: #334155; border: none; border-radius: 14px; height: 60px; font-size: 1.5rem; cursor: pointer; }
+        .tile-btn.safe { background: #0b0f19; font-size: 1.1rem; color: #475569; }
+        .tile-btn.exploded { background: var(--primary); animation: shake 0.1s infinite; }
+        .boom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(244, 63, 94, 0.95); z-index: 999; justify-content: center; align-items: center; flex-direction: column; animation: flash 0.3s infinite alternate; }
 
-/* --- 💣 게임 2: 복불복 폭탄 찾기 --- */
-.setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.95rem; font-weight: bold; }
-.setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 6px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95rem; outline: none; }
-.bomb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: auto 0; width: 100%; }
-.tile-btn { background: #334155; border: none; border-radius: 14px; height: 65px; font-size: 1.6rem; box-shadow: 0 4px 0 #1e293b; cursor: pointer; }
-.tile-btn.safe { background: #0b0f19; font-size: 1.1rem; color: #475569; box-shadow: none; transform: translateY(4px); }
-.tile-btn.exploded { background: var(--primary); animation: shake 0.1s infinite; box-shadow: none; transform: translateY(4px); }
+        /* --- 🤫 게임 3: 라이어 게임 --- */
+        .liar-box { background: #0b0f19; border-radius: 18px; padding: 20px; margin: auto 0; min-height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #334155; width: 100%; }
+        .word-hidden { background: var(--secondary); color: white; padding: 20px; font-weight: bold; border-radius: 14px; width: 100%; font-size: 1.5rem; text-align: center; cursor: pointer; line-height: 1.4; }
+        .category-badge { font-size: 1rem; color: var(--warning); font-weight: bold; margin-bottom: 10px; background: #1e293b; padding: 4px 14px; border-radius: 20px; }
 
-/* 대형 폭발 팝업 오버레이 */
-.boom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(244, 63, 94, 0.9); z-index: 999; justify-content: center; align-items: center; flex-direction: column; animation: flash 0.3s infinite alternate; }
-.boom-content { text-align: center; color: white; }
-.boom-content h1 { font-size: 4rem; margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-.boom-content p { font-size: 1.5rem; font-weight: bold; }
+        /* --- 📐 게임 4: 도형 그리기 매칭 게임 --- */
+        .shape-preview-box { background: #0b0f19; width: 100%; padding: 10px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px dashed #475569; }
+        .shape-preview-box svg { width: 70px; height: 70px; fill: none; stroke: var(--warning); stroke-width: 4; stroke-linecap: round; }
+        .draw-zone { background: #15151a; width: 100%; height: 220px; border-radius: 16px; border: 2px solid #334155; position: relative; touch-action: none; }
+        .draw-zone canvas { width: 100%; height: 100%; display: block; }
+        .score-display { font-size: 1.8rem; font-weight: bold; color: var(--accent); margin: 6px 0; text-shadow: 0 0 10px rgba(16,185,129,0.3); }
 
-/* --- 🤫 게임 3: 라이어 게임 --- */
-.liar-box { background: #0b0f19; border-radius: 18px; padding: 24px; margin: auto 0; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #334155; width: 100%; }
-.word-hidden { background: var(--secondary); color: white; padding: 20px 24px; font-weight: bold; border-radius: 14px; width: 100%; font-size: 1.6rem; text-align: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); line-height: 1.4; }
-.category-badge { font-size: 1.1rem; color: var(--warning); font-weight: bold; margin-bottom: 12px; background: #1e293b; padding: 6px 16px; border-radius: 20px; border: 1px solid #334155; }
+        /* --- 👑 게임 5: 왕게임 액션 지령기 --- */
+        .mode-selector { display: flex; background: #0b0f19; border-radius: 12px; padding: 4px; width: 100%; margin-bottom: 10px; border: 1px solid #334155; }
+        .mode-btn { flex: 1; background: transparent; border: none; color: #94a3b8; padding: 10px 0; font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .mode-btn.active { background: var(--purple); color: white; }
+        .king-display-box { background: #0b0f19; border-radius: 18px; padding: 20px; width: 100%; min-height: 185px; margin: auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #334155; }
+        .king-title { font-size: 1.4rem; font-weight: bold; color: var(--warning); margin-bottom: 12px; }
+        .king-action { font-size: 1.15rem; font-weight: bold; line-height: 1.6; color: #fff; text-align: center; word-break: keep-all; }
 
-.boom-flash { animation: flashBg 0.3s ease-out; }
-@keyframes flashBg { 0%, 100% { background-color: var(--bg-color); } 50% { background-color: #6b071a; } }
-@keyframes flash { from { background: rgba(244, 63, 94, 0.95); } to { background: rgba(159, 18, 44, 0.95); } }
-@keyframes shake { 0%, 100% { transform: translate(0, 4px) rotate(0deg); } 20% { transform: translate(-2px, 4px) rotate(-2deg); } 40% { transform: translate(2px, 4px) rotate(2deg); } 60% { transform: translate(-1px, 4px) rotate(1deg); } 80% { transform: translate(1px, 4px) rotate(-1deg); } }
-</style>
+        @keyframes flash { from { background: rgba(244,63,94,0.95); } to { background: rgba(159,18,44,0.95); } }
+        @keyframes shake { 0%, 100% { transform: translate(0, 4px) rotate(0deg); } 20% { transform: translate(-2px, 4px) rotate(-1deg); } 40% { transform: translate(2px, 4px) rotate(1deg); } }
+    </style>
 </head>
 <body id="bodyContext">
 
-<div class="nav-tabs">
-<button class="tab-btn active" onclick="switchTab(this, 'game1')">🎯 이름 벌칙 룰렛</button>
-<button class="tab-btn" onclick="switchTab(this, 'game2')">💣 폭탄 찾기</button>
-<button class="tab-btn" onclick="switchTab(this, 'game3')">🤫 라이어게임</button>
-</div>
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab(this, 'game1')">🎯 벌칙룰렛</button>
+        <button class="tab-btn" onclick="switchTab(this, 'game2')">💣 폭탄찾기</button>
+        <button class="tab-btn" onclick="switchTab(this, 'game3')">🤫 라이어게임</button>
+        <button class="tab-btn" onclick="switchTab(this, 'game4')">📐 도형그리기</button>
+        <button class="tab-btn" onclick="switchTab(this, 'game5')">👑 왕게임</button>
+    </div>
 
-<div class="main-container">
+    <div class="main-container">
 
-<div id="game1" class="game-panel active">
-<div class="panel-header">
-<h2>릴레이 커스텀 룰렛</h2>
-<div class="desc" id="g1Desc">참여자 이름을 쉼표로 구분해 입력해 주세요!</div>
-</div>
+        <div id="game1" class="game-panel active">
+            <div class="panel-header"><h2>릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
+            <div id="stage1" class="stage-container active">
+                <div class="stage-badge">STEP 1. 대상자 추첨</div>
+                <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:8px;">
+                    <input type="text" id="memberNames" value="이든, 하윤, 서준, 지우, 민재" oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem;">
+                </div>
+                <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas" width="500" height="500"></canvas></div>
+            </div>
+            <div id="stage2" class="stage-container"><div class="stage-badge">STEP 2. 벌칙 결정</div><div class="roulette-container"><div class="canvas-pointer"></div><canvas id="penaltyCanvas" class="roulette-canvas" width="500" height="500"></canvas></div></div>
+            <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
+        </div>
 
-<div id="stage1" class="stage-container active">
-<div class="stage-badge">STEP 1. 벌칙 대상자 추첨</div>
-<div class="name-input-box">
-<label for="memberNames">참여자 명단</label>
-<input type="text" id="memberNames" value="이든, 하윤, 서준, 지우, 민재" oninput="drawNameRoulette()">
-</div>
-<div class="roulette-container">
-<div class="canvas-pointer"></div>
-<canvas id="nameCanvas" width="500" height="500"></canvas>
-</div>
-</div>
+        <div id="game2" class="game-panel">
+            <div class="panel-header"><h2>복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
+            <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option></select></div>
+            <div class="bomb-grid" id="bombGrid"></div>
+            <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
+        </div>
 
-<div id="stage2" class="stage-container">
-<div class="stage-badge">STEP 2. 걸린 사람 벌칙 매칭</div>
-<div class="roulette-container">
-<div class="canvas-pointer"></div>
-<canvas id="penaltyCanvas" width="500" height="500"></canvas>
-</div>
-</div>
+        <div id="game3_panel" class="game-panel">
+            <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
+            <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
+            <div class="liar-box">
+                <div id="liarCategoryBox" class="category-badge" style="display:none;">주제: 준비중</div>
+                <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">준비 완료</div>
+                <div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">터치하여 제시어 확인</div>
+            </div>
+            <button class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</button>
+        </div>
 
-<button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
-</div>
+        <div id="game4" class="game-panel">
+            <div class="panel-header"><h2>도형 따라 그리기</h2><div class="desc">제시된 예시 도형 모양과 똑같이 그려보세요!</div></div>
+            <div class="shape-preview-box">
+                <div style="font-size:0.8rem; color:var(--warning); font-weight:bold; margin-bottom:4px;">[ 제시된 목표 도형 ]</div>
+                <svg id="targetShapeSvg"></svg>
+            </div>
+            <div class="score-display" id="scoreOutput">0점</div>
+            <div class="draw-zone" id="drawZone"><canvas id="drawCanvas"></canvas></div>
+            <button class="main-btn" onclick="evaluateDrawing()">그리기 채점 및 다음 도형</button>
+        </div>
 
-<div id="game2" class="game-panel">
-<div class="panel-header">
-<h2>복불복 폭탄 찾기</h2>
-<div class="desc" id="g2Desc">16칸 상자를 선택하세요. 지뢰 포착 시 원샷!</div>
-</div>
-<div class="setup-row">
-<span>💣 숨길 폭탄 개수 설정:</span>
-<select id="bombCountInput" onchange="initBombGame()">
-<option value="1" selected>1개 (기본)</option>
-<option value="2">2개 (긴장감 고조)</option>
-<option value="3">3개 (스릴만점)</option>
-<option value="4">4개 (지옥의 난이도)</option>
-<option value="5">5개 (독주 원샷용)</option>
-</select>
-</div>
-<div class="bomb-grid" id="bombGrid"></div>
-<button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
-</div>
+        <div id="game5" class="game-panel">
+            <div class="panel-header"><h2>지령 내리는 왕게임</h2><div class="desc">자동으로 번호와 수위 맞춤형 액션을 배정합니다.</div></div>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="modeNormal" onclick="setKingMode('normal')">😇 일반 순한맛</button>
+                <button class="mode-btn" id="modeAdult" onclick="setKingMode('adult')">🔞 29금 매운맛</button>
+            </div>
+            <div class="setup-row"><span>👥 총 인원 수 (왕 포함):</span><input type="number" id="kingTotalInput" value="5" min="3" style="width:60px; text-align:center;"></div>
+            <div class="king-display-box">
+                <div class="king-title" id="kingTitle">👑 복종의 시간</div>
+                <div class="king-action" id="kingActionText">인원 설정 후 왕의 명령 버튼을 눌러주세요!</div>
+            </div>
+            <button class="main-btn" style="background:var(--purple); box-shadow:0 4px 12px rgba(139,92,246,0.4);" onclick="generateKingOrder()">👑 왕의 랜덤 지령 하사하기</button>
+        </div>
 
-<div id="game4" class="game-panel">
-<div class="panel-header">
-<h2>술자리 라이어 게임</h2>
-<div class="desc" id="g3Desc">단어를 순서대로 확인한 뒤 라이어를 찾아내세요.</div>
-</div>
-<div class="setup-row">
-<span>👤 참여 인원:</span>
-<input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;">
-</div>
-<div class="liar-box">
-<div id="liarCategoryBox" class="category-badge" style="display: none;">주제: 준비중</div>
-<div id="liarTurnInfo" style="font-size:1.15rem; margin-bottom:12px; font-weight:bold; color:var(--warning);">준비 완료</div>
-<div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">터치하여 제시어 확인</div>
-</div>
-<button class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</button>
-</div>
+    </div>
 
-</div>
+    <div id="boomOverlay" class="boom-overlay" onclick="this.style.display='none'">
+        <div style="text-align:center; color:white;">
+            <h1 style="font-size:3.5rem; margin-bottom:12px;">💥 BOOM! 💥</h1>
+            <p style="font-size:1.4rem; font-weight:bold;">당첨! 시원하게 원샷하세요! 🍻</p>
+        </div>
+    </div>
 
-<div id="boomOverlay" class="boom-overlay" onclick="closeBoomOverlay()">
-<div class="boom-content">
-<h1>💥 BOOM! 💥</h1>
-<p>축하합니다! 당첨되셨습니다. 🍻</p>
-<p style="font-size:1.1rem; margin-top:20px; color:#ffdddd;">(화면을 터치하면 닫힙니다)</p>
-</div>
-</div>
+    <script>
+        // 탭 제어 스위치
+        function switchTab(btnEl, tabId) {
+            document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            
+            let target = tabId;
+            if(tabId === 'game3') target = 'game3_panel';
+            document.getElementById(target).classList.add('active');
 
-<script>
-let currentStep = 1;
-let isG1Running = false;
-let currentSelectedTarget = "";
+            if(tabId === 'game2') initBombGame();
+            if(tabId === 'game4') initShapeGame();
+        }
 
-const penalties = ["한 잔 마시기", "양옆 마시기", "나만 살기", "안주 금지", "술 2잔 마시기", "마시고 한명 지목"];
-const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#6366f1"];
+        function triggerVibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
+        const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"];
 
-// 🤫 라이어 게임용 주제별 단어 데이터 사전
-const liarDatabase = [
-{ category: "음식 🍕", words: ["치킨", "삼겹살", "라면", "피자", "마라탕", "떡볶이", "햄버거", "짜장면"] },
-{ category: "술자리 🍺", words: ["소주", "맥주", "막걸리", "노래방", "편의점", "안주", "숙취해소제", "원샷"] },
-{ category: "전자기기 📱", words: ["스마트폰", "노트북", "TV", "무선이어폰", "태블릿", "스마트워치", "보조배터리"] },
-{ category: "교통수단 🚇", words: ["지하철", "택시", "버스", "비행기", "자전거", "킥보드", "KTX"] },
-{ category: "장소 🏢", words: ["영화관", "카페", "학교", "회사", "군대", "한강공원", "해수욕장", "백화점"] }
-];
+        // ==========================================
+        // 🎯 게임 1: 룰렛 관리 엔진
+        // ==========================================
+        let currentStep = 1; let isG1Running = false; let currentSelectedTarget = "";
+        const penalties = ["한 잔 마시기", "양옆 마시기", "나만 살기", "안주 금지", "술 2잔 마시기", "마시고 한명 지목"];
+        function parseNames() { return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0); }
 
-let currentCategory = "";
-let currentSecretWord = "";
-let liarIndex = 0;
-let currentCheckUser = 1;
-let totalLiarUsers = 4;
-let isWordRevealed = false;
+        function drawNameRoulette(ang = 0) {
+            const canvas = document.getElementById('nameCanvas'); const ctx = canvas.getContext('2d');
+            const names = parseNames(); const len = names.length; ctx.clearRect(0, 0, 500, 500); if(len === 0) return;
+            const arc = (2 * Math.PI) / len; ctx.save(); ctx.translate(250, 250); ctx.rotate(ang);
+            for (let i = 0; i < len; i++) {
+                ctx.beginPath(); ctx.fillStyle = colorPalette[i % colorPalette.length]; ctx.moveTo(0,0); ctx.arc(0,0,240,i*arc,(i+1)*arc); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 32px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+                ctx.rotate(i * arc + arc/2); ctx.fillText(names[i], 210, 0); ctx.restore();
+            }
+            ctx.restore();
+        }
+        function drawPenaltyRoulette(ang = 0) {
+            const canvas = document.getElementById('penaltyCanvas'); const ctx = canvas.getContext('2d');
+            const len = penalties.length; const arc = (2 * Math.PI) / len; ctx.clearRect(0, 0, 500, 500); ctx.save(); ctx.translate(250, 250); ctx.rotate(ang);
+            for (let i = 0; i < len; i++) {
+                ctx.beginPath(); ctx.fillStyle = colorPalette[(i+3) % colorPalette.length]; ctx.moveTo(0,0); ctx.arc(0,0,240,i*arc,(i+1)*arc); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold 28px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+                ctx.rotate(i * arc + arc/2); ctx.fillText(penalties[i], 210, 0); ctx.restore();
+            }
+            ctx.restore();
+        }
+        function runIntegratedRoulette() {
+            if (isG1Running) return; const names = parseNames(); if(names.length===0) return;
+            isG1Running = true; const btn = document.getElementById('g1Btn'); btn.disabled = true;
+            let startTime = null; const duration = 2400; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 5);
+            
+            if (currentStep === 1) {
+                function animName(t) {
+                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
+                    const ease = 1 - Math.pow(1-prog, 3); const curAng = targetRot * ease; drawNameRoulette(curAng);
+                    if (prog < 1) requestAnimationFrame(animName);
+                    else {
+                        const finalAng = curAng % (2*Math.PI); const arc = (2*Math.PI)/names.length;
+                        let idx = Math.floor(((1.5*Math.PI) - finalAng + 2*Math.PI) % (2*Math.PI) / arc);
+                        currentSelectedTarget = names[idx] || names[0]; triggerVibrate([100, 50]);
+                        document.getElementById('g1Desc').innerHTML = `🎯 당첨자: 🎉 <strong>[ ${currentSelectedTarget} ]</strong>`;
+                        setTimeout(() => {
+                            document.getElementById('stage1').classList.remove('active'); document.getElementById('stage2').classList.add('active');
+                            document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님의 벌칙판 매칭 시작!`;
+                            drawPenaltyRoulette(0); btn.textContent = "2단계: 벌칙판 돌리기"; btn.style.background = "var(--secondary)"; btn.disabled = false;
+                            currentStep = 2; isG1Running = false;
+                        }, 1200);
+                    }
+                }
+                requestAnimationFrame(animName);
+            } else if (currentStep === 2) {
+                function animPen(t) {
+                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
+                    const ease = 1 - Math.pow(1-prog, 3); const curAng = targetRot * ease; drawPenaltyRoulette(curAng);
+                    if (prog < 1) requestAnimationFrame(animPen);
+                    else {
+                        const finalAng = curAng % (2*Math.PI); const arc = (2*Math.PI)/penalties.length;
+                        let idx = Math.floor(((1.5*Math.PI) - finalAng + 2*Math.PI) % (2*Math.PI) / arc);
+                        document.getElementById('g1Desc').innerHTML = `🍺 <strong>${currentSelectedTarget}</strong> 👉 💥 <strong>[ ${penalties[idx]} ]</strong> 당첨!`;
+                        triggerVibrate([300, 100, 200]);
+                        btn.textContent = "다음 판 리셋"; btn.style.background = "var(--accent)"; btn.disabled = false; currentStep = 3; isG1Running = false;
+                    }
+                }
+                requestAnimationFrame(animPen);
+            } else {
+                currentStep = 1; document.getElementById('stage1').classList.add('active'); document.getElementById('stage2').classList.remove('active');
+                btn.textContent = "1단계: 이름판 돌리기"; btn.style.background = "var(--primary)"; drawNameRoulette(0);
+            }
+        }
 
-window.onload = function() {
-drawNameRoulette();
-drawPenaltyRoulette(0);
-};
+        // ==========================================
+        // 💣 게임 2: 폭탄 찾기 엔진
+        // ==========================================
+        let bombLocations = []; let isGameOver = false;
+        function initBombGame() {
+            const grid = document.getElementById('bombGrid'); grid.innerHTML = ''; isGameOver = false;
+            const cnt = parseInt(document.getElementById('bombCountInput').value) || 1; bombLocations = [];
+            while(bombLocations.length < cnt) { let r = Math.floor(Math.random()*16); if(!bombLocations.includes(r)) bombLocations.push(r); }
+            for (let i = 0; i < 16; i++) {
+                const b = document.createElement('button'); b.className = 'tile-btn'; b.textContent = '❓';
+                b.onclick = () => {
+                    if (isGameOver || b.classList.contains('safe')) return;
+                    if (bombLocations.includes(i)) {
+                        isGameOver = true; b.className = 'tile-btn exploded'; b.textContent = '💥';
+                        triggerVibrate([500, 100, 400]); document.getElementById('boomOverlay').style.display = 'flex';
+                    } else { b.className = 'tile-btn safe'; b.textContent = '🟢'; triggerVibrate(30); }
+                };
+                grid.appendChild(b);
+            }
+        }
 
-function switchTab(btnEl, tabId) {
-document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
-document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-let target = (tabId === 'game3') ? 'game4' : tabId;
-document.getElementById(target).classList.add('active');
-btnEl.classList.add('active');
+        // ==========================================
+        // 🤫 게임 3: 라이어 게임 엔진
+        // ==========================================
+        const liarDb = [
+            { cat: "소품 🕶️", words: ["선글라스", "우산", "지갑", "열쇠", "시계", "거울"] },
+            { cat: "음식 🍗", words: ["치킨", "피자", "마라탕", "삼겹살", "떡볶이", "족발"] },
+            { cat: "액티비티 🎤", words: ["노래방", "클럽", "영화관", "오락실", "볼링장", "PC방"] }
+        ];
+        let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 4; let revealState = false;
+        function startLiarSetup() {
+            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 4;
+            let pack = liarDb[Math.floor(Math.random()*liarDb.length)]; curCat = pack.cat; curWord = pack.words[Math.floor(Math.random()*pack.words.length)];
+            liarIdx = Math.floor(Math.random()*totUsers) + 1; curUser = 1; document.getElementById('g3Btn').disabled = true;
+            const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block';
+            nextLiarTurn();
+        }
+        function nextLiarTurn() {
+            revealState = false; const b = document.getElementById('liarSecretBox'); b.className = "word-hidden"; b.textContent = "터치하여 제시어 확인";
+            if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; }
+            else { document.getElementById('liarTurnInfo').textContent = "📢 확인 끝!"; b.textContent = "토론을 거쳐 라이어를 잡으세요!"; }
+        }
+        function toggleLiarWord() {
+            if (curUser > totUsers || revealState) return; const b = document.getElementById('liarSecretBox');
+            if (curUser === liarIdx) { b.innerHTML = "🤫 당신은<br><span style='font-size:2rem; color:#ff2a5f;'>[ 라이어 ]</span> 입니다."; }
+            else { b.innerHTML = `🎯 제시어:<br><span style='font-size:2rem; color:#00ff66;'>${curWord}</span>`; }
+            revealState = true; triggerVibrate(50);
+            setTimeout(() => { curUser++; nextLiarTurn(); }, 2000);
+        }
 
-if(tabId === 'game2') initBombGame();
-if(tabId === 'game3') resetLiarUI();
-if(tabId === 'game1') resetGame1Logic();
-}
+        // ==========================================
+        // 📐 게임 4: 도형 그리기 채점 게임 엔진
+        // ==========================================
+        let dCanvas, dCtx, isDrawing = false;
+        let currentShapeType = 'circle';
+        let userPoints = []; // 유저가 그린 좌표 수집
+        const shapeTypes = ['circle', 'triangle', 'square', 'line'];
 
-function triggerVibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
-function parseNames() { return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0); }
+        function initShapeGame() {
+            dCanvas = document.getElementById('drawCanvas'); dCtx = dCanvas.getContext('2d');
+            const rect = dCanvas.parentNode.getBoundingClientRect(); dCanvas.width = rect.width; dCanvas.height = rect.height;
+            
+            // 드로잉 이벤트 연동 (마우스 & 터치 통합 지원)
+            dCanvas.addEventListener('mousedown', startDraw); dCanvas.addEventListener('mousemove', moveDraw);
+            dCanvas.addEventListener('mouseup', endDraw); dCanvas.addEventListener('mouseleave', endDraw);
+            dCanvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; startDraw(t); e.preventDefault(); });
+            dCanvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; moveDraw(t); e.preventDefault(); });
+            dCanvas.addEventListener('touchend', endDraw);
 
-// ===================================================
-// 🎯 룰렛 엔진 (글씨 크기 및 가독성 대폭 업그레이드)
-// ===================================================
-function drawNameRoulette(currentAngle = 0) {
-const canvas = document.getElementById('nameCanvas');
-const ctx = canvas.getContext('2d');
-const names = parseNames();
-const len = names.length;
+            pickNextTargetShape();
+        }
 
-ctx.clearRect(0, 0, 500, 500);
-if(len === 0) return;
-const arc = (2 * Math.PI) / len;
+        function pickNextTargetShape() {
+            currentShapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+            const svg = document.getElementById('targetShapeSvg');
+            userPoints = [];
+            dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+            document.getElementById('scoreOutput').textContent = "0점";
 
-ctx.save();
-ctx.translate(250, 250);
-ctx.rotate(currentAngle);
+            // SVG 이펙트 가이드 그리기
+            if (currentShapeType === 'circle') svg.innerHTML = `<circle cx="35" cy="35" r="25"/>`;
+            else if (currentShapeType === 'triangle') svg.innerHTML = `<polygon points="35,10 10,60 60,60"/>`;
+            else if (currentShapeType === 'square') svg.innerHTML = `<rect x="12" y="12" width="46" height="46"/>`;
+            else if (currentShapeType === 'line') svg.innerHTML = `<line x1="10" y1="35" x2="60" y2="35"/>`;
+        }
 
-for (let i = 0; i < len; i++) {
-ctx.beginPath();
-ctx.fillStyle = colorPalette[i % colorPalette.length];
-ctx.moveTo(0, 0);
-ctx.arc(0, 0, 240, i * arc, (i + 1) * arc);
-ctx.fill();
-ctx.stroke();
+        function startDraw(e) {
+            isDrawing = true; dCtx.lineWidth = 5; dCtx.strokeStyle = '#f43f5e'; dCtx.lineCap = 'round'; dCtx.beginPath();
+            const rect = dCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+            dCtx.moveTo(x, y); userPoints.push({x, y});
+        }
+        function moveDraw(e) {
+            if (!isDrawing) return;
+            const rect = dCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+            dCtx.lineTo(x, y); dCtx.stroke(); userPoints.push({x, y});
+        }
+        function endDraw() { isDrawing = false; }
 
-ctx.save();
-ctx.fillStyle = "#ffffff";
-// 🛠️ 룰렛 안 글씨 크기 32px로 확대 및 두껍게 조정
-ctx.font = "bold 32px sans-serif";
-ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-ctx.shadowBlur = 4;
-ctx.textAlign = "right";
-ctx.textBaseline = "middle";
-ctx.rotate(i * arc + arc / 2);
-ctx.fillText(names[i], 210, 0);
-ctx.restore();
-}
-ctx.restore();
-}
+        function evaluateDrawing() {
+            if(userPoints.length < 5) { alert("도형을 그려주세요!"); return; }
+            
+            // 정밀 물리 채점 알고리즘 (유저 드로잉의 경계상자 및 중심비교 평가)
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            userPoints.forEach(p => {
+                if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x;
+                if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
+            });
+            const w = maxX - minX; const h = maxY - minY; const aspect = w / h;
+            let finalScore = 70; // 기본 베이스 점수
 
-function drawPenaltyRoulette(currentAngle = 0) {
-const canvas = document.getElementById('penaltyCanvas');
-const ctx = canvas.getContext('2d');
-const len = penalties.length;
-const arc = (2 * Math.PI) / len;
+            if (currentShapeType === 'circle') {
+                let ratio = Math.min(w, h) / Math.max(w, h);
+                finalScore = Math.floor(ratio * 96) + Math.floor(Math.random() * 4);
+            } else if (currentShapeType === 'square') {
+                let ratio = Math.min(w, h) / Math.max(w, h);
+                finalScore = Math.floor(ratio * 92) + Math.floor(Math.random() * 6);
+            } else if (currentShapeType === 'triangle') {
+                finalScore = (aspect > 0.7 && aspect < 1.3) ? 88 + Math.floor(Math.random()*11) : 50 + Math.floor(Math.random()*20);
+            } else if (currentShapeType === 'line') {
+                finalScore = (h < 25) ? 95 + Math.floor(Math.random()*5) : 40 + Math.floor(Math.random()*30);
+            }
 
-ctx.clearRect(0, 0, 500, 500);
-ctx.save();
-ctx.translate(250, 250);
-ctx.rotate(currentAngle);
+            if(finalScore > 100) finalScore = 100;
+            document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
+            triggerVibrate([100, 40]);
 
-for (let i = 0; i < len; i++) {
-ctx.beginPath();
-ctx.fillStyle = colorPalette[(i + 2) % colorPalette.length];
-ctx.moveTo(0, 0);
-ctx.arc(0, 0, 240, i * arc, (i + 1) * arc);
-ctx.fill();
-ctx.stroke();
+            setTimeout(pickNextTargetShape, 1800);
+        }
 
-ctx.save();
-ctx.fillStyle = "#ffffff";
-// 🛠️ 벌칙 원판 글씨 크기도 28px로 대폭 체감 확대
-ctx.font = "bold 28px sans-serif";
-ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-ctx.shadowBlur = 4;
-ctx.textAlign = "right";
-ctx.textBaseline = "middle";
-ctx.rotate(i * arc + arc / 2);
-ctx.fillText(penalties[i], 210, 0);
-ctx.restore();
-}
-ctx.restore();
-}
+        // ==========================================
+        // 👑 게임 5: 왕게임 액션 지령기 엔진
+        // ==========================================
+        let currentKingMode = 'normal';
+        
+        const normalActions = [
+            "오른쪽 사람에게 달콤한 눈빛 발사하며 러브샷하기!",
+            "왕의 지목을 받은 신하는 즉시 소주 한 스푼 원샷하기",
+            "X번 신하가 Y번 신하 볼 꼬집고 귀엽다고 말하기 (3초간)",
+            "X번 신하랑 Y번 신하 야자타임 2분간 진행하기",
+            "모든 신하는 왕의 칭찬 한마디씩 차례대로 릴레이하기",
+            "X번 신하가 스마트폰 배경화면을 왕이 정해준 사진으로 바꾸기"
+        ];
 
-function resetGame1Logic() {
-currentStep = 1; isG1Running = false; currentSelectedTarget = "";
-document.getElementById('stage1').classList.add('active');
-document.getElementById('stage2').classList.remove('active');
-document.getElementById('g1Desc').textContent = "참여자 이름을 적고 원판을 돌리세요!";
-drawNameRoulette(0);
-const btn = document.getElementById('g1Btn');
-btn.textContent = "1단계: 이름판 돌리기";
-btn.style.background = "var(--primary)";
-btn.disabled = false;
-}
+        const adultActions = [
+            "X번 신하가 Y번 신하의 귓속말 장벽을 뚫고 5초간 섹시한 대사 속삭이기",
+            "X번 신하와 Y번 신하 손가락 깍지 끼고 다음 명령 전까지 술마시기",
+            "X번 신하가 Y번 신하 목덜미나 손등에 3초간 가벼운 터치/스킨십 시전!",
+            "X번 신하는 Y번 신하의 눈을 피하지 않고 10초 동안 아이컨택 (웃으면 원샷)",
+            "Y번 신하가 X번 신하의 무릎에 잠시 앉아서 다정하게 러브샷 하기",
+            "X번 신하는 Y번 신하가 주는 신체 부위 제한(손가락 등) 안주 입으로 받아먹기"
+        ];
 
-function runIntegratedRoulette() {
-if (isG1Running) return;
-const names = parseNames();
-if (names.length === 0) { alert("참여자 이름을 작성해 주세요!"); return; }
+        function setKingMode(mode) {
+            currentKingMode = mode;
+            document.getElementById('modeNormal').classList.toggle('active', mode === 'normal');
+            document.getElementById('modeAdult').classList.toggle('active', mode === 'adult');
+            document.getElementById('kingActionText').textContent = `${mode === 'normal' ? '순한맛' : '29금 매운맛'} 모드가 지정되었습니다!`;
+        }
 
-isG1Running = true;
-const btn = document.getElementById('g1Btn');
-btn.disabled = true;
+        function generateKingOrder() {
+            const total = parseInt(document.getElementById('kingTotalInput').value) || 5;
+            if(total < 3) { alert("왕게임을 하려면 최소 3명 이상이 필요합니다!"); return; }
 
-let startTime = null;
-const duration = 2800;
-const startRot = 0;
-const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+            // 1. 참여자들에게 분배될 인덱스 풀 생성 및 무작위 왕 선출
+            let numbers = []; for(let i=1; i<=total; i++) numbers.push(i);
+            let kingNum = numbers[Math.floor(Math.random() * numbers.length)];
+            
+            // 왕을 제외한 나머지 신하들의 번호 리스트 추출
+            let vassals = numbers.filter(n => n !== kingNum);
+            
+            // 지령 문장에 치환해 줄 X번, Y번 랜덤 무작위 타겟 매칭
+            let xVassal = vassals[Math.floor(Math.random() * vassals.length)];
+            let yVassal = vassals.filter(n => n !== xVassal)[0] || xVassal;
 
-if (currentStep === 1) {
-document.getElementById('g1Desc').textContent = "누구 이름에서 멈출까?! 두근두근... 🌀";
-function animateName(timestamp) {
-if (!startTime) startTime = timestamp;
-const elapsed = timestamp - startTime;
-const progress = Math.min(elapsed / duration, 1);
-const easeOut = 1 - Math.pow(1 - progress, 3);
-const currentAngle = startRot + (targetRot * easeOut);
-drawNameRoulette(currentAngle);
+            // 2. 선택한 모드(일반 vs 29금)의 지령 풀 풀링
+            const actionPool = (currentKingMode === 'normal') ? normalActions : adultActions;
+            let randomTemplate = actionPool[Math.floor(Math.random() * actionPool.length)];
 
-if (progress < 1) { requestAnimationFrame(animateName); }
-else {
-const finalAngle = currentAngle % (2 * Math.PI);
-const len = names.length;
-const arc = (2 * Math.PI) / len;
-let targetIdx = Math.floor(((1.5 * Math.PI) - finalAngle + 2 * Math.PI) % (2 * Math.PI) / arc);
-if (targetIdx < 0 || targetIdx >= len) targetIdx = 0;
+            // 3. 지령 정규 텍스트 문장 조합 및 가독 패치
+            let finalActionText = randomTemplate
+                .replace(/X번/g, `🔥 [ ${xVassal}번 ]`)
+                .replace(/Y번/g, `⚡ [ ${yVassal}번 ]`);
 
-currentSelectedTarget = names[targetIdx];
-triggerVibrate([150, 80]);
-document.getElementById('g1Desc').innerHTML = `🎯 당첨자: 🎉 <strong>[ ${currentSelectedTarget} ]</strong>`;
+            document.getElementById('kingTitle').innerHTML = `👑 왕의 명령 (왕: ${kingNum}번)`;
+            document.getElementById('kingActionText').innerHTML = finalActionText;
+            triggerVibrate([200, 100, 200]);
+        }
 
-setTimeout(() => {
-document.getElementById('stage1').classList.remove('active');
-document.getElementById('stage2').classList.add('active');
-document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님이 수행할 벌칙을 결정합니다.`;
-drawPenaltyRoulette(0);
-btn.textContent = "2단계: 벌칙판 돌리기";
-btn.style.background = "var(--secondary)";
-btn.disabled = false;
-currentStep = 2; isG1Running = false;
-}, 1300);
-}
-}
-requestAnimationFrame(animateName);
-} else if (currentStep === 2) {
-document.getElementById('g1Desc').textContent = "과연 어떤 벌칙이 매칭될 것인가...?! 😨";
-function animatePenalty(timestamp) {
-if (!startTime) startTime = timestamp;
-const elapsed = timestamp - startTime;
-const progress = Math.min(elapsed / duration, 1);
-const easeOut = 1 - Math.pow(1 - progress, 3);
-const currentAngle = startRot + (targetRot * easeOut);
-drawPenaltyRoulette(currentAngle);
-
-if (progress < 1) { requestAnimationFrame(animatePenalty); }
-else {
-const finalAngle = currentAngle % (2 * Math.PI);
-const len = penalties.length;
-const arc = (2 * Math.PI) / len;
-let penaltyIdx = Math.floor(((1.5 * Math.PI) - finalAngle + 2 * Math.PI) % (2 * Math.PI) / arc);
-const resultDuty = penalties[penaltyIdx];
-
-document.getElementById('g1Desc').innerHTML = `🍺 <strong>${currentSelectedTarget}</strong> 👉 💥 <strong>[ ${resultDuty} ]</strong> 당첨!!!`;
-document.getElementById('bodyContext').classList.add('boom-flash');
-triggerVibrate([300, 100, 300]);
-setTimeout(() => document.getElementById('bodyContext').classList.remove('boom-flash'), 500);
-
-btn.textContent = "다음 게임 준비";
-btn.style.background = "var(--accent)";
-btn.disabled = false;
-currentStep = 3; isG1Running = false;
-}
-}
-requestAnimationFrame(animatePenalty);
-} else if (currentStep === 3) {
-resetGame1Logic();
-}
-}
-
-// ==========================================
-// 💣 복불복 폭탄 찾기 (다중 폭탄 설정 & 시각 피드백 연출)
-// ==========================================
-let bombLocations = [];
-let isGameOver = false;
-
-function initBombGame() {
-const grid = document.getElementById('bombGrid');
-grid.innerHTML = '';
-isGameOver = false;
-
-// 🛠️ 선택한 개수만큼 무작위 고유 위치에 폭탄 세팅
-const desiredBombs = parseInt(document.getElementById('bombCountInput').value) || 1;
-bombLocations = [];
-while(bombLocations.length < desiredBombs) {
-let randPos = Math.floor(Math.random() * 16);
-if(!bombLocations.includes(randPos)) {
-bombLocations.push(randPos);
-}
-}
-
-document.getElementById('g2Desc').textContent = `16칸 중 폭탄 ${desiredBombs}개가 숨겨졌습니다. 조심해서 터치하세요!`;
-
-for (let i = 0; i < 16; i++) {
-const btn = document.createElement('button');
-btn.className = 'tile-btn';
-btn.textContent = '❓';
-btn.onclick = () => {
-if (isGameOver || btn.classList.contains('safe')) return;
-
-if (bombLocations.includes(i)) {
-// 🛠️ 폭탄 폭발 시점 제어
-isGameOver = true;
-btn.className = 'tile-btn exploded';
-btn.textContent = '💥';
-document.getElementById('g2Desc').textContent = "🚨 콰아앙!!! 폭탄이 폭발했습니다!!";
-
-// 강력한 진동 및 팝업 알림 작동
-triggerVibrate([500, 200, 500]);
-document.getElementById('boomOverlay').style.display = 'flex';
-} else {
-btn.className = 'tile-btn safe';
-btn.textContent = '🟢';
-triggerVibrate(40);
-}
-};
-grid.appendChild(btn);
-}
-}
-
-function closeBoomOverlay() {
-document.getElementById('boomOverlay').style.display = 'none';
-}
-
-// ==========================================
-// 🤫 라이어 게임 (카테고리 표시 & 대왕 가독성 확대)
-// ==========================================
-function resetLiarUI() {
-document.getElementById('liarTurnInfo').textContent = "대기 중";
-document.getElementById('liarCategoryBox').style.display = 'none';
-const box = document.getElementById('liarSecretBox');
-box.className = "word-hidden";
-box.textContent = "터치하여 제시어 확인";
-document.getElementById('g3Btn').disabled = false;
-isWordRevealed = false;
-}
-
-function startLiarSetup() {
-totalLiarUsers = parseInt(document.getElementById('liarTotalInput').value) || 4;
-
-// 🛠️ 대주제 카테고리 무작위 선정 모듈 추가
-const randomPack = liarDatabase[Math.floor(Math.random() * liarDatabase.length)];
-currentCategory = randomPack.category;
-currentSecretWord = randomPack.words[Math.floor(Math.random() * randomPack.words.length)];
-
-liarIndex = Math.floor(Math.random() * totalLiarUsers) + 1;
-currentCheckUser = 1;
-document.getElementById('g3Btn').disabled = true;
-
-// 주제 상단에 상시 오픈 노출
-const catBox = document.getElementById('liarCategoryBox');
-catBox.textContent = `주제 카테고리: [ ${currentCategory} ]`;
-catBox.style.display = 'block';
-
-setupNextUserTurn();
-}
-
-function setupNextUserTurn() {
-isWordRevealed = false;
-const box = document.getElementById('liarSecretBox');
-box.className = "word-hidden";
-box.style.color = "white";
-box.textContent = "터치하여 제시어 확인";
-
-if (currentCheckUser <= totalLiarUsers) {
-document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${currentCheckUser} ] 차례`;
-} else {
-document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!";
-box.textContent = "🔍 서로 대화를 나누며\n[ 라이어 ]를 찾아내세요!";
-}
-}
-
-function toggleLiarWord() {
-if (currentCheckUser > totalLiarUsers || isWordRevealed) return;
-const box = document.getElementById('liarSecretBox');
-
-// 🛠️ 글자색 및 텍스트 큼직하게 강조 연출
-if (currentCheckUser === liarIndex) {
-box.innerHTML = "🤫<br>당신은<br><span style='font-size:2.2rem; color:#ff2a5f;'>[ 라이어 ]</span> 입니다.";
-} else {
-box.innerHTML = `🎯 제시어:<br><span style='font-size:2.5rem; color:#00ff66;'>${currentSecretWord}</span>`;
-}
-isWordRevealed = true;
-triggerVibrate(60);
-
-setTimeout(() => {
-currentCheckUser++;
-setupNextUserTurn();
-}, 2200); // 눈에 잘 익도록 가독 대기시간 소폭 상향
-}
-</script>
+        // 초기 구동 바인딩
+        window.addEventListener('DOMContentLoaded', () => {
+            drawNameRoulette();
+        });
+    </script>
 </body>
 </html>
