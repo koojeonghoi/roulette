@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v17.0</title>
+    <title>초호화 술자리 패키지 오락실 | v19.0</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -78,7 +78,7 @@
         .mode-selector { display: flex; background: #0b0f19; border-radius: 12px; padding: 4px; width: 100%; margin-bottom: 10px; border: 1px solid #334155; }
         .mode-btn { flex: 1; background: transparent; border: none; color: #94a3b8; padding: 10px 0; font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
         .mode-btn.active { background: var(--purple); color: white; }
-        .king-display-box { background: #0b0f19; border-radius: 18px; padding: 15px; width: 100%; min-height: 195px; margin: auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #334155; overflow-y: auto; }
+        .king-display-box { background: #0b0f19; border-radius: 18px; padding: 15px; width: 100%; min-height: 200px; margin: auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #334155; overflow-y: auto; }
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
@@ -98,6 +98,7 @@
 
     <div class="main-container">
 
+        <!-- 게임 1: 이름 벌칙 룰렛 -->
         <div id="game1" class="game-panel active">
             <div class="panel-header"><h2>릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
             <div id="stage1" class="stage-container active">
@@ -111,6 +112,7 @@
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
         </div>
 
+        <!-- 게임 2: 복불복 폭탄 찾기 -->
         <div id="game2" class="game-panel">
             <div class="panel-header"><h2>복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
             <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option></select></div>
@@ -118,6 +120,7 @@
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
         </div>
 
+        <!-- 게임 3: 라이어 게임 -->
         <div id="game3_panel" class="game-panel">
             <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc" id="g3Desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
             <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
@@ -126,9 +129,10 @@
                 <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">게임을 시작해주세요.</div>
                 <div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">비밀 창 (준비 필요)</div>
             </div>
-            <button class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</button>
+            <div class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</div>
         </div>
 
+        <!-- 게임 4: 도형 지정 및 대결형 그리기 게임 -->
         <div id="game4" class="game-panel">
             <div class="panel-header"><h2>도형 고정 대결 모드</h2><div class="desc">도형을 고정해두고 여러 명이 순서대로 그려 점수 내기를 하세요!</div></div>
             <div class="setup-row">
@@ -152,16 +156,37 @@
             </div>
         </div>
 
+        <!-- 게임 5: 진짜 왕게임 액션 지령기 (버전 19.0 고도화) -->
         <div id="game5" class="game-panel">
-            <div class="panel-header"><h2>진짜 권력형 왕게임</h2><div class="desc" id="g5Desc">폰을 돌려보며 내 신분(왕 또는 신하 번호)을 확인하세요!</div></div>
+            <div class="panel-header"><h2>진짜 권력형 왕게임</h2><div class="desc" id="g5Desc">번호 배정 방식을 고르고 본인의 역할을 확인하세요.</div></div>
             <div class="mode-selector">
                 <button class="mode-btn active" id="modeNormal" onclick="setKingMode('normal')">😇 일반 순한맛</button>
                 <button class="mode-btn" id="modeAdult" onclick="setKingMode('adult')">🔞 극매운맛 29금</button>
             </div>
-            <div class="setup-row"><span>👥 참여 인원 (왕 포함):</span><input type="number" id="kingTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
+            
+            <div class="setup-row">
+                <span>⚙️ 번호 배정 방식:</span>
+                <select id="kingTypeSelect" onchange="toggleKingInputStyle()">
+                    <option value="anonymous" selected>🎲 익명 랜덤 방식 (인원수만)</option>
+                    <option value="named">✏️ 이름 입력 방식 (순차배정)</option>
+                </select>
+            </div>
+
+            <!-- 방식에 따라 가변 표출되는 설정 영역 -->
+            <div id="kingConfigArea" style="width: 100%;">
+                <div class="setup-row" id="kingCountRow">
+                    <span>👥 참여 인원 (왕 포함):</span>
+                    <input type="number" id="kingTotalInput" value="4" min="3" style="width:60px; text-align:center;">
+                </div>
+                <div class="setup-row" id="kingNameRow" style="display:none; flex-direction:column; align-items:flex-start; gap:6px;">
+                    <span style="font-size:0.85rem; color:#94a3b8;">📝 참여자 이름 (쉼표로 구분):</span>
+                    <input type="text" id="kingNameInput" value="정회, 용원, 정렬, 민수" style="width:100%; text-align:left;">
+                </div>
+            </div>
+
             <div class="king-display-box">
-                <div class="king-title" id="kingStatusTitle">신분 확인 대기</div>
-                <div class="king-action" id="kingMainText">총 인원 설정 후 아래 버튼을 눌러주세요!</div>
+                <div class="king-title" id="kingStatusTitle">1단계: 게임 세팅 대기</div>
+                <div class="king-action" id="kingMainText">배정 방식과 수위를 설정한 후 아래 버튼을 눌러 게임을 개시하세요!</div>
             </div>
             <button class="main-btn" id="g5Btn" style="background:var(--purple); box-shadow:0 4px 12px rgba(139,92,246,0.4);" onclick="startKingIdentityLoop()">👑 신분 배정 시작하기</button>
         </div>
@@ -450,35 +475,84 @@
         }
 
         // ==========================================
-        // 👑 게임 5: 진짜 권력형 왕게임 엔진 (개편 완료)
+        // 👑 게임 5: 진짜 권력형 왕게임 엔진 (v19.0)
         // ==========================================
         let currentKingMode = 'normal';
         let kingGamePool = []; 
         let kingGameIdx = 0; 
         let totalKingPlayers = 4;
-        let isCheckingIdentity = false;
+        let kingParticipantNames = []; // 이름 모드용 배열
 
+        // 😇 일반 순한맛 지령 풀 (32개)
         const normalIdeas = [
-            "💡 [일반 가이드] 오른쪽 신하와 사랑을 가득 담은 러브샷 시키기",
-            "💡 [일반 가이드] 특정 번호 지목해서 소주 한 스푼 원샷 시키기",
-            "💡 [일반 가이드] 두 명 골라서 3초간 볼 꼬집고 귀엽다고 외치게 하기",
-            "💡 [일반 가이드] 두 명 골라서 2분 동안 야자타임 시키기",
-            "💡 [일반 가이드] 나머지 신하들 전원에게 왕 칭찬 한마디씩 릴레이 시키기"
+            "💡 [일반 가이드] 오른쪽 신하와 눈빛 교환 후 진한 러브샷 시키기",
+            "💡 [일반 가이드] 특정 번호 지목해서 소주 반 잔 깔끔하게 원샷 시키기",
+            "💡 [일반 가이드] 두 명 골라서 서로 볼 꼬집고 귀엽다고 애교 떨게 하기",
+            "💡 [일반 가이드] 두 명 골라서 2분 동안 강제 야자타임 진행 시키기",
+            "💡 [일반 가이드] 나머지 신하들 전원에게 왕 칭찬 한마디씩 강제로 릴레이 시키기",
+            "💡 [일반 가이드] 지정된 번호 2명, 서로 스마트폰 기본 카메라로 엽기 셀카 찍어주기",
+            "💡 [일반 가이드] 가장 마음에 드는 이성 또는 동성 한 명에게 소주 한 잔 따라주고 원샷하기",
+            "💡 [일반 가이드] 지정된 번호, 일어나서 요즘 유행하는 챌린지 댄스 5초 동안 추기",
+            "💡 [일반 가이드] 지정된 번호, 옆 사람에게 안주 정성스럽게 먹여주기",
+            "💡 [일반 가이드] 지정된 번호 2명, 손바닥 밀치기 게임해서 진 사람이 꿀밤 맞기",
+            "💡 [일반 가이드] 가장 최근에 카카오톡 보낸 사람의 대화방 내용 소리내서 3줄 읽기",
+            "💡 [일반 가이드] 지정된 번호, 30초 동안 혀 짧은 소리로만 대답하기",
+            "💡 [일반 가이드] 지정된 번호, 폰에 있는 가장 엽기적인 사진 한 장 공개하기",
+            "💡 [일반 가이드] 왼쪽 신하가 오른쪽 신하에게 달콤한 칭찬 3가지 쏟아붓기",
+            "💡 [일반 가이드] 지정된 번호, 다음 차례까지 영어(Konglish 포함) 절대 사용 금지",
+            "💡 [일반 가이드] 지정된 번호 2명, 러브샷 자세로 탄산음료나 물 원샷하기",
+            "💡 [일반 가이드] 지정된 번호, 왕의 어깨나 목 15초 동안 시원하게 안마해주기",
+            "💡 [일반 가이드] 지정된 번호, 삼행시 지어서 모두를 웃기면 패스, 실패 시 반 잔",
+            "💡 [일반 가이드] 지정된 번호, 현재 단톡방 한 곳에 '나 취한 거 같다' 선언하기",
+            "💡 [일반 가이드] 지정된 번호, 왕이 주는 잔 군말 없이 원샷하기",
+            "💡 [일반 가이드] 지정된 번호 2명, 서로 칭찬 배틀해서 영혼 없는 사람 마시기",
+            "💡 [일반 가이드] 지정된 번호, 물 머금고 옆 사람 개그 10초 동안 참기",
+            "💡 [일반 가이드] 지정된 번호 2명, 눈싸움 해서 지는 사람이 술 한 잔 마시기",
+            "💡 [일반 가이드] 지정된 번호, 폰 알람 3분 뒤로 맞춰두고 울릴 때 술 마시기",
+            "💡 [일반 가이드] 지정된 번호, 지금 가장 먹고 싶은 안주를 온몸으로 표현하기",
+            "💡 [일반 가이드] 오른쪽 신하, 왕에게 극존칭 쓰며 술 한 잔 정중히 올리기",
+            "💡 [일반 가이드] 지정된 번호 2명, 하이파이브 세 번 강하게 하고 화이팅 외치기",
+            "💡 [일반 가이드] 지정된 번호, 자기 좌우에 앉은 사람들에게 술 반 잔씩 채워주기",
+            "💡 [일반 가이드] 지정된 번호, 최근 일주일 내 산 물건 중 가장 돈 아까운 거 고백하기",
+            "💡 [일반 가이드] 지정된 번호, 윙크 날리며 귀여운 포즈 3초 유지하기",
+            "💡 [일반 가이드] 모든 신하, 잔 들고 왕의 만수무강을 빌며 건배사 후 반 잔 마시기",
+            "💡 [일반 가이드] 지정된 번호, 1분 동안 허리 꼿꼿이 펴고 군대 말투(다나까)만 쓰기"
         ];
 
+        // 🔞 극매운맛 29금 지령 풀 (32개)
         const adultIdeas = [
-            "🔥 [29금 추천] 신하 두 명 골라서 귓속에 숨결 넣으며 신음소리 내기 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 옷 속에 손 넣고 15초 동안 눈빛 교환 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 목이나 쇄골에 3초간 뽀뽀 마크 남기기 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 공주님 안기 한 상태로 스쿼트 3회 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 입술 거리 1cm 유지하고 10초 버티기 시키기",
-            "🔥 [29금 추천] 한 명은 허벅지 베고 눕고, 다른 한 명은 입으로 안주 떨어뜨려주기 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 입술로만 종이 한 장 옮기기 시키기",
-            "🔥 [29금 추천] 한 명이 다른 한 명 강하게 백허그한 상태로 다음 지령까지 술 마시게 하기",
-            "🔥 [29금 추천] 두 명 지정해서 5초 동안 찐하게 딥마우스 입맞춤(키스) 시키기",
-            "🔥 [29금 추천] 은밀한 성적 판타지나 경험담 1분간 적나라하게 고백 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 손가락 깍지 끼고 다음 판 끝날 때까지 안 풀기 시키기",
-            "🔥 [29금 추천] 두 명 지정해서 양볼 밀착하고 동시에 소주 원샷하게 만들기"
+            "🔥 [29금 추천] 신하 두 명 골라서 귓속에 숨결 넣으며 아슬아슬한 소리 내기",
+            "🔥 [29금 추천] 두 명 지정해서 옷 속에 손 넣고 15초 동안 눈 떼지 말고 눈빛 교환",
+            "🔥 [29금 추천] 두 명 지정해서 목이나 쇄골에 3초간 진한 뽀뽀 마크 남기기 시키기",
+            "🔥 [29금 추천] 두 명 지정해서 공주님 안기 한 상태로 아이컨택하며 스쿼트 3회",
+            "🔥 [29금 추천] 두 명 지정해서 입술 거리 1cm 유지하고 10초 버티게 하기",
+            "🔥 [29금 추천] 한 명은 허벅지 베고 눕고, 다른 한 명은 입으로 안주 물어 전달하기",
+            "🔥 [29금 추천] 두 명 지정해서 입술로만 종이 한 장 옮기게 시키기 (실패 시 동반샷)",
+            "🔥 [29금 추천] 한 명이 다른 한 명 진하게 백허그한 상태로 다음 지령 전까지 술 마시기",
+            "🔥 [29금 추천] 두 명 지정해서 분위기 폭발할 만한 5초간의 딥 입맞춤(키스) 시키기",
+            "🔥 [29금 추천] 본인의 가장 은밀했던 성적 판타지나 경험담 1분간 적나라하게 풀기",
+            "🔥 [29금 추천] 지정된 번호 2명, 손가락 깍지 낀 채로 이번 판이 끝날 때까지 대기",
+            "🔥 [29금 추천] 지정된 번호 2명, 서로 볼에 귀여운 입맞춤 쪽! 소리 나게 하기",
+            "🔥 [29금 추천] 지정된 번호, 본인의 이성 유혹 필살 멘트를 옆 사람 귓속말 속삭이기",
+            "🔥 [29금 추천] 지정된 번호 2명, 서로의 허리에 손을 얹고 10초간 밀착 블루스 춤추기",
+            "🔥 [29금 추천] 첫 키스 혹은 최근 키스의 장소와 상황을 묘사하기 (거부 시 소주 한 잔)",
+            "🔥 [29금 추천] 지정된 번호, 마음에 드는 사람 무릎 위에 30초 동안 앉아있기",
+            "🔥 [29금 추천] 지정된 번호 2명, 야릇한 눈빛으로 대화 없이 15초간 쳐다보기",
+            "🔥 [29금 추천] 지정된 번호, 이성 참가자 중 오늘 귀 뒤나 목선이 가장 예쁜 사람 지목",
+            "🔥 [29금 추천] 지정된 번호 2명, 귀를 맞대고 비비며 오글거리는 대사 한 마디씩 하기",
+            "🔥 [29금 추천] 지정된 번호, 몸의 은밀한 점 위치나 매력 포인트 한 곳 말하기",
+            "🔥 [29금 추천] 지정된 번호 2명, 서로 손바닥 마주 대고 손가락 간지럽히기 10초",
+            "🔥 [29금 추천] 왕을 제외하고 가장 키스 잘할 것 같은 사람 뽑고 이유 대기",
+            "🔥 [29금 추천] 지정된 번호 2명, 마주 보고 서로의 입술을 손가락으로 가볍게 쓸어주기",
+            "🔥 [29금 추천] 연인의 뒤태와 앞태 중 본인이 더 약해지는 부위 솔직히 고백하기",
+            "🔥 [29금 추천] 지정된 번호 2명, 뒤에서 안아 격렬하게 흔드는 백허그 5초 진행",
+            "🔥 [29금 추천] 본인의 연애 성향 고백: 낮이밤져, 낮이밤이, 낮져밤이, 낮져밤져?",
+            "🔥 [29금 추천] 지정된 번호, 마음에 드는 상대 손등에 부드럽게 뽀뽀하기",
+            "🔥 [29금 추천] 이 테이블에서 내 전 연인과 가장 닮은 스타일 한 명 지목하기",
+            "🔥 [29금 추천] 지정된 번호 2명, 간지럼 태우기 배틀 10초간 진행하기",
+            "🔥 [29금 추천] 본인이 이성에게 들었던 가장 짜릿한 칭찬 한마디 풀기",
+            "🔥 [29금 추천] 지정된 번호 2명, 머리카락 쓸어넘겨 주며 심쿵한 눈빛 교환 5초",
+            "🔥 [29금 추천] 현재 이 방 안에서 단둘이 조용한 곳으로 탈출하고픈 사람 1명 말하기"
         ];
 
         function setKingMode(mode) {
@@ -487,84 +561,170 @@
             document.getElementById('modeAdult').classList.toggle('active', mode === 'adult');
         }
 
-        // 왕게임 세팅 및 루프 시작
-        function startKingIdentityLoop() {
-            totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 4;
-            if(totalKingPlayers < 3) { alert("왕게임은 최소 3명 이상 필요합니다!"); return; }
-
-            // 역할 카드 무작위 셔플 (왕 1명, 나머지는 1번부터 순서환산)
-            kingGamePool = ['👑 왕'];
-            for(let i = 1; i <= totalKingPlayers - 1; i++) {
-                kingGamePool.push(`👤 신하 [ ${i}번 ]`);
+        // 방식 변경 시 UI 변환
+        function toggleKingInputStyle() {
+            const type = document.getElementById('kingTypeSelect').value;
+            if(type === 'anonymous') {
+                document.getElementById('kingCountRow').style.display = 'flex';
+                document.getElementById('kingNameRow').style.display = 'none';
+            } else {
+                document.getElementById('kingCountRow').style.display = 'none';
+                document.getElementById('kingNameRow').style.display = 'flex';
             }
-            // 배열 무작위 섞기
-            kingGamePool.sort(() => Math.random() - 0.5);
-
-            kingGameIdx = 0;
-            isCheckingIdentity = true;
-            document.getElementById('kingTotalInput').disabled = true;
-            
-            showNextIdentityScreen();
         }
 
-        function showNextIdentityScreen() {
+        // 왕게임 배정 프로세스 개시
+        function startKingIdentityLoop() {
+            const type = document.getElementById('kingTypeSelect').value;
+            kingGamePool = [];
+            kingParticipantNames = [];
+
+            if(type === 'anonymous') {
+                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 4;
+                if(totalKingPlayers < 3) { alert("왕게임은 최소 3명 이상 필요합니다!"); return; }
+                
+                // 익명 역할 생성
+                kingGamePool.push('👑 왕');
+                for(let i = 1; i <= totalKingPlayers - 1; i++) {
+                    kingGamePool.push(`👤 신하 [ ${i}번 ]`);
+                }
+                // 익명 풀 셔플
+                kingGamePool.sort(() => Math.random() - 0.5);
+            } else {
+                // 이름 입력 방식 처리
+                const namesStr = document.getElementById('kingNameInput').value;
+                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                totalKingPlayers = kingParticipantNames.length;
+                if(totalKingPlayers < 3) { alert("이름을 최소 3명 이상 입력해 주세요!"); return; }
+
+                // 번호 역할 매칭 리스트 생성
+                let roles = ['👑 왕'];
+                for(let i = 1; i <= totalKingPlayers - 1; i++) {
+                    roles.push(`👤 신하 [ ${i}번 ]`);
+                }
+                roles.sort(() => Math.random() - 0.5);
+
+                // 이름별로 역할 할당
+                for(let i = 0; i < totalKingPlayers; i++) {
+                    kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
+                }
+            }
+
+            kingGameIdx = 0;
+            // 입력창들 잠금
+            document.getElementById('kingTypeSelect').disabled = true;
+            document.getElementById('kingTotalInput').disabled = true;
+            document.getElementById('kingNameInput').disabled = true;
+            
+            showIdentityWaitScreen();
+        }
+
+        // 대기 및 전환 제어 화면
+        function showIdentityWaitScreen() {
+            const type = document.getElementById('kingTypeSelect').value;
             const titleEl = document.getElementById('kingStatusTitle');
             const textEl = document.getElementById('kingMainText');
             const btnEl = document.getElementById('g5Btn');
 
             if (kingGameIdx < totalKingPlayers) {
-                titleEl.textContent = `플레이어 ${kingGameIdx + 1}의 차례`;
-                textEl.innerHTML = `<span style='color:var(--secondary); font-size:1.15rem; font-weight:bold;'>보안 유지!</span><br>주변 사람에게 안 보이게 폰을 들고<br>아래 버튼을 눌러 신분을 확인하세요.`;
-                btnEl.textContent = "내 신분 확인하기";
+                if (type === 'anonymous') {
+                    titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`;
+                    textEl.innerHTML = `
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: var(--secondary);">[플레이어 ${kingGameIdx + 1}] 님만 폰을 잡아주세요.</div>
+                        <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">다른 사람들은 절대 화면을 보지 마세요.<br>준비가 되었다면 확인 버튼을 터치하세요.</p>
+                    `;
+                } else {
+                    // 이름 모드일 때는 해당 당사자를 소환
+                    const targetPerson = kingGamePool[kingGameIdx].name;
+                    titleEl.textContent = `⏳ [ ${targetPerson} ] 차례!`;
+                    textEl.innerHTML = `
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: var(--accent);">👉 ${targetPerson} 님만 스마트폰을 받으세요.</div>
+                        <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">주변 사람들은 번호를 보지 못하게 고개를 돌려주세요.<br>준비되면 확인 버튼을 누르세요.</p>
+                    `;
+                }
+                btnEl.textContent = "나의 신분 확인하기";
                 btnEl.style.background = "var(--primary)";
-                btnEl.onclick = revealIdentitySecrets;
+                btnEl.onclick = revealIdentityToPlayer;
             } else {
-                // 전원 확인 완료 -> 왕의 통치 화면으로 전환
-                titleEl.textContent = "👑 왕의 통치 타임!";
+                // 전원 확인 완료 후 최종 왕의 연단 가이드 출력
+                titleEl.textContent = "👑 왕의 심판 시간!";
                 
                 const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
                 const randomIdea = pool[Math.floor(Math.random() * pool.length)];
 
                 textEl.innerHTML = `
-                    <div style='color:var(--warning); font-size:1.2rem; font-weight:bold; margin-bottom:10px;'>지금 즉시 왕은 명령을 내리십시오!</div>
-                    <div style='background:#0b0f19; padding:12px; border-radius:10px; border:1px dashed #475569; font-size:0.95rem;' class='king-action'>
+                    <div style='color:var(--warning); font-size:1.15rem; font-weight:bold; margin-bottom:10px;'>👑 이제 왕이 권력을 행사할 시간입니다!</div>
+                    <div style='background:#0b0f19; padding:12px; border-radius:10px; border:1px dashed #475569; font-size:0.95rem; text-align: left;' class='king-action'>
                         ${randomIdea}
                     </div>
-                    <div style='font-size:0.8rem; color:#94a3b8; margin-top:10px;'>※ 왕은 위 가이드를 쓰거나 완전히 새로운 명령을 직접 소리쳐 외치면 됩니다! 명령 완료 후 번호를 공개하세요!</div>
+                    <div style='font-size:0.8rem; color:#94a3b8; margin-top:12px;'>※ 왕은 위 추천 벌칙을 내리거나, 1번부터 ${totalKingPlayers-1}번 신하에게 자신만의 무시무시한 미션을 부여해도 좋습니다!</div>
                 `;
-                btnEl.textContent = "새 판 시작하기";
+                btnEl.textContent = "지령 완수! 다음 판 시작";
                 btnEl.style.background = "var(--purple)";
                 btnEl.onclick = () => {
+                    document.getElementById('kingTypeSelect').disabled = false;
                     document.getElementById('kingTotalInput').disabled = false;
-                    titleEl.textContent = "신분 확인 대기";
-                    textEl.textContent = "총 인원 설정 후 아래 버튼을 눌러주세요!";
+                    document.getElementById('kingNameInput').disabled = false;
+                    titleEl.textContent = "1단계: 게임 세팅 대기";
+                    textEl.textContent = "배정 방식과 수위를 설정한 후 아래 버튼을 눌러 게임을 개시하세요!";
                     btnEl.textContent = "👑 신분 배정 시작하기";
                     btnEl.onclick = startKingIdentityLoop;
                 };
             }
         }
 
-        function revealIdentitySecrets() {
+        // 플레이어 정체 가림막 및 타임아웃
+        function revealIdentityToPlayer() {
+            const type = document.getElementById('kingTypeSelect').value;
             const titleEl = document.getElementById('kingStatusTitle');
             const textEl = document.getElementById('kingMainText');
             const btnEl = document.getElementById('g5Btn');
             triggerVibrate(60);
 
-            const myRole = kingGamePool[kingGameIdx];
-            let displayRoleText = "";
-            
-            if(myRole.includes('왕')) {
-                displayRoleText = `<span style='font-size:2rem; color:var(--warning); font-weight:bold;'>👑 왕 당첨!</span><br><br>절대 조용히 하시고 다음 사람에게 폰을 넘기세요.`;
+            let myRole = "";
+            let displayName = "";
+
+            if(type === 'anonymous') {
+                myRole = kingGamePool[kingGameIdx];
+                displayName = `플레이어 ${kingGameIdx + 1}`;
             } else {
-                displayRoleText = `당신의 신분은<br><span style='font-size:1.8rem; color:white; font-weight:bold;'>${myRole}</span> 입니다.<br><br>번호를 기억하고 다음 사람에게 넘기세요.`;
+                myRole = kingGamePool[kingGameIdx].role;
+                displayName = kingGamePool[kingGameIdx].name;
             }
 
-            textEl.innerHTML = displayRoleText;
-            btnEl.textContent = "기억했습니다 (다음 사람 패스)";
-            btnEl.style.background = "var(--accent)";
+            let contentHtml = "";
+            if(myRole.includes('왕')) {
+                contentHtml = `
+                    <div style='padding: 15px; background: rgba(245,158,11,0.1); border-radius: 12px; border: 1px solid var(--warning);'>
+                        <p style='font-size:1rem; color:var(--warning); margin-bottom:5px; font-weight:bold;'>👑 [ ${displayName} ]</p>
+                        <span style='font-size:2.2rem; color:var(--warning); font-weight:bold;'>왕 당첨</span>
+                        <p style='font-size:0.9rem; margin-top:10px; color:#fff;'>절대 표정을 들키지 마세요. 당신이 법입니다!</p>
+                    </div>
+                `;
+            } else {
+                contentHtml = `
+                    <div style='padding: 15px; background: rgba(59,130,246,0.1); border-radius: 12px; border: 1px solid var(--secondary);'>
+                        <p style='font-size:1rem; color:#94a3b8; margin-bottom:5px; font-weight:bold;'>👤 [ ${displayName} ]</p>
+                        <p style='font-size:0.85rem; color:#fff; margin-bottom:5px;'>당신에게 부여된 번호는</p>
+                        <span style='font-size:2.1rem; color:white; font-weight:bold;'>${myRole}</span>
+                        <p style='font-size:0.82rem; margin-top:8px; color:#f43f5e;'>※ 왕이 번호를 호명하기 전까지 절대 비밀 유지!</p>
+                    </div>
+                `;
+            }
+
+            titleEl.textContent = `📢 신분 확인 중...`;
+            textEl.innerHTML = contentHtml;
+            btnEl.disabled = true;
+            btnEl.textContent = "보안을 위해 잠시 후 화면이 숨겨집니다...";
+            btnEl.style.background = "#475569";
             
             kingGameIdx++;
-            btnEl.onclick = showNextIdentityScreen;
+            
+            // 2.5초 뒤 보안 블라인드 전환
+            setTimeout(() => {
+                btnEl.disabled = false;
+                showIdentityWaitScreen();
+            }, 2500);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
