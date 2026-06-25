@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>올인원 술자리 게임 천국 | v13.0</title>
+    <title>초호화 술자리 패키지 오락실 | v14.0</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -27,7 +27,6 @@
             height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; 
         }
 
-        /* 내비게이션 상단 바 스크롤 가능 (메뉴가 많아짐에 대응) */
         .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; }
@@ -48,7 +47,7 @@
         .setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 10px 14px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; }
         .setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 6px 10px; font-weight: bold; border-radius: 8px; font-size: 0.9rem; outline: none; }
 
-        /* --- 🎯 게임 1: 룰렛 인프라 --- */
+        /* --- 🎯 게임 1: 룰렛 --- */
         .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 10px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
@@ -70,10 +69,10 @@
 
         /* --- 📐 게임 4: 도형 그리기 매칭 게임 --- */
         .shape-preview-box { background: #0b0f19; width: 100%; padding: 10px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px dashed #475569; }
-        .shape-preview-box svg { width: 70px; height: 70px; fill: none; stroke: var(--warning); stroke-width: 4; stroke-linecap: round; }
-        .draw-zone { background: #15151a; width: 100%; height: 220px; border-radius: 16px; border: 2px solid #334155; position: relative; touch-action: none; }
+        .shape-preview-box svg { width: 80px; height: 80px; fill: none; stroke: var(--warning); stroke-width: 4; stroke-linecap: round; }
+        .draw-zone { background: #15151a; width: 100%; height: 210px; border-radius: 16px; border: 2px solid #334155; position: relative; touch-action: none; }
         .draw-zone canvas { width: 100%; height: 100%; display: block; }
-        .score-display { font-size: 1.8rem; font-weight: bold; color: var(--accent); margin: 6px 0; text-shadow: 0 0 10px rgba(16,185,129,0.3); }
+        .score-display { font-size: 2.2rem; font-weight: bold; color: var(--accent); margin: 4px 0; text-shadow: 0 0 12px rgba(16,185,129,0.5); }
 
         /* --- 👑 게임 5: 왕게임 액션 지령기 --- */
         .mode-selector { display: flex; background: #0b0f19; border-radius: 12px; padding: 4px; width: 100%; margin-bottom: 10px; border: 1px solid #334155; }
@@ -81,7 +80,7 @@
         .mode-btn.active { background: var(--purple); color: white; }
         .king-display-box { background: #0b0f19; border-radius: 18px; padding: 20px; width: 100%; min-height: 185px; margin: auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #334155; }
         .king-title { font-size: 1.4rem; font-weight: bold; color: var(--warning); margin-bottom: 12px; }
-        .king-action { font-size: 1.15rem; font-weight: bold; line-height: 1.6; color: #fff; text-align: center; word-break: keep-all; }
+        .king-action { font-size: 1.2rem; font-weight: bold; line-height: 1.6; color: #fff; text-align: center; word-break: keep-all; }
 
         @keyframes flash { from { background: rgba(244,63,94,0.95); } to { background: rgba(159,18,44,0.95); } }
         @keyframes shake { 0%, 100% { transform: translate(0, 4px) rotate(0deg); } 20% { transform: translate(-2px, 4px) rotate(-1deg); } 40% { transform: translate(2px, 4px) rotate(1deg); } }
@@ -99,11 +98,13 @@
 
     <div class="main-container">
 
+        <!-- 게임 1: 이름 벌칙 룰렛 -->
         <div id="game1" class="game-panel active">
             <div class="panel-header"><h2>릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:8px;">
+                    <!-- 정회, 용원, 정렬 이름 고정 기본값 처리 -->
                     <input type="text" id="memberNames" value="정회, 용원, 정렬" oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem;">
                 </div>
                 <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas" width="500" height="500"></canvas></div>
@@ -112,6 +113,7 @@
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
         </div>
 
+        <!-- 게임 2: 복불복 폭탄 찾기 -->
         <div id="game2" class="game-panel">
             <div class="panel-header"><h2>복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
             <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option></select></div>
@@ -119,6 +121,7 @@
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
         </div>
 
+        <!-- 게임 3: 라이어 게임 -->
         <div id="game3_panel" class="game-panel">
             <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
             <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
@@ -130,24 +133,38 @@
             <button class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</button>
         </div>
 
+        <!-- 게임 4: 도형 그리기 매칭 점수 게임 -->
         <div id="game4" class="game-panel">
-            <div class="panel-header"><h2>도형 따라 그리기</h2><div class="desc">제시된 예시 도형 모양과 똑같이 그려보세요!</div></div>
+            <div class="panel-header"><h2>도형 지정 대결 게임</h2><div class="desc">도형을 선택해 고정하고, 여러 명이 돌아가며 점수 대결을 하세요!</div></div>
+            <div class="setup-row">
+                <span>📐 도전할 도형 지정:</span>
+                <select id="shapeSelect" onchange="selectTargetShape()">
+                    <option value="circle">🟢 동그라미 (쉬움)</option>
+                    <option value="triangle">🔺 삼각형 (보통)</option>
+                    <option value="heart">❤️ 하트 (어려움)</option>
+                    <option value="star">⭐ 별모양 (헬난이도)</option>
+                    <option value="lightning">⚡ 번개모양 (불지옥)</option>
+                </select>
+            </div>
             <div class="shape-preview-box">
-                <div style="font-size:0.8rem; color:var(--warning); font-weight:bold; margin-bottom:4px;">[ 제시된 목표 도형 ]</div>
                 <svg id="targetShapeSvg"></svg>
             </div>
             <div class="score-display" id="scoreOutput">0점</div>
             <div class="draw-zone" id="drawZone"><canvas id="drawCanvas"></canvas></div>
-            <button class="main-btn" onclick="evaluateDrawing()">그리기 채점 및 다음 도형</button>
+            <div style="display:flex; gap:10px; width:100%; margin-top:auto;">
+                <button class="sub-btn" style="flex:1;" onclick="clearCanvasOnly()">다시 그리기</button>
+                <button class="main-btn" style="flex:1.5; margin-top:0; padding:12px;" onclick="evaluateDrawing()">점수 채점하기</button>
+            </div>
         </div>
 
+        <!-- 게임 5: 왕게임 액션 지령기 -->
         <div id="game5" class="game-panel">
             <div class="panel-header"><h2>지령 내리는 왕게임</h2><div class="desc">자동으로 번호와 수위 맞춤형 액션을 배정합니다.</div></div>
             <div class="mode-selector">
                 <button class="mode-btn active" id="modeNormal" onclick="setKingMode('normal')">😇 일반 순한맛</button>
-                <button class="mode-btn" id="modeAdult" onclick="setKingMode('adult')">🔞 29금 매운맛</button>
+                <button class="mode-btn" id="modeAdult" onclick="setKingMode('adult')">🔞 29금 하드코어</button>
             </div>
-            <div class="setup-row"><span>👥 총 인원 수 (왕 포함):</span><input type="number" id="kingTotalInput" value="5" min="3" style="width:60px; text-align:center;"></div>
+            <div class="setup-row"><span>👥 총 인원 수 (왕 포함):</span><input type="number" id="kingTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
             <div class="king-display-box">
                 <div class="king-title" id="kingTitle">👑 복종의 시간</div>
                 <div class="king-action" id="kingActionText">인원 설정 후 왕의 명령 버튼을 눌러주세요!</div>
@@ -157,6 +174,7 @@
 
     </div>
 
+    <!-- 폭탄 팝업 오버레이 -->
     <div id="boomOverlay" class="boom-overlay" onclick="this.style.display='none'">
         <div style="text-align:center; color:white;">
             <h1 style="font-size:3.5rem; margin-bottom:12px;">💥 BOOM! 💥</h1>
@@ -165,7 +183,6 @@
     </div>
 
     <script>
-        // 탭 제어 스위치
         function switchTab(btnEl, tabId) {
             document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -305,43 +322,52 @@
         }
 
         // ==========================================
-        // 📐 게임 4: 도형 그리기 채점 게임 엔진
+        // 📐 게임 4: 도형 지정 대결 게임 엔진
         // ==========================================
         let dCanvas, dCtx, isDrawing = false;
         let currentShapeType = 'circle';
-        let userPoints = []; // 유저가 그린 좌표 수집
-        const shapeTypes = ['circle', 'triangle', 'square', 'line'];
+        let userPoints = [];
 
         function initShapeGame() {
             dCanvas = document.getElementById('drawCanvas'); dCtx = dCanvas.getContext('2d');
             const rect = dCanvas.parentNode.getBoundingClientRect(); dCanvas.width = rect.width; dCanvas.height = rect.height;
             
-            // 드로잉 이벤트 연동 (마우스 & 터치 통합 지원)
             dCanvas.addEventListener('mousedown', startDraw); dCanvas.addEventListener('mousemove', moveDraw);
             dCanvas.addEventListener('mouseup', endDraw); dCanvas.addEventListener('mouseleave', endDraw);
             dCanvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; startDraw(t); e.preventDefault(); });
             dCanvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; moveDraw(t); e.preventDefault(); });
             dCanvas.addEventListener('touchend', endDraw);
 
-            pickNextTargetShape();
+            selectTargetShape();
         }
 
-        function pickNextTargetShape() {
-            currentShapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+        function selectTargetShape() {
+            currentShapeType = document.getElementById('shapeSelect').value;
             const svg = document.getElementById('targetShapeSvg');
-            userPoints = [];
-            dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
-            document.getElementById('scoreOutput').textContent = "0점";
+            clearCanvasOnly();
 
-            // SVG 이펙트 가이드 그리기
-            if (currentShapeType === 'circle') svg.innerHTML = `<circle cx="35" cy="35" r="25"/>`;
-            else if (currentShapeType === 'triangle') svg.innerHTML = `<polygon points="35,10 10,60 60,60"/>`;
-            else if (currentShapeType === 'square') svg.innerHTML = `<rect x="12" y="12" width="46" height="46"/>`;
-            else if (currentShapeType === 'line') svg.innerHTML = `<line x1="10" y1="35" x2="60" y2="35"/>`;
+            // 다양한 고난도 가이드 문양 SVG 매핑
+            if (currentShapeType === 'circle') {
+                svg.innerHTML = `<circle cx="40" cy="40" r="30"/>`;
+            } else if (currentShapeType === 'triangle') {
+                svg.innerHTML = `<polygon points="40,10 10,70 70,70"/>`;
+            } else if (currentShapeType === 'heart') {
+                svg.innerHTML = `<path d="M40,25 C40,10 15,10 15,32 C15,53 40,72 40,72 C40,72 65,53 65,32 C65,10 40,10 40,25 Z"/>`;
+            } else if (currentShapeType === 'star') {
+                svg.innerHTML = `<polygon points="40,5 50,30 78,30 55,47 64,74 40,56 16,74 25,47 2,30 30,30"/>`;
+            } else if (currentShapeType === 'lightning') {
+                svg.innerHTML = `<polygon points="50,5 15,45 38,45 25,75 65,32 42,32"/>`;
+            }
+        }
+
+        function clearCanvasOnly() {
+            userPoints = [];
+            if(dCtx) dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+            document.getElementById('scoreOutput').textContent = "0점";
         }
 
         function startDraw(e) {
-            isDrawing = true; dCtx.lineWidth = 5; dCtx.strokeStyle = '#f43f5e'; dCtx.lineCap = 'round'; dCtx.beginPath();
+            isDrawing = true; dCtx.lineWidth = 6; dCtx.strokeStyle = '#f43f5e'; dCtx.lineCap = 'round'; dCtx.lineJoin = 'round'; dCtx.beginPath();
             const rect = dCanvas.getBoundingClientRect();
             const x = e.clientX - rect.left; const y = e.clientY - rect.top;
             dCtx.moveTo(x, y); userPoints.push({x, y});
@@ -357,36 +383,38 @@
         function evaluateDrawing() {
             if(userPoints.length < 5) { alert("도형을 그려주세요!"); return; }
             
-            // 정밀 물리 채점 알고리즘 (유저 드로잉의 경계상자 및 중심비교 평가)
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             userPoints.forEach(p => {
                 if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x;
                 if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
             });
             const w = maxX - minX; const h = maxY - minY; const aspect = w / h;
-            let finalScore = 70; // 기본 베이스 점수
+            let baseScore = 65;
 
+            // 도형 난이도별 정밀 알고리즘 보정
             if (currentShapeType === 'circle') {
                 let ratio = Math.min(w, h) / Math.max(w, h);
-                finalScore = Math.floor(ratio * 96) + Math.floor(Math.random() * 4);
-            } else if (currentShapeType === 'square') {
-                let ratio = Math.min(w, h) / Math.max(w, h);
-                finalScore = Math.floor(ratio * 92) + Math.floor(Math.random() * 6);
+                baseScore = Math.floor(ratio * 95);
             } else if (currentShapeType === 'triangle') {
-                finalScore = (aspect > 0.7 && aspect < 1.3) ? 88 + Math.floor(Math.random()*11) : 50 + Math.floor(Math.random()*20);
-            } else if (currentShapeType === 'line') {
-                finalScore = (h < 25) ? 95 + Math.floor(Math.random()*5) : 40 + Math.floor(Math.random()*30);
+                baseScore = (aspect > 0.8 && aspect < 1.2) ? 85 : 60;
+            } else if (currentShapeType === 'heart') {
+                baseScore = (userPoints.length > 25 && aspect > 0.9) ? 78 : 55;
+            } else if (currentShapeType === 'star') {
+                baseScore = (userPoints.length > 35) ? 75 : 45;
+            } else if (currentShapeType === 'lightning') {
+                baseScore = (userPoints.length > 20) ? 72 : 50;
             }
 
+            let finalScore = baseScore + Math.floor(Math.random() * 8);
             if(finalScore > 100) finalScore = 100;
-            document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
-            triggerVibrate([100, 40]);
+            if(finalScore < 10) finalScore = 15;
 
-            setTimeout(pickNextTargetShape, 1800);
+            document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
+            triggerVibrate([120, 50]);
         }
 
         // ==========================================
-        // 👑 게임 5: 왕게임 액션 지령기 엔진
+        // 👑 게임 5: 왕게임 하드코어 액션 엔진
         // ==========================================
         let currentKingMode = 'normal';
         
@@ -395,46 +423,44 @@
             "왕의 지목을 받은 신하는 즉시 소주 한 스푼 원샷하기",
             "X번 신하가 Y번 신하 볼 꼬집고 귀엽다고 말하기 (3초간)",
             "X번 신하랑 Y번 신하 야자타임 2분간 진행하기",
-            "모든 신하는 왕의 칭찬 한마디씩 차례대로 릴레이하기",
-            "X번 신하가 스마트폰 배경화면을 왕이 정해준 사진으로 바꾸기"
+            "모든 신하는 왕의 칭찬 한마디씩 차례대로 릴레이하기"
         ];
 
+        // 🔞 수위 대폭 상향 및 액션 대량 추가 패치
         const adultActions = [
-            "X번 신하가 Y번 신하의 귓속말 장벽을 뚫고 5초간 섹시한 대사 속삭이기",
-            "X번 신하와 Y번 신하 손가락 깍지 끼고 다음 명령 전까지 술마시기",
-            "X번 신하가 Y번 신하 목덜미나 손등에 3초간 가벼운 터치/스킨십 시전!",
-            "X번 신하는 Y번 신하의 눈을 피하지 않고 10초 동안 아이컨택 (웃으면 원샷)",
-            "Y번 신하가 X번 신하의 무릎에 잠시 앉아서 다정하게 러브샷 하기",
-            "X번 신하는 Y번 신하가 주는 신체 부위 제한(손가락 등) 안주 입으로 받아먹기"
+            "X번 신하가 Y번 신하의 귓속에 바람을 불어넣으며 가장 섹시한 목소리로 신음소리 내기",
+            "X번 신하와 Y번 신하가 서로 손을 옷 속에 넣고 15초 동안 아이컨택하기 (웃으면 둘 다 원샷)",
+            "X번 신하가 Y번 신하의 목이나 쇄골에 3초간 가벼운 뽀뽀/키스 마크 날리기",
+            "X번 신하가 Y번 신하를 공주님 안기로 안고 스쿼트 3회 실시! 실패 시 벌주 2잔",
+            "Y번 신하가 X번 신하의 입술 바로 앞 1cm까지 다가가 숨결을 느끼며 5초간 버티기",
+            "X번 신하는 Y번 신하의 허벅지를 베고 누운 상태로, Y번 신하가 입으로 떨어뜨려 주는 안주 받아먹기",
+            "X번 신하와 Y번 신하가 입술로 종이 한 장을 옮기는 미션 실시! 떨어뜨리면 그 자리에서 러브샷",
+            "X번 신하가 Y번 신하의 허리를 감싸 안고 백허그 상태로 다음 왕게임 지령이 끝날 때까지 유지하기",
+            "Y번 신하가 X번 신하의 볼이나 입술에 립스틱/틴트 자국이 남도록 진하게 자국 남기기",
+            "X번 신하가 자신의 가장 은밀하고 찌릿했던 성적 판타지나 경험담을 1분간 솔직하게 고백하기 (거부 시 원샷 3잔)"
         ];
 
         function setKingMode(mode) {
             currentKingMode = mode;
             document.getElementById('modeNormal').classList.toggle('active', mode === 'normal');
             document.getElementById('modeAdult').classList.toggle('active', mode === 'adult');
-            document.getElementById('kingActionText').textContent = `${mode === 'normal' ? '순한맛' : '29금 매운맛'} 모드가 지정되었습니다!`;
+            document.getElementById('kingActionText').textContent = `${mode === 'normal' ? '순한맛' : '🔞 하드코어 29금'} 모드가 지정되었습니다!`;
         }
 
         function generateKingOrder() {
-            const total = parseInt(document.getElementById('kingTotalInput').value) || 5;
+            const total = parseInt(document.getElementById('kingTotalInput').value) || 4;
             if(total < 3) { alert("왕게임을 하려면 최소 3명 이상이 필요합니다!"); return; }
 
-            // 1. 참여자들에게 분배될 인덱스 풀 생성 및 무작위 왕 선출
             let numbers = []; for(let i=1; i<=total; i++) numbers.push(i);
             let kingNum = numbers[Math.floor(Math.random() * numbers.length)];
             
-            // 왕을 제외한 나머지 신하들의 번호 리스트 추출
             let vassals = numbers.filter(n => n !== kingNum);
-            
-            // 지령 문장에 치환해 줄 X번, Y번 랜덤 무작위 타겟 매칭
             let xVassal = vassals[Math.floor(Math.random() * vassals.length)];
             let yVassal = vassals.filter(n => n !== xVassal)[0] || xVassal;
 
-            // 2. 선택한 모드(일반 vs 29금)의 지령 풀 풀링
             const actionPool = (currentKingMode === 'normal') ? normalActions : adultActions;
             let randomTemplate = actionPool[Math.floor(Math.random() * actionPool.length)];
 
-            // 3. 지령 정규 텍스트 문장 조합 및 가독 패치
             let finalActionText = randomTemplate
                 .replace(/X번/g, `🔥 [ ${xVassal}번 ]`)
                 .replace(/Y번/g, `⚡ [ ${yVassal}번 ]`);
@@ -444,7 +470,6 @@
             triggerVibrate([200, 100, 200]);
         }
 
-        // 초기 구동 바인딩
         window.addEventListener('DOMContentLoaded', () => {
             drawNameRoulette();
         });
