@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v15.0</title>
+    <title>초호화 술자리 패키지 오락실 | v16.0</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -64,8 +64,8 @@
 
         /* --- 🤫 게임 3: 라이어 게임 --- */
         .liar-box { background: #0b0f19; border-radius: 18px; padding: 20px; margin: auto 0; min-height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #334155; width: 100%; }
-        .word-hidden { background: var(--secondary); color: white; padding: 20px; font-weight: bold; border-radius: 14px; width: 100%; font-size: 1.5rem; text-align: center; cursor: pointer; line-height: 1.4; }
-        .category-badge { font-size: 1rem; color: var(--warning); font-weight: bold; margin-bottom: 10px; background: #1e293b; padding: 4px 14px; border-radius: 20px; }
+        .word-hidden { background: var(--secondary); color: white; padding: 20px; font-weight: bold; border-radius: 14px; width: 100%; font-size: 1.4rem; text-align: center; cursor: pointer; line-height: 1.4; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+        .category-badge { font-size: 1rem; color: var(--warning); font-weight: bold; margin-bottom: 10px; background: #1e293b; padding: 4px 14px; border-radius: 20px; border: 1px solid #475569; }
 
         /* --- 📐 게임 4: 도형 그리기 매칭 게임 --- */
         .shape-preview-box { background: #0b0f19; width: 100%; padding: 10px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px dashed #475569; }
@@ -119,12 +119,12 @@
         </div>
 
         <div id="game3_panel" class="game-panel">
-            <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
+            <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc" id="g3Desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
             <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
             <div class="liar-box">
-                <div id="liarCategoryBox" class="category-badge" style="display:none;">주제: 준비중</div>
-                <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">준비 완료</div>
-                <div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">터치하여 제시어 확인</div>
+                <div id="liarCategoryBox" class="category-badge" style="display:none;">주제: 대기중</div>
+                <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">게임을 시작해주세요.</div>
+                <div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">비밀 창 (준비 필요)</div>
             </div>
             <button class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</button>
         </div>
@@ -286,32 +286,79 @@
         }
 
         // ==========================================
-        // 🤫 게임 3: 라이어 게임 엔진
+        // 🤫 게임 3: 라이어 게임 엔진 (버그 수정 및 제시어 완전 보강)
         // ==========================================
         const liarDb = [
-            { cat: "소품 🕶️", words: ["선글라스", "우산", "지갑", "열쇠", "시계", "거울"] },
-            { cat: "음식 🍗", words: ["치킨", "피자", "마라탕", "삼겹살", "떡볶이", "족발"] },
-            { cat: "액티비티 🎤", words: ["노래방", "클럽", "영화관", "오락실", "볼링장", "PC방"] }
+            { cat: "연예/방송 📺", words: ["유재석", "아이유", "BTS", "봉준호", "오징어게임", "손흥민", "뉴진스", "에스파"] },
+            { cat: "음식/야식 🍗", words: ["마라탕", "삼겹살", "불닭볶음면", "치즈볼", "탕후루", "떡볶이", "양꼬치", "짜장면"] },
+            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지"] },
+            { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장"] },
+            { cat: "🔞 19금 매운맛", words: ["첫키스", "원나잇", "모텔", "콘돔", "비키니", "복근", "수영복", "낮이밤져"] }
         ];
+        
         let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 4; let revealState = false;
+        
         function startLiarSetup() {
             totUsers = parseInt(document.getElementById('liarTotalInput').value) || 4;
-            let pack = liarDb[Math.floor(Math.random()*liarDb.length)]; curCat = pack.cat; curWord = pack.words[Math.floor(Math.random()*pack.words.length)];
-            liarIdx = Math.floor(Math.random()*totUsers) + 1; curUser = 1; document.getElementById('g3Btn').disabled = true;
-            const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block';
+            if(totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
+            
+            // 인덱스 버그 완전 수정 - 매번 독립적인 무작위 카테고리와 단어를 선별
+            const randomCatIdx = Math.floor(Math.random() * liarDb.length);
+            const selectedPack = liarDb[randomCatIdx];
+            curCat = selectedPack.cat;
+            
+            const randomWordIdx = Math.floor(Math.random() * selectedPack.words.length);
+            curWord = selectedPack.words[randomWordIdx];
+            
+            liarIdx = Math.floor(Math.random() * totUsers) + 1; 
+            curUser = 1; 
+            
+            document.getElementById('g3Btn').disabled = true;
+            document.getElementById('g3Desc').textContent = "한 명씩 스마트폰을 들고 비밀 창을 터치해 확인하세요!";
+            
+            const cb = document.getElementById('liarCategoryBox'); 
+            cb.textContent = `주제: [ ${curCat} ]`; 
+            cb.style.display = 'block';
+            
             nextLiarTurn();
         }
+        
         function nextLiarTurn() {
-            revealState = false; const b = document.getElementById('liarSecretBox'); b.className = "word-hidden"; b.textContent = "터치하여 제시어 확인";
-            if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; }
-            else { document.getElementById('liarTurnInfo').textContent = "📢 확인 끝!"; b.textContent = "토론을 거쳐 라이어를 잡으세요!"; }
+            revealState = false; 
+            const b = document.getElementById('liarSecretBox'); 
+            b.className = "word-hidden"; 
+            b.style.background = "var(--secondary)";
+            b.textContent = "터치하여 확인하기";
+            
+            if (curUser <= totUsers) { 
+                document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; 
+            } else { 
+                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!"; 
+                b.textContent = "서로 질문을 던지며 라이어를 찾으세요!";
+                b.style.background = "var(--accent)";
+                document.getElementById('g3Btn').disabled = false;
+                document.getElementById('g3Btn').textContent = "한 판 더 하기";
+            }
         }
+        
         function toggleLiarWord() {
-            if (curUser > totUsers || revealState) return; const b = document.getElementById('liarSecretBox');
-            if (curUser === liarIdx) { b.innerHTML = "🤫 당신은<br><span style='font-size:2rem; color:#ff2a5f;'>[ 라이어 ]</span> 입니다."; }
-            else { b.innerHTML = `🎯 제시어:<br><span style='font-size:2rem; color:#00ff66;'>${curWord}</span>`; }
-            revealState = true; triggerVibrate(50);
-            setTimeout(() => { curUser++; nextLiarTurn(); }, 2000);
+            if (curUser > totUsers || revealState) return; 
+            const b = document.getElementById('liarSecretBox');
+            
+            if (curUser === liarIdx) { 
+                b.innerHTML = "🤫 당신은 <br><span style='font-size:1.8rem; color:#ff2a5f; font-weight:bold;'>[ 라이어 ]</span> 입니다."; 
+            } else { 
+                b.innerHTML = `🎯 제시어:<br><span style='font-size:1.8rem; color:#00ff66; font-weight:bold;'>${curWord}</span>`; 
+            }
+            
+            revealState = true; 
+            triggerVibrate(50);
+            
+            // 2.5초 후 자동으로 다음 유저 순서로 전환
+            setTimeout(() => { 
+                curUser++; 
+                nextLiarTurn(); 
+            }, 2500);
         }
 
         // ==========================================
@@ -405,7 +452,7 @@
         }
 
         // ==========================================
-        // 👑 게임 5: 왕게임 초고수위 하드코어 액션 엔진
+        // 👑 게임 5: 왕게임 엔진
         // ==========================================
         let currentKingMode = 'normal';
         
@@ -417,7 +464,6 @@
             "모든 신하는 왕의 칭찬 한마디씩 차례대로 릴레이하기"
         ];
 
-        // 🔥 피드백 반영: 브레이크 없는 찐 마라맛 하드코어 29금 지령 22가지 풀
         const adultActions = [
             "X번 신하가 Y번 신하의 귓속에 뜨거운 숨결을 불어넣으며 5초간 섹시한 신음소리 내기",
             "X번 신하와 Y번 신하가 서로 손을 옷 속에 집어넣고 15초 동안 아이컨택하기 (눈 피하거나 웃으면 둘 다 2잔 원샷)",
