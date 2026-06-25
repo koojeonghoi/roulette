@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v21.0</title>
+    <title>초호화 술자리 패키지 오락실 | v21.1</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -44,8 +44,11 @@
         .main-btn:disabled { background: #475569; box-shadow: none; opacity: 0.6; }
         .sub-btn { background: #475569; color: white; border: none; padding: 12px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 12px; cursor: pointer; }
 
-        .setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 10px 14px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; }
-        .setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 6px 10px; font-weight: bold; border-radius: 8px; font-size: 0.9rem; outline: none; }
+        /* 설정 영역 깨짐 방지를 위해 구조 개선 및 flex-direction 변경 가능하도록 수정 */
+        .setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 12px 14px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; gap: 8px; }
+        .setup-row.column-layout { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 8px 10px; font-weight: bold; border-radius: 8px; font-size: 0.9rem; outline: none; width: auto; }
+        .setup-row .full-width { width: 100%; }
 
         /* --- 🎯 게임 1: 룰렛 --- */
         .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
@@ -104,6 +107,7 @@
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:8px;">
+                    <!-- 민수를 지우고 기본 3명 세팅 -->
                     <input type="text" id="memberNames" value="정회, 용원, 정렬" oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem;">
                 </div>
                 <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas" width="500" height="500"></canvas></div>
@@ -123,7 +127,7 @@
         <!-- 게임 3: 라이어 게임 -->
         <div id="game3_panel" class="game-panel">
             <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc" id="g3Desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
-            <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="4" min="3" style="width:60px; text-align:center;"></div>
+            <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="3" min="3" style="width:60px; text-align:center;"></div>
             <div class="liar-box">
                 <div id="liarCategoryBox" class="category-badge" style="display:none;">주제: 대기중</div>
                 <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">게임을 시작해주세요.</div>
@@ -135,9 +139,9 @@
         <!-- 게임 4: 도형 지정 및 대결형 그리기 게임 -->
         <div id="game4" class="game-panel">
             <div class="panel-header"><h2>도형 고정 대결 모드</h2><div class="desc">도형을 고정해두고 여러 명이 순서대로 그려 점수 내기를 하세요!</div></div>
-            <div class="setup-row">
+            <div class="setup-row column-layout">
                 <span>📐 도전할 도형 지정:</span>
-                <select id="shapeSelect" onchange="selectTargetShape()">
+                <select id="shapeSelect" onchange="selectTargetShape()" class="full-width">
                     <option value="circle">🟢 동그라미 (쉬움)</option>
                     <option value="triangle">🔺 삼각형 (보통)</option>
                     <option value="heart">❤️ 하트문양 (어려움)</option>
@@ -156,7 +160,7 @@
             </div>
         </div>
 
-        <!-- 게임 5: 진짜 왕게임 액션 지령기 (v21.0 마스터 오더 실명 다이렉트 고도화) -->
+        <!-- 게임 5: 진짜 왕게임 액션 지령기 (v21.1 레이아웃 깨짐 완전 방어 보정판) -->
         <div id="game5" class="game-panel">
             <div class="panel-header"><h2>진짜 권력형 왕게임</h2><div class="desc" id="g5Desc">배정 방식 또는 마스터 실명 다이렉트 오더를 선택하세요.</div></div>
             <div class="mode-selector">
@@ -164,9 +168,10 @@
                 <button class="mode-btn" id="modeAdult" onclick="setKingMode('adult')">🔞 극매운맛 29금</button>
             </div>
             
-            <div class="setup-row">
-                <span>⚙️ 게임 방식 선택:</span>
-                <select id="kingTypeSelect" onchange="toggleKingInputStyle()">
+            <!-- 세로로 무너져 내리던 레이아웃을 완전히 상하 정렬 기법으로 교정 -->
+            <div class="setup-row column-layout">
+                <span style="font-size:0.85rem; color:#94a3b8;">⚙️ 게임 방식 선택:</span>
+                <select id="kingTypeSelect" onchange="toggleKingInputStyle()" class="full-width">
                     <option value="master" selected>⚡ 마스터 실명 오더 (왕 없이 즉시 지령)</option>
                     <option value="anonymous">🎲 익명 랜덤 방식 (인원수 기반 번호 배정)</option>
                     <option value="named">✏️ 이름 입력 방식 (순차 번호 배정)</option>
@@ -177,11 +182,12 @@
             <div id="kingConfigArea" style="width: 100%;">
                 <div class="setup-row" id="kingCountRow" style="display:none;">
                     <span>👥 참여 인원수:</span>
-                    <input type="number" id="kingTotalInput" value="4" min="3" style="width:60px; text-align:center;">
+                    <input type="number" id="kingTotalInput" value="3" min="3" style="width:60px; text-align:center;">
                 </div>
-                <div class="setup-row" id="kingNameRow" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
-                    <span style="font-size:0.85rem; color:#94a3b8;" id="kingNameLabel">📝 참여자 이름 (쉼표로 구분):</span>
-                    <input type="text" id="kingNameInput" value="정회, 용원, 정렬, 민수" style="width:100%; text-align:left;">
+                <div class="setup-row column-layout" id="kingNameRow" style="display:flex;">
+                    <span style="font-size:0.85rem; color:#94a3b8;" id="kingNameLabel">📝 참여자 이름 입력 (쉼표로 구분):</span>
+                    <!-- 민수를 삭제하고 요청하신 3명만 기본값 처리 -->
+                    <input type="text" id="kingNameInput" value="정회, 용원, 정렬" class="full-width">
                 </div>
             </div>
 
@@ -322,10 +328,10 @@
             { cat: "🔞 19금 매운맛", words: ["첫키스", "원나잇", "모텔", "콘돔", "비키니", "복근", "수영복", "낮이밤져"] }
         ];
         
-        let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 4; let revealState = false;
+        let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 3; let revealState = false;
         
         function startLiarSetup() {
-            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 4;
+            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 3;
             if(totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
             
             const randomCatIdx = Math.floor(Math.random() * liarDb.length);
@@ -476,12 +482,12 @@
         }
 
         // ==========================================
-        // 👑 게임 5: 진짜 권력형 왕게임 엔진 (v21.0 마스터 오더 실명 다이렉트형)
+        // 👑 게임 5: 진짜 권력형 왕게임 엔진
         // ==========================================
         let currentKingMode = 'normal';
         let kingGamePool = []; 
         let kingGameIdx = 0; 
-        let totalKingPlayers = 4;
+        let totalKingPlayers = 3;
         let kingParticipantNames = [];
 
         // 😇 일반 순한맛 지령 풀 (32개)
@@ -556,7 +562,7 @@
             "🔥 [29금 추천] 현재 이 방 안에서 단둘이 조용한 곳으로 탈출하고픈 사람 1명 말하기"
         ];
 
-        // ⚡ 마스터 오더 전용 일반형 독립 실명 지령 (32개 - {X}, {Y}에 실명이 즉시 대입됨)
+        // ⚡ 마스터 오더 전용 일반형 독립 실명 지령 (32개)
         const masterNormalIdeas = [
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 30초 동안 로봇 성대모사로만 모든 대화를 처리하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 자리에서 일어나 화끈하게 하이파이브를 한 후 서로의 외모 칭찬을 3개씩 폭격하시오.",
@@ -564,7 +570,7 @@
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) <strong>{Y}</strong>이(가) 던지는 날카로운 유도질문에 무조건 진실만을 답하시오. (거부 시 벌주)",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 최근 한 달 이내 가장 부끄러웠던 이불킥 흑역사를 적나라하게 고백하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 처음 만났을 때 가졌던 서로의 첫인상 필터를 빼고 솔직하게 폭로하시오.",
-            "⚡ [마스터 오더] 현재 <strong>{X}</strong>의 왼쪽에 앉아 있는 행운아는 소주 반 잔을 시원하게 원샷하시오.",
+            "현재 <strong>{X}</strong>의 왼쪽에 앉아 있는 행운아는 소주 반 잔을 시원하게 원샷하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 다음 지령 전까지 모든 대답을 3초 이내에 출력해야 하며, 버벅대면 한 잔 마십니다.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 벌떡 일어나 요즘 유행하는 쇼츠/릴스 안무를 5초간 뻔뻔하고 당당하게 소화하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 카카오톡 최근 대화방 3개를 과감히 열어 상위 3줄을 소리 내어 낭독하시오.",
@@ -583,7 +589,7 @@
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 이번 주에 긁은 카드 내역 중 가장 돈 지랄이라 생각되는 시발비용 항목을 자백하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 모두를 향해 윙크를 강렬하게 날린 뒤 가장 자신 있는 치명적 포즈를 3초 동안 유지하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 1분 동안 허리를 각 잡고 꼿꼿이 세운 채 절도 있는 군대식 말투(다나까)만 출력하시오.",
-            "⚡ [마스터 오더] 술상에 있는 모든 멤버는 잔을 풀로 채우고, <strong>{X}</strong>의 위트 넘치는 건배사에 맞춰 깔끔하게 반 잔을 들이키시오.",
+            "술상에 있는 모든 멤버는 잔을 풀로 채우고, <strong>{X}</strong>의 위트 넘치는 건배사에 맞춰 깔끔하게 반 잔을 들이키시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 스마트폰 알람 타이머를 정확히 2분 뒤로 예약하고 알람 벨소리가 울리는 순간 군말 없이 원샷하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>은(는) 지금 술자리 분위기에 대해 평소 마음에 품고 있던 소소한 피드백이나 서운함을 가감 없이 공유하시오.",
             "⚡ [마스터 오더] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 영혼이 탈출한 리액션 배틀을 벌여, 인공지능보다 더 알파고 같은 리액션을 한 쪽이 독샷합니다.",
@@ -598,7 +604,7 @@
             document.getElementById('modeAdult').classList.toggle('active', mode === 'adult');
         }
 
-        // 방식 변경 시 UI 변환
+        // 방식 변경 시 UI 변환 (깨짐 방지 레이아웃 대응)
         function toggleKingInputStyle() {
             const type = document.getElementById('kingTypeSelect').value;
             const countRow = document.getElementById('kingCountRow');
@@ -657,7 +663,6 @@
                     let rawIdea = masterNormalIdeas[Math.floor(Math.random() * masterNormalIdeas.length)];
                     targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
                 } else {
-                    // 29금 모드일 경우 기존 지령 기반으로 실명 직접 맵핑 하이브리드 가공
                     let rawIdea = adultIdeas[Math.floor(Math.random() * adultIdeas.length)];
                     targetCommand = rawIdea
                         .replace("신하 두 명 골라서", `<strong>${pName1}</strong>와(과) <strong>${pName2}</strong>은(는)`)
@@ -667,7 +672,6 @@
                         .replace("지정된 번호 2명,", `<strong>${pName1}</strong>와(과) <strong>${pName2}</strong>은(는)`)
                         .replace("지정된 번호,", `<strong>${pName1}</strong>은(는)`);
                     
-                    // 예외 처리 프리픽스 보정
                     if(!targetCommand.includes(pName1)) {
                         targetCommand = `🔥 [마스터 명령] <strong>${pName1}</strong>와(과) <strong>${pName2}</strong>에게 명하노니, ` + targetCommand;
                     }
@@ -688,7 +692,7 @@
             // 👑 기존 번호 배정 방식 로직 (순차 턴)
             kingGamePool = [];
             if(type === 'anonymous') {
-                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 4;
+                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3;
                 if(totalKingPlayers < 3) { alert("왕게임은 최소 3명 이상 필요합니다!"); return; }
                 
                 kingGamePool.push('👑 왕');
@@ -721,7 +725,6 @@
             showIdentityWaitScreen();
         }
 
-        // 번호 배정 대기 스크린 (기존 모드용)
         function showIdentityWaitScreen() {
             const type = document.getElementById('kingTypeSelect').value;
             const titleEl = document.getElementById('kingStatusTitle');
@@ -772,7 +775,6 @@
             }
         }
 
-        // 정체 가림막 가변 처리
         function revealIdentityToPlayer() {
             const type = document.getElementById('kingTypeSelect').value;
             const titleEl = document.getElementById('kingStatusTitle');
