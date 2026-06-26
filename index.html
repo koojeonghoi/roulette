@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v24.2</title>
+    <title>초호화 술자리 패키지 오락실 | v24.3</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -51,7 +51,7 @@
         .setup-row .full-width { width: 100%; }
         .setup-row label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; }
 
-        /* --- 🎯 게임 1: 룰렛 (크기 긴급 축소 반영) --- */
+        /* --- 🎯 게임 1: 룰렛 --- */
         .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
@@ -88,8 +88,8 @@
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
-        /* --- 🪜 게임 6: 사다리 타기 (설명란 및 입력란 완벽 가시화) --- */
-        .ladder-zone { background: #15151a; width: 100%; height: 190px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 4px 0; }
+        /* --- 🪜 게임 6: 사다리 타기 --- */
+        .ladder-zone { background: #15151a; width: 100%; height: 160px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 4px 0; }
         .ladder-zone canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
         .ladder-labels { display: flex; justify-content: space-between; width: 100%; padding: 0 5px; font-size: 0.75rem; font-weight: bold; color: #94a3b8; }
         .ladder-labels.bottom-labels { color: var(--warning); margin-top: 2px; }
@@ -215,7 +215,6 @@
         <div id="game6" class="game-panel">
             <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">기둥 사이 공간을 터치하면 가로선이 추가/삭제됩니다! 기둥 위 이름을 누르면 출발합니다.</div></div>
             
-            <!-- 사다리 참여자 명단 및 벌칙 입력칸 완벽 노출 -->
             <div class="setup-row column-layout">
                 <label for="ladderMembers">📝 참여자 명단 입력 (쉼표 구분):</label>
                 <input type="text" id="ladderMembers" value="정회, 용원, 정렬" oninput="initLadderGame()" class="full-width" style="font-size:0.85rem; padding:6px;">
@@ -228,7 +227,11 @@
             <div class="ladder-labels top-labels" id="ladderTopLabels"></div>
             <div class="ladder-zone"><canvas id="ladderCanvas"></canvas></div>
             <div class="ladder-labels bottom-labels" id="ladderBottomLabels"></div>
-            <button class="main-btn" style="background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3); margin-top:4px;" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
+            
+            <div style="display:flex; gap:8px; width:100%; margin-top:auto;">
+                <button class="sub-btn" style="flex:1; padding:12px; font-size:0.9rem; background:#475569;" onclick="resetLadderOnly()">🔄 새 사다리 시작</button>
+                <button class="main-btn" style="flex:1.5; margin-top:0; background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3);" onclick="startLadderDraw()">🎲 랜덤 자동 타기</button>
+            </div>
         </div>
 
     </div>
@@ -613,12 +616,13 @@
                 bottomLabels.innerHTML += `<span id="ladderBottom-${idx}">${r}</span>`;
             });
 
-            ladderLines = [];
-            for (let r = 0; r < totalRowsSlots; r++) {
-                for (let c = 0; c < ladderCount - 1; c++) {
-                    if (Math.random() > 0.55) {
-                        if (c === 0 || !ladderLines.some(line => line.row === r && line.col === c - 1)) {
-                            ladderLines.push({ row: r, col: c, custom: false });
+            if (ladderLines.length === 0) {
+                for (let r = 0; r < totalRowsSlots; r++) {
+                    for (let c = 0; c < ladderCount - 1; c++) {
+                        if (Math.random() > 0.55) {
+                            if (c === 0 || !ladderLines.some(line => line.row === r && line.col === c - 1)) {
+                                ladderLines.push({ row: r, col: c, custom: false });
+                            }
                         }
                     }
                 }
@@ -645,7 +649,7 @@
         function drawLadderBase(highlightPath = null, progress = 1) {
             const canvas = document.getElementById('ladderCanvas'); if(!canvas) return;
             const ctx = canvas.getContext('2d');
-            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 190;
+            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 160;
             ctx.clearRect(0, 0, w, canvas.height);
 
             const padding = w / (ladderCount * 2);
@@ -721,6 +725,16 @@
                 }
             }
             drawLadderBase();
+        }
+
+        function resetLadderOnly() {
+            if(isLadderRunning) return;
+            ladderLines = [];
+            document.querySelectorAll('.ladder-labels.top-labels span').forEach(el => el.classList.remove('active-player'));
+            document.querySelectorAll('.ladder-labels.bottom-labels span').forEach(el => el.classList.remove('hit-result'));
+            document.getElementById('g6Desc').innerHTML = "기둥 사이 공간을 터치하면 가로선이 추가/삭제됩니다! 기둥 위 이름을 누르면 출발합니다.";
+            triggerVibrate(60);
+            initLadderGame();
         }
 
         function selectLadderPlayer(playerIdx) {
