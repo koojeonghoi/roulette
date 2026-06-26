@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v24.6</title>
+    <title>초호화 술자리 패키지 오락실 | v24.6.1</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -33,7 +33,7 @@
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
 
-        .main-container { flex: 1; display: flex; justify(content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
+        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
         .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .game-panel.active { display: flex; }
 
@@ -299,7 +299,7 @@
         const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"];
 
         // ==========================================
-        // 🎯 게임 1: 룰렛 관리 엔진 (리셋 로직 전면 수정)
+        // 🎯 게임 1: 룰렛 관리 엔진
         // ==========================================
         let currentStep = 1; let isG1Running = false; let currentSelectedTarget = "";
         const penalties = ["한 잔 마시기", "양옆 마시기", "나만 살기", "안주 금지", "술 2잔 마시기", "마시고 한명 지목"];
@@ -387,7 +387,6 @@
                 }
                 requestAnimationFrame(animPen);
             } else if (currentStep === 3) {
-                // 리셋 상태: 1단계 화면으로 즉시 원복
                 currentStep = 1; 
                 document.getElementById('stage1').classList.add('active'); 
                 document.getElementById('stage2').classList.remove('active');
