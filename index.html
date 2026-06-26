@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v24.6.1</title>
+    <title>초호화 술자리 패키지 오락실 | v24.6.2</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -144,11 +144,11 @@
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:4px;">
-                    <input type="text" id="memberNames" value="정회, 용원, 정렬," oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem; text-align:center;">
+                    <input type="text" id="memberNames" value="정회, 용원, 정렬" oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem; text-align:center;">
                 </div>
-                <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas" width="500" height="500"></canvas></div>
+                <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas"></canvas></div>
             </div>
-            <div id="stage2" class="stage-container"><div class="stage-badge">STEP 2. 벌칙 결정</div><div class="roulette-container"><div class="canvas-pointer"></div><canvas id="penaltyCanvas" class="roulette-canvas" width="500" height="500"></canvas></div></div>
+            <div id="stage2" class="stage-container"><div class="stage-badge">STEP 2. 벌칙 결정</div><div class="roulette-container"><div class="canvas-pointer"></div><canvas id="penaltyCanvas" class="roulette-canvas"></canvas></div></div>
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
         </div>
 
@@ -267,133 +267,215 @@
     </div>
 
     <script>
-        // 탭 전환 기능
+        // ==========================================
+        // 탭 전환
+        // ==========================================
         function switchTab(tabId) {
-            document.querySelectorAll('.game-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const targetPanel = document.getElementById(tabId);
-            const targetTabBtn = document.getElementById('tab-' + tabId);
-            
-            if (targetPanel && targetTabBtn) {
-                targetPanel.classList.add('active');
-                targetTabBtn.classList.add('active');
-            }
+            document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
 
-            if(tabId === 'game1') {
-                setTimeout(() => { drawNameRoulette(); }, 50);
-            } else if(tabId === 'game2') {
-                initBombGame();
-            } else if(tabId === 'game4') {
-                setTimeout(() => { initShapeGame(); }, 50);
-            } else if(tabId === 'game6') {
-                setTimeout(() => { initLadderGame(); }, 50);
-            }
+            // 탭 전환 후 레이아웃이 확정된 다음 프레임에서 캔버스 초기화
+            requestAnimationFrame(() => {
+                if (tabId === 'game1') drawNameRoulette();
+                else if (tabId === 'game2') initBombGame();
+                else if (tabId === 'game4') initShapeGame();
+                else if (tabId === 'game6') initLadderGame();
+            });
         }
 
         function triggerVibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
         const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"];
 
         // ==========================================
-        // 🎯 게임 1: 룰렛 관리 엔진
+        // 🎯 게임 1: 룰렛 엔진
+        // 버그 수정: canvas.width/height를 clientWidth/clientHeight 기준으로
+        // 설정하여 display:none 해제 전 0이 되던 문제 해결
         // ==========================================
         let currentStep = 1; let isG1Running = false; let currentSelectedTarget = "";
         const penalties = ["한 잔 마시기", "양옆 마시기", "나만 살기", "안주 금지", "술 2잔 마시기", "마시고 한명 지목"];
-        function parseNames() { return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0); }
+
+        function parseNames() {
+            return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+        }
+
+        function resizeCanvas(canvas) {
+            // getBoundingClientRect 대신 offsetParent 기반으로 크기 계산
+            // display:flex + active인 패널의 .roulette-container 크기를 직접 읽음
+            const container = canvas.parentElement;
+            const size = container.offsetWidth || container.clientWidth;
+            if (size > 0) {
+                canvas.width = size * 2;
+                canvas.height = size * 2;
+            } else {
+                // fallback: 화면 너비의 70% 사용
+                const fallback = Math.min(window.innerWidth * 0.7, 330) * 2;
+                canvas.width = fallback;
+                canvas.height = fallback;
+            }
+        }
 
         function drawNameRoulette(ang = 0) {
-            const canvas = document.getElementById('nameCanvas'); if(!canvas) return;
-            const ctx = canvas.getContext('2d'); const names = parseNames(); const len = names.length; 
-            
-            const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width * 2; canvas.height = rect.width * 2;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height); if(len === 0) return;
-            const center = canvas.width / 2; const radius = center - 10;
-            const arc = (2 * Math.PI) / len; ctx.save(); ctx.translate(center, center); ctx.rotate(ang);
-            
+            const canvas = document.getElementById('nameCanvas');
+            if (!canvas) return;
+            resizeCanvas(canvas);
+            const ctx = canvas.getContext('2d');
+            const names = parseNames();
+            const len = names.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (len === 0) return;
+
+            const center = canvas.width / 2;
+            const radius = center - 10;
+            const arc = (2 * Math.PI) / len;
+            const fontSize = Math.max(20, Math.floor(canvas.width * 0.07));
+
+            ctx.save();
+            ctx.translate(center, center);
+            ctx.rotate(ang);
             for (let i = 0; i < len; i++) {
-                ctx.beginPath(); ctx.fillStyle = colorPalette[i % colorPalette.length]; ctx.moveTo(0,0); ctx.arc(0,0,radius,i*arc,(i+1)*arc); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#1e293b"; ctx.stroke();
-                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold " + Math.max(16, rect.width*0.07) + "px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
-                ctx.rotate(i * arc + arc/2); ctx.fillText(names[i], radius - 25, 0); ctx.restore();
+                ctx.beginPath();
+                ctx.fillStyle = colorPalette[i % colorPalette.length];
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#1e293b";
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = "#fff";
+                ctx.font = `bold ${fontSize}px sans-serif`;
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.rotate(i * arc + arc / 2);
+                ctx.fillText(names[i], radius - 25, 0);
+                ctx.restore();
             }
             ctx.restore();
         }
 
         function drawPenaltyRoulette(ang = 0) {
-            const canvas = document.getElementById('penaltyCanvas'); if(!canvas) return;
-            const ctx = canvas.getContext('2d'); const len = penalties.length; 
-            
-            const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width * 2; canvas.height = rect.width * 2;
-            
-            const center = canvas.width / 2; const radius = center - 10;
-            const arc = (2 * Math.PI) / len; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.save(); ctx.translate(center, center); ctx.rotate(ang);
-            
+            const canvas = document.getElementById('penaltyCanvas');
+            if (!canvas) return;
+            resizeCanvas(canvas);
+            const ctx = canvas.getContext('2d');
+            const len = penalties.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const center = canvas.width / 2;
+            const radius = center - 10;
+            const arc = (2 * Math.PI) / len;
+            const fontSize = Math.max(18, Math.floor(canvas.width * 0.06));
+
+            ctx.save();
+            ctx.translate(center, center);
+            ctx.rotate(ang);
             for (let i = 0; i < len; i++) {
-                ctx.beginPath(); ctx.fillStyle = colorPalette[(i+3) % colorPalette.length]; ctx.moveTo(0,0); ctx.arc(0,0,radius,i*arc,(i+1)*arc); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#1e293b"; ctx.stroke();
-                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = "bold " + Math.max(14, rect.width*0.06) + "px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
-                ctx.rotate(i * arc + arc/2); ctx.fillText(penalties[i], radius - 20, 0); ctx.restore();
+                ctx.beginPath();
+                ctx.fillStyle = colorPalette[(i + 3) % colorPalette.length];
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#1e293b";
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = "#fff";
+                ctx.font = `bold ${fontSize}px sans-serif`;
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.rotate(i * arc + arc / 2);
+                ctx.fillText(penalties[i], radius - 20, 0);
+                ctx.restore();
             }
             ctx.restore();
         }
 
         function runIntegratedRoulette() {
-            if (isG1Running) return; const names = parseNames(); if(names.length===0) return;
+            if (isG1Running) return;
+            const names = parseNames();
+            if (names.length === 0) return;
             const btn = document.getElementById('g1Btn');
-            
+
             if (currentStep === 1) {
                 isG1Running = true; btn.disabled = true;
-                let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
-                
+                let startTime = null;
+                const duration = 2500;
+                const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+
                 function animName(t) {
-                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
-                    const ease = 1 - Math.pow(1-prog, 4); const curAng = targetRot * ease; drawNameRoulette(curAng);
-                    if (prog < 1) requestAnimationFrame(animName);
-                    else {
-                        const finalAng = curAng % (2*Math.PI); const arc = (2*Math.PI)/names.length;
-                        let idx = Math.floor(((1.5*Math.PI) - finalAng + 2*Math.PI) % (2*Math.PI) / arc);
-                        currentSelectedTarget = names[idx] || names[0]; triggerVibrate([100, 50]);
+                    if (!startTime) startTime = t;
+                    const el = t - startTime;
+                    const prog = Math.min(el / duration, 1);
+                    const ease = 1 - Math.pow(1 - prog, 4);
+                    const curAng = targetRot * ease;
+                    drawNameRoulette(curAng);
+                    if (prog < 1) {
+                        requestAnimationFrame(animName);
+                    } else {
+                        const finalAng = curAng % (2 * Math.PI);
+                        const arc = (2 * Math.PI) / names.length;
+                        let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
+                        currentSelectedTarget = names[idx] || names[0];
+                        triggerVibrate([100, 50]);
                         document.getElementById('g1Desc').innerHTML = `🎯 당첨자: 🎉 <strong>[ ${currentSelectedTarget} ]</strong>`;
                         setTimeout(() => {
-                            document.getElementById('stage1').classList.remove('active'); document.getElementById('stage2').classList.add('active');
+                            document.getElementById('stage1').classList.remove('active');
+                            document.getElementById('stage2').classList.add('active');
                             document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님의 벌칙 추첨 시작!`;
-                            drawPenaltyRoulette(0); btn.textContent = "2단계: 벌칙판 돌리기"; btn.style.background = "var(--secondary)"; btn.disabled = false;
-                            currentStep = 2; isG1Running = false;
+                            // 패널티 룰렛 컨테이너가 보이는 상태에서 그리기
+                            requestAnimationFrame(() => { drawPenaltyRoulette(0); });
+                            btn.textContent = "2단계: 벌칙판 돌리기";
+                            btn.style.background = "var(--secondary)";
+                            btn.disabled = false;
+                            currentStep = 2;
+                            isG1Running = false;
                         }, 1200);
                     }
                 }
                 requestAnimationFrame(animName);
+
             } else if (currentStep === 2) {
                 isG1Running = true; btn.disabled = true;
-                let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
-                
+                let startTime = null;
+                const duration = 2500;
+                const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+
                 function animPen(t) {
-                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
-                    const ease = 1 - Math.pow(1-prog, 4); const curAng = targetRot * ease; drawPenaltyRoulette(curAng);
-                    if (prog < 1) requestAnimationFrame(animPen);
-                    else {
-                        const finalAng = curAng % (2*Math.PI); const arc = (2*Math.PI)/penalties.length;
-                        let idx = Math.floor(((1.5*Math.PI) - finalAng + 2*Math.PI) % (2*Math.PI) / arc);
+                    if (!startTime) startTime = t;
+                    const el = t - startTime;
+                    const prog = Math.min(el / duration, 1);
+                    const ease = 1 - Math.pow(1 - prog, 4);
+                    const curAng = targetRot * ease;
+                    drawPenaltyRoulette(curAng);
+                    if (prog < 1) {
+                        requestAnimationFrame(animPen);
+                    } else {
+                        const finalAng = curAng % (2 * Math.PI);
+                        const arc = (2 * Math.PI) / penalties.length;
+                        let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
                         document.getElementById('g1Desc').innerHTML = `🍺 <strong>${currentSelectedTarget}</strong> 👉 💥 <strong>[ ${penalties[idx]} ]</strong> 당첨!`;
                         triggerVibrate([300, 100, 200]);
-                        btn.textContent = "다음 판 리셋하기"; btn.style.background = "var(--accent)"; btn.disabled = false; 
-                        currentStep = 3; isG1Running = false;
+                        btn.textContent = "다음 판 리셋하기";
+                        btn.style.background = "var(--accent)";
+                        btn.disabled = false;
+                        currentStep = 3;
+                        isG1Running = false;
                     }
                 }
                 requestAnimationFrame(animPen);
+
             } else if (currentStep === 3) {
-                currentStep = 1; 
-                document.getElementById('stage1').classList.add('active'); 
+                currentStep = 1;
+                document.getElementById('stage1').classList.add('active');
                 document.getElementById('stage2').classList.remove('active');
                 document.getElementById('g1Desc').textContent = "참여자 명단을 쉼표로 입력해 주세요.";
-                btn.textContent = "1단계: 이름판 돌리기"; 
-                btn.style.background = "var(--primary)"; 
-                setTimeout(() => { drawNameRoulette(0); }, 50);
+                btn.textContent = "1단계: 이름판 돌리기";
+                btn.style.background = "var(--primary)";
+                requestAnimationFrame(() => { drawNameRoulette(0); });
             }
         }
 
@@ -402,9 +484,9 @@
         // ==========================================
         let bombLocations = []; let isGameOver = false;
         function initBombGame() {
-            const grid = document.getElementById('bombGrid'); if(!grid) return; grid.innerHTML = ''; isGameOver = false;
+            const grid = document.getElementById('bombGrid'); if (!grid) return; grid.innerHTML = ''; isGameOver = false;
             const cnt = parseInt(document.getElementById('bombCountInput').value) || 1; bombLocations = [];
-            while(bombLocations.length < cnt) { let r = Math.floor(Math.random()*16); if(!bombLocations.includes(r)) bombLocations.push(r); }
+            while (bombLocations.length < cnt) { let r = Math.floor(Math.random() * 16); if (!bombLocations.includes(r)) bombLocations.push(r); }
             for (let i = 0; i < 16; i++) {
                 const b = document.createElement('button'); b.className = 'tile-btn'; b.textContent = '❓';
                 b.onclick = () => {
@@ -422,37 +504,42 @@
         // 🤫 게임 3: 라이어 게임 엔진
         // ==========================================
         const liarDb = [
-            { cat: "연예/방송 📺", words: ["유재석", "아이유", "BTS", "봉준호", "오징어게임", "손흥민", "뉴진스", "에스파"] },
-            { cat: "음식/야식 🍗", words: ["마라탕", "삼겹살", "불닭볶음면", "치즈볼", "탕후루", "떡볶이", "양꼬치", "짜장면"] },
-            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지"] },
-            { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장"] }
+            { cat: "연예/방송 📺", words: ["유재석", "아이유", "BTS", "봉준호", "오징어게임", "손흥민", "뉴진스", "에스파", "블랙핑크", "임영웅", "김종국", "차은우", "박보검", "장원영", "런닝맨", "무한도전", "나는솔로", "더글로리", "피식대학", "유튜브", "넷플릭스", "슈퍼맨이돌아왔다"] },
+            { cat: "음식/야식 🍗", words: ["마라탕", "삼겹살", "불닭볶음면", "치즈볼", "탕후루", "떡볶이", "양꼬치", "짜장면", "치킨", "피자", "족발", "곱창", "닭발", "김치찌개", "라면", "초밥", "햄버거", "아이스크림", "붕어빵", "호떡", "김밥", "냉면", "순대"] },
+            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지", "리모컨", "이어폰", "선풍기", "냉장고", "세탁기", "안마의자", "우산", "베개", "거울", "화장지", "칫솔", "드라이기", "키보드", "마우스"] },
+            { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장", "놀이공원", "백화점", "카페", "맛집", "바다", "계곡", "찜질방", "호텔", "펜션", "공항", "학교", "회사", "PC방", "포차"] },
+            { cat: "취미/활동 🎮", words: ["게임", "골프", "낚시", "등산", "요리", "사진찍기", "쇼핑", "운동", "독서", "여행", "넷플릭스보기", "드라이브", "노래부르기", "춤추기", "캠핑", "러닝", "헬스", "볼링", "스키", "수영"] },
+            { cat: "동물/생물 🐾", words: ["강아지", "고양이", "토끼", "햄스터", "호랑이", "사자", "펭귄", "돌고래", "상어", "독수리", "판다", "원숭이", "거북이", "앵무새", "공룡", "악어", "여우", "곰"] },
+            { cat: "패션/뷰티 💄", words: ["립스틱", "향수", "운동화", "청바지", "명품백", "선글라스", "모자", "반지", "시계", "화장품", "헤어스타일", "네일아트", "정장", "후드티", "패딩", "슬랙스"] },
+            { cat: "추억/감성 🌙", words: ["첫사랑", "졸업식", "생일", "여름휴가", "첫눈", "벚꽃", "사진첩", "편지", "선물", "데이트", "고백", "짝사랑", "동창회", "추억여행", "어린시절"] },
+            { cat: "밈/인터넷 😂", words: ["짤", "밈", "댓글", "악플", "인스타그램", "틱톡", "릴스", "챌린지", "구독", "좋아요", "라이브방송", "댓글창", "프로필사진", "스토리"] }
         ];
-        
+
         let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 3; let revealState = false;
-        
+
         function startLiarSetup() {
             totUsers = parseInt(document.getElementById('liarTotalInput').value) || 3;
-            if(totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
+            if (totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
             const randomCatIdx = Math.floor(Math.random() * liarDb.length);
             const selectedPack = liarDb[randomCatIdx]; curCat = selectedPack.cat;
             const randomWordIdx = Math.floor(Math.random() * selectedPack.words.length);
-            curWord = selectedPack.words[randomWordIdx]; liarIdx = Math.floor(Math.random() * totUsers) + 1; curUser = 1; 
+            curWord = selectedPack.words[randomWordIdx]; liarIdx = Math.floor(Math.random() * totUsers) + 1; curUser = 1;
             document.getElementById('g3Btn').disabled = true;
             document.getElementById('g3Desc').textContent = "한 명씩 스마트폰을 들고 비밀 창을 터치해 확인하세요!";
             const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block';
             nextLiarTurn();
         }
-        
+
         function nextLiarTurn() {
             revealState = false; const b = document.getElementById('liarSecretBox'); b.className = "word-hidden"; b.style.background = "var(--secondary)"; b.textContent = "터치하여 확인하기";
             if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; }
-            else { 
-                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!"; 
+            else {
+                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!";
                 b.textContent = "서로 질문을 던지며 라이어를 찾으세요!"; b.style.background = "var(--accent)";
                 document.getElementById('g3Btn').disabled = false; document.getElementById('g3Btn').textContent = "한 판 더 하기";
             }
         }
-        
+
         function toggleLiarWord() {
             if (curUser > totUsers || revealState) return; const b = document.getElementById('liarSecretBox');
             if (curUser === liarIdx) { b.innerHTML = "🤫 당신은 <br><span style='font-size:1.8rem; color:#ff2a5f; font-weight:bold;'>[ 라이어 ]</span> 입니다."; }
@@ -472,8 +559,8 @@
             const rect = dCanvas.parentNode.getBoundingClientRect(); dCanvas.width = rect.width; dCanvas.height = rect.height;
             dCanvas.replaceWith(dCanvas.cloneNode(true)); dCanvas = document.getElementById('drawCanvas'); dCtx = dCanvas.getContext('2d');
             dCanvas.addEventListener('mousedown', startDraw); dCanvas.addEventListener('mousemove', moveDraw); dCanvas.addEventListener('mouseup', endDraw);
-            dCanvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; startDraw(t); e.preventDefault(); }, {passive: false});
-            dCanvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; moveDraw(t); e.preventDefault(); }, {passive: false});
+            dCanvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; startDraw(t); e.preventDefault(); }, { passive: false });
+            dCanvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; moveDraw(t); e.preventDefault(); }, { passive: false });
             dCanvas.addEventListener('touchend', endDraw);
             selectTargetShape();
         }
@@ -490,7 +577,7 @@
             clearInterval(shapeTimer); shapeTimer = null; isTimerActive = false; isShapeLocked = false; shapeTimeLeft = 5.0;
             document.getElementById('timerBarZone').style.display = 'none'; document.getElementById('timerBarFill').style.width = '100%';
             document.getElementById('g4ShapeDesc').innerHTML = "그리기를 시작하면 즉시 5초 타이머가 작동합니다!";
-            document.getElementById('shapeScoreBtn').disabled = false; userPoints = []; if(dCtx) dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+            document.getElementById('shapeScoreBtn').disabled = false; userPoints = []; if (dCtx) dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
             document.getElementById('scoreOutput').textContent = "0점";
         }
 
@@ -514,49 +601,172 @@
             if (isShapeLocked) return; if (!isTimerActive) startShapeTimer();
             isDrawing = true; dCtx.lineWidth = 6; dCtx.strokeStyle = '#f43f5e'; dCtx.lineCap = 'round'; dCtx.lineJoin = 'round'; dCtx.beginPath();
             const rect = dCanvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-            dCtx.moveTo(x, y); userPoints.push({x, y});
+            dCtx.moveTo(x, y); userPoints.push({ x, y });
         }
         function moveDraw(e) {
             if (!isDrawing || isShapeLocked) return; const rect = dCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left; const y = e.clientY - rect.top; dCtx.lineTo(x, y); dCtx.stroke(); userPoints.push({x, y});
+            const x = e.clientX - rect.left; const y = e.clientY - rect.top; dCtx.lineTo(x, y); dCtx.stroke(); userPoints.push({ x, y });
         }
         function endDraw() { isDrawing = false; }
 
         function evaluateDrawing() {
             clearInterval(shapeTimer); isShapeLocked = true;
-            if(userPoints.length < 5) { 
-                alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; 
-            }
+            if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             userPoints.forEach(p => {
-                if(p.x < minX) minX = p.x; if(p.x > maxX) maxX = p.x; if(p.y < minY) minY = p.y; if(p.y > maxY) maxY = p.y;
+                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
             });
             const w = maxX - minX; const h = maxY - minY; const aspect = w / h; let baseScore = 65;
             if (currentShapeType === 'circle') { let ratio = Math.min(w, h) / Math.max(w, h); baseScore = Math.floor(ratio * 95); }
             else if (currentShapeType === 'triangle') baseScore = (aspect > 0.8 && aspect < 1.2) ? 85 : 60;
             else baseScore = (userPoints.length > 25) ? 80 : 55;
-            let finalScore = baseScore + Math.floor(Math.random() * 8); if(finalScore > 100) finalScore = 100;
+            let finalScore = baseScore + Math.floor(Math.random() * 8); if (finalScore > 100) finalScore = 100;
             document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
             document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
         }
 
         // ==========================================
-        // 👑 게임 5: 진짜 왕게임 엔진
+        // 👑 게임 5: 왕게임 엔진
+        // 순한맛 마스터 오더 30개 + 29금 마스터 오더 30개 + 일반 왕게임 지령 30개 추가
         // ==========================================
         let currentKingMode = 'normal'; let kingGamePool = []; let kingGameIdx = 0; let totalKingPlayers = 3; let kingParticipantNames = [];
+
+        // 일반 왕게임 지령 (왕 선출 후 사용) — 30개
         const normalIdeas = [
-            "💡 [일반] 오른쪽 사람과 눈빛 교환 후 진한 러브샷 시키기", "💡 [일반] 특정 번호 지목해서 소주 반 잔 깔끔하게 원샷 시키기",
-            "💡 [일반] 두 명 골라서 서로 볼 꼬집고 귀엽다고 애교 떨게 하기", "💡 [일반] 두 명 골라서 2분 동안 강제 야자타임 진행 시키기"
+            "💡 [일반] 오른쪽 사람과 눈빛 교환 후 진한 러브샷 시키기",
+            "💡 [일반] 특정 번호 지목해서 소주 반 잔 깔끔하게 원샷 시키기",
+            "💡 [일반] 두 명 골라서 서로 볼 꼬집고 귀엽다고 애교 떨게 하기",
+            "💡 [일반] 두 명 골라서 2분 동안 강제 야자타임 진행 시키기",
+            "💡 [일반] 지목한 사람에게 제일 최근에 받은 카톡 내용 공개 시키기",
+            "💡 [일반] 한 명 골라서 30초 동안 눈 마주치며 진심 어린 고백 시키기",
+            "💡 [일반] 옆 사람 어깨에 기대고 30초간 눈 감게 하기",
+            "💡 [일반] 가장 못 웃기는 드립 친 사람 벌주 원샷 시키기",
+            "💡 [일반] 테이블에서 가장 나이 어린 사람 소주 한 잔 폭탄 시키기",
+            "💡 [일반] 지목한 사람 폰에서 갤러리 첫 번째 사진 공개 시키기",
+            "💡 [일반] 아무 노래나 30초 동안 즉흥 열창, 박자 틀리면 벌주",
+            "💡 [일반] 두 명 골라 서로에게 못 먹었던 음식 먹이기 대결",
+            "💡 [일반] 지목한 사람 손등에 입김으로 하트 그리기",
+            "💡 [일반] 한 명 골라서 테이블 위 안주 3가지 이름 기억하고 눈 가리고 맞추기",
+            "💡 [일반] 지목한 사람 혀 내밀고 10초 버티기, 실패 시 벌주",
+            "💡 [일반] 두 명 골라 한쪽이 메뉴판 보고 설명, 상대방은 맞추기",
+            "💡 [일반] 모두 한 손은 등 뒤로 숨기고 밥 먹기 5분 도전",
+            "💡 [일반] 지목한 사람에게 나만 아는 그 사람 비밀 or 약점 한 가지 공개",
+            "💡 [일반] 한 명 골라서 오늘 저녁 가장 민망했던 순간 고백 시키기",
+            "💡 [일반] 두 명 골라 제자리 달리기 30초 대결, 덜 힘들어 보이는 사람 벌주",
+            "💡 [일반] 가장 마지막으로 연애한 사람 소주 1잔 원샷",
+            "💡 [일반] 지목한 사람 목소리 흉내 내기, 못 맞추면 왕이 벌주",
+            "💡 [일반] 좌우로 한 바퀴 돌며 옆 사람 귓속말 릴레이 후 마지막 사람 공개",
+            "💡 [일반] 눈 감고 가장 먼저 손든 사람과 왕이 팔씨름, 진 사람 벌주",
+            "💡 [일반] 지목한 두 사람이 서로 등 맞대고 앉아 건배 후 원샷",
+            "💡 [일반] 한 명 골라 스마트폰 잠금 해제해서 왕에게 바치기 (1분)",
+            "💡 [일반] 왕이 지목한 사람에게 오늘의 TMI 한 가지 강제 고백",
+            "💡 [일반] 두 명 골라서 서로 간단한 마사지 30초 교환",
+            "💡 [일반] 지목한 사람 현재 카카오톡 상태메시지 공개 후 해설",
+            "💡 [일반] 한 명 골라 왕 앞에서 1분 안에 혀 꼬이는 말 3개 연속 성공시키기"
         ];
+
+        // 29금 왕게임 지령 (왕 선출 후 사용) — 30개
         const adultIdeas = [
-            "🔥 [29금] 두 명 지정해서 옷 속에 손 넣고 15초 동안 눈 떼지 말고 눈빛 교환", "🔥 [29금] 두 명 지정해서 목이나 쇄골에 3초간 볼뽀뽀 남기기 시키기",
-            "🔥 [29금] 두 명 지정해서 입술 거리 1cm 유지하고 10초 버티게 하기"
+            "🔥 [29금] 두 명 지정해서 옷 속에 손 넣고 15초 동안 눈 떼지 말고 눈빛 교환",
+            "🔥 [29금] 두 명 지정해서 목이나 쇄골에 3초간 볼뽀뽀 남기기 시키기",
+            "🔥 [29금] 두 명 지정해서 입술 거리 1cm 유지하고 10초 버티게 하기",
+            "🔥 [29금] 지목한 사람 귓속에 3초간 숨 불어넣기 시키기",
+            "🔥 [29금] 두 명 골라 손목 안쪽에 가볍게 입술 닿게 하기",
+            "🔥 [29금] 지목한 사람 쇄골 라인 따라 손가락으로 천천히 긋기",
+            "🔥 [29금] 두 명 골라 등 맞대고 앉아 상대방 이름 속삭이기 3회",
+            "🔥 [29금] 지목한 사람 뒷목에 얼음 천천히 굴리기",
+            "🔥 [29금] 두 명 골라 서로 발등에 발 올려놓고 1분 버티기",
+            "🔥 [29금] 지목한 사람에게 오늘 가장 섹시해 보인 사람 실명 공개",
+            "🔥 [29금] 두 명 골라 손바닥 마주 대고 눈 마주치며 10초 버티기",
+            "🔥 [29금] 지목한 사람 무릎에 왕이 손 올리고 30초간 버티기",
+            "🔥 [29금] 두 명 골라 서로의 귀에 대고 가장 하고 싶은 거 속삭이기",
+            "🔥 [29금] 지목한 사람이 왕 입에 직접 안주 먹여주기",
+            "🔥 [29금] 두 명 골라 한 잔을 서로 입으로만 릴레이해서 마시기",
+            "🔥 [29금] 지목한 사람 뺨에 립스틱 자국 남기기 (있는 경우)",
+            "🔥 [29금] 두 명 골라 서로 눈 감고 얼굴 윤곽 손가락으로 더듬기",
+            "🔥 [29금] 지목한 사람 머리 30초 동안 쓰다듬어 주기",
+            "🔥 [29금] 두 명 골라 소주잔 이마에 올리고 상대방 어깨 두드리기 도전",
+            "🔥 [29금] 지목한 사람이 왕 어깨에 얼굴 묻고 10초 버티기",
+            "🔥 [29금] 두 명 골라 손깍지 끼고 1분간 유지하기",
+            "🔥 [29금] 지목한 사람 팔짱 끼고 오늘 가장 잘생기고 예쁜 사람 공개",
+            "🔥 [29금] 두 명 골라 서로의 무릎에 손 올리고 눈빛 교환 20초",
+            "🔥 [29금] 지목한 사람 뒷목 잡아주며 '괜찮아' 속삭이기",
+            "🔥 [29금] 두 명 골라 눈 마주치고 상대방 입술 가리키며 '예쁘다' 말하기",
+            "🔥 [29금] 지목한 사람 손등에 입술 갖다 대고 3초 유지",
+            "🔥 [29금] 두 명 골라 서로 등에 글씨 써서 맞추기, 틀리면 원샷",
+            "🔥 [29금] 지목한 사람 목 뒤쪽 피부 온도 손등으로 느끼며 10초",
+            "🔥 [29금] 두 명 골라 같은 잔으로 번갈아 마시는 '공유샷' 도전",
+            "🔥 [29금] 지목한 사람 포옹 10초, 버티지 못하면 왕이 추가 지령"
         ];
+
+        // 마스터 오더 - 순한맛 (실명 대입) — 30개
         const masterNormalIdeas = [
             "⚡ [마스터] <strong>{X}</strong>은(는) 30초 동안 로봇 성대모사로만 모든 대화를 처리하시오.",
             "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 외모 칭찬을 3개씩 폭격하시오.",
-            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 두 팔을 X자로 진하게 꼬아 마시는 러브샷을 실시하시오."
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 두 팔을 X자로 진하게 꼬아 마시는 러브샷을 실시하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 당장 테이블에서 가장 웃긴 표정을 3초간 유지하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 오늘 가장 부끄러운 TMI를 1가지 털어놓으시오.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로에게 '인생 최대 실수'를 한 문장으로 고백하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 바로 아무 노래 1절을 전원 앞에서 열창하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 30초 안에 제자리에서 스쿼트 10회를 완수하시오.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 팔씨름 한 판, 진 사람 소주 원샷.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) <strong>{Y}</strong>에게 오늘 처음 만났을 때 느낀 첫인상을 솔직하게 말하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 1분간 핸드폰을 테이블 위에 뒤집어 두시오. 확인하면 벌주.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 각자 술을 따라 상대에게 바치고 동시 원샷.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 입고 있는 옷 브랜드와 가격을 공개하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 오른쪽 사람 이름을 5번 빠르게 외친 뒤 소주 한 모금.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) '최근 1년 가장 창피했던 순간'을 동시에 고백.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 바로 안주 중 하나를 눈 감고 먹고 이름 맞추시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 테이블 전원에게 진심 어린 칭찬을 한 마디씩 돌리시오.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 등 맞대고 앉아 '지금 이 자리에서 제일 좋은 점' 동시 외치기.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 갤러리에서 가장 오래된 사진 1장을 모두에게 공개.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 바로 1분간 침묵 도전. 말하면 즉시 벌주.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 가위바위보 3판, 2선 승 달성자가 진 사람에게 벌주.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 이 자리에서 제일 고마운 사람 지목하고 이유 말하기.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 오늘 가장 맛있었던 안주 3위 발표 즉석 진행.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로 상대방의 장점 2가지를 말한 뒤 건배.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 눈 감고 테이블 주변 사람 중 1명의 손을 잡아 목소리만으로 맞추기.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 마지막으로 연락한 상대방 이름(이니셜)과 내용(한 줄) 공개.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) '오늘 서로에게 하고 싶었던 말' 동시에 속삭이기.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 지금 당장 자기 입으로 자신의 별명을 짓고 선포하시오.",
+            "⚡ [마스터] <strong>{X}</strong>은(는) 오늘 자리에서 가장 인상적인 사람 1명 지목 후 그 이유를 1분간 발표.",
+            "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 각자 10초 안에 상대방에 관한 사실 하나를 맞히시오. 틀리면 벌주."
         ];
+
+        // 마스터 오더 - 29금 (실명 대입) — 30개
+        const masterAdultIdeas = [
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로 가까이 서서 15초간 숨을 맞대며 눈빛으로 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 목선에 가볍게 입술을 대고 3초간 머무르시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 입술 간격 1cm를 유지한 채 10초 동안 눈을 감고 호흡을 맞추시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 귓가에 10초간 달콤한 한 문장을 천천히 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 손목 안쪽에 서로 가볍게 입술을 대고 5초간 멈추시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 쇄골 라인을 손끝으로 천천히 쓰다듬어 5초간 멈추시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 뒷목을 감싸 안고 낮은 목소리로 '오늘 네가 최고였어'라고 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 무릎 위에 손을 올리고 30초간 눈을 마주치며 버티시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 손을 맞잡고 서로의 이름을 속삭이며 3번 번갈아 부르시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>에게 오늘 가장 매력적으로 보였던 순간을 귓속말로 고백하시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 등에 손가락으로 이름을 써서 맞추기 — 틀리면 원샷.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 손등에 가볍게 입을 가져다대고 5초간 머무르시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 같은 잔으로 번갈아 마시되, 마지막 한 모금은 서로 건네주시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>에게 가장 설레었던 장면 하나를 목소리를 낮춰 고백하시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 눈을 감고 서로의 얼굴 윤곽을 손끝으로 더듬어 주시오(10초).",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>를 포옹해 10초간 유지 — 버티지 못하면 추가 미션 수행.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로 발등을 맞대고 1분간 가만히 있기(서로의 숨 소리 들으며).",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 머리를 부드럽게 30초간 쓰다듬어 주시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로 입술 가까이 손가락을 대고 '예쁘다' 한마디씩 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 목 뒤쪽을 손등으로 스치며 10초간 온기를 느끼시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로 무릎에 손을 올리고 20초간 눈을 마주치며 숨 참고 버티시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 귓속에 가장 하고 싶은 한 가지를 속삭이시오(검열 가능한 형태로).",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 뺨에 손을 대고 '오늘 제일 예뻐'라고 말하시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>에게 입술과 3cm 거리를 유지하며 '보고 싶었어'를 낮게 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 팔목을 잡고 맥박을 느끼며 30초간 눈을 마주치시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 어깨에 얼굴을 기대고 '너랑 있으면 편해'를 속삭이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 한 손으로 같은 잔을 잡고 눈을 마주치며 동시에 원샷하시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 손바닥에 손가락으로 천천히 '좋아해'를 적어 보이시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 팔짱을 끼고 동시에 '오늘 네가 있어서 좋았어'를 말하시오.",
+            "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>에게 아이컨택을 유지하며 작은 소주 한 잔을 직접 따라주시오."
+        ];
+
 
         function setKingMode(mode) {
             currentKingMode = mode;
@@ -565,81 +775,111 @@
         }
 
         function toggleKingInputStyle() {
-            const type = document.getElementById('kingTypeSelect').value; const countRow = document.getElementById('kingCountRow');
-            const nameRow = document.getElementById('kingNameRow'); const btnEl = document.getElementById('g5Btn'); const labelEl = document.getElementById('kingNameLabel');
-            if(type === 'master') {
-                if(countRow) countRow.style.display = 'none'; nameRow.style.display = 'flex'; labelEl.textContent = "📝 참여자 이름 입력 (쉼표로 구분):";
+            const type = document.getElementById('kingTypeSelect').value;
+            const countRow = document.getElementById('kingCountRow');
+            const nameRow = document.getElementById('kingNameRow');
+            const btnEl = document.getElementById('g5Btn');
+            const labelEl = document.getElementById('kingNameLabel');
+            if (type === 'master') {
+                if (countRow) countRow.style.display = 'none';
+                nameRow.style.display = 'flex';
+                labelEl.textContent = "📝 참여자 이름 입력 (쉼표로 구분):";
                 btnEl.textContent = "⚡ 즉시 마스터 오더 실행";
             } else {
-                if(countRow) countRow.style.display = type === 'anonymous' ? 'flex' : 'none'; nameRow.style.display = type === 'named' ? 'flex' : 'none';
+                if (countRow) countRow.style.display = type === 'anonymous' ? 'flex' : 'none';
+                nameRow.style.display = type === 'named' ? 'flex' : 'none';
                 btnEl.textContent = "👑 신분 배정 시작하기";
             }
         }
 
         function startKingIdentityLoop() {
-            const type = document.getElementById('kingTypeSelect').value; const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
+            const type = document.getElementById('kingTypeSelect').value;
+            const titleEl = document.getElementById('kingStatusTitle');
+            const textEl = document.getElementById('kingMainText');
 
             if (type === 'master') {
-                const namesStr = document.getElementById('kingNameInput').value; kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
-                if(kingParticipantNames.length < 2) { alert("최소 2명 이상의 이름이 필요합니다!"); return; }
-                titleEl.textContent = `⚡ 절대 마스터의 실명 오더`;
-                let idx1 = Math.floor(Math.random() * kingParticipantNames.length); let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
-                while(idx1 === idx2 && kingParticipantNames.length > 1) { idx2 = Math.floor(Math.random() * kingParticipantNames.length); }
-                let pName1 = kingParticipantNames[idx1]; let pName2 = kingParticipantNames[idx2]; let targetCommand = "";
+                const namesStr = document.getElementById('kingNameInput').value;
+                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                if (kingParticipantNames.length < 2) { alert("최소 2명 이상의 이름이 필요합니다!"); return; }
 
+                titleEl.textContent = `⚡ 절대 마스터의 실명 오더`;
+                let idx1 = Math.floor(Math.random() * kingParticipantNames.length);
+                let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
+                while (idx1 === idx2 && kingParticipantNames.length > 1) {
+                    idx2 = Math.floor(Math.random() * kingParticipantNames.length);
+                }
+                const pName1 = kingParticipantNames[idx1];
+                const pName2 = kingParticipantNames[idx2];
+
+                let targetCommand = "";
                 if (currentKingMode === 'normal') {
-                    let rawIdea = masterNormalIdeas[Math.floor(Math.random() * masterNormalIdeas.length)]; targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
+                    const rawIdea = masterNormalIdeas[Math.floor(Math.random() * masterNormalIdeas.length)];
+                    targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
                 } else {
-                    let rawIdea = adultIdeas[Math.floor(Math.random() * adultIdeas.length)];
-                    targetCommand = rawIdea.replace("두 명 지정해서", `<strong>${pName1}</strong>와(과) <strong>${pName2}</strong>은(는)`);
+                    const rawIdea = masterAdultIdeas[Math.floor(Math.random() * masterAdultIdeas.length)];
+                    targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
                 }
                 textEl.innerHTML = `<div style='color:var(--primary); font-size:1.1rem; margin-bottom:10px;'>🚨 마스터의 지령 타겟팅 완료!</div><div class='king-action'>${targetCommand}</div>`;
                 return;
             }
 
             kingGamePool = [];
-            if(type === 'anonymous') {
+            if (type === 'anonymous') {
                 totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3;
-                kingGamePool.push('👑 왕'); for(let i = 1; i <= totalKingPlayers - 1; i++) kingGamePool.push(`👤 신하 [ ${i}번 ]`);
+                kingGamePool.push('👑 왕');
+                for (let i = 1; i <= totalKingPlayers - 1; i++) kingGamePool.push(`👤 신하 [ ${i}번 ]`);
                 kingGamePool.sort(() => Math.random() - 0.5);
             } else {
-                const namesStr = document.getElementById('kingNameInput').value; kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                const namesStr = document.getElementById('kingNameInput').value;
+                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
                 totalKingPlayers = kingParticipantNames.length;
-                let roles = ['👑 왕']; for(let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`);
+                let roles = ['👑 왕'];
+                for (let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`);
                 roles.sort(() => Math.random() - 0.5);
-                for(let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
+                for (let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
             }
-            kingGameIdx = 0; document.getElementById('kingTypeSelect').disabled = true; showIdentityWaitScreen();
+            kingGameIdx = 0;
+            document.getElementById('kingTypeSelect').disabled = true;
+            showIdentityWaitScreen();
         }
 
         function showIdentityWaitScreen() {
-            const type = document.getElementById('kingTypeSelect').value; const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
+            const type = document.getElementById('kingTypeSelect').value;
+            const titleEl = document.getElementById('kingStatusTitle');
+            const textEl = document.getElementById('kingMainText');
+            const btnEl = document.getElementById('g5Btn');
             if (kingGameIdx < totalKingPlayers) {
                 if (type === 'anonymous') {
                     titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`;
                     textEl.innerHTML = `<div>[플레이어 ${kingGameIdx + 1}] 님만 확인하세요.</div>`;
                 } else {
-                    const targetPerson = kingGamePool[kingGameIdx].name; titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`;
+                    const targetPerson = kingGamePool[kingGameIdx].name;
+                    titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`;
                     textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`;
                 }
-                btnEl.textContent = "역할 확인하기"; btnEl.onclick = revealIdentityToPlayer;
+                btnEl.textContent = "역할 확인하기";
+                btnEl.onclick = revealIdentityToPlayer;
             } else {
-                titleEl.textContent = "👑 왕의 오더 하차!"; const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
+                titleEl.textContent = "👑 왕의 오더 하차!";
+                const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
                 textEl.innerHTML = `<div class='king-action'>${pool[Math.floor(Math.random() * pool.length)]}</div>`;
-                btnEl.textContent = "새 판 세팅"; btnEl.onclick = () => {
-                    document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle();
+                btnEl.textContent = "새 판 세팅";
+                btnEl.onclick = () => {
+                    document.getElementById('kingTypeSelect').disabled = false;
+                    toggleKingInputStyle();
                 };
             }
         }
 
         function revealIdentityToPlayer() {
-            const type = document.getElementById('kingTypeSelect').value; const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
+            const type = document.getElementById('kingTypeSelect').value;
+            const textEl = document.getElementById('kingMainText');
+            const btnEl = document.getElementById('g5Btn');
             let myRole = type === 'anonymous' ? kingGamePool[kingGameIdx] : kingGamePool[kingGameIdx].role;
             textEl.innerHTML = `<div><span style='font-size:2rem; color:var(--warning); font-weight:bold;'>${myRole}</span></div>`;
-            btnEl.disabled = true; kingGameIdx++; setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
+            btnEl.disabled = true;
+            kingGameIdx++;
+            setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
         }
 
         // ==========================================
@@ -650,12 +890,12 @@
 
         function initLadderGame() {
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
-            ladderCount = mInput.length; if(ladderCount < 2) return;
-            
+            ladderCount = mInput.length; if (ladderCount < 2) return;
+
             const rInput = document.getElementById('ladderResults');
             let currentResults = rInput.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
-            while(currentResults.length < ladderCount) currentResults.push("통과");
-            if(currentResults.length > ladderCount) currentResults = currentResults.slice(0, ladderCount);
+            while (currentResults.length < ladderCount) currentResults.push("통과");
+            if (currentResults.length > ladderCount) currentResults = currentResults.slice(0, ladderCount);
             rInput.value = currentResults.join(', ');
 
             document.getElementById('ladderTopLabels').innerHTML = mInput.map((m, idx) => `<span id="ladderTop-${idx}" onclick="selectLadderPlayer(${idx})">${m}</span>`).join('');
@@ -676,46 +916,43 @@
         }
 
         function drawLadderBase(highlightPath = null, progress = 1) {
-            const canvas = document.getElementById('ladderCanvas'); if(!canvas) return;
+            const canvas = document.getElementById('ladderCanvas'); if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const w = canvas.parentNode.getBoundingClientRect().width;
             const h = canvas.parentNode.getBoundingClientRect().height;
             canvas.width = w; canvas.height = h;
-            
             ctx.clearRect(0, 0, w, h);
             const padding = w / (ladderCount * 2);
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
             const rowHeight = (h - 20) / totalRowsSlots;
 
             ctx.lineWidth = 6; ctx.strokeStyle = '#475569'; ctx.lineCap = 'round';
-            for(let i=0; i<ladderCount; i++) {
+            for (let i = 0; i < ladderCount; i++) {
                 ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), h - 10); ctx.stroke();
             }
-
             ladderLines.forEach(line => {
                 const y = 10 + line.row * rowHeight + rowHeight / 2;
                 ctx.beginPath(); ctx.moveTo(getX(line.col), y); ctx.lineTo(getX(line.col + 1), y);
                 ctx.lineWidth = line.custom ? 7 : 5;
                 ctx.strokeStyle = line.custom ? '#3b82f6' : '#475569'; ctx.stroke();
             });
-
             if (highlightPath && highlightPath.length > 0) {
                 ctx.lineWidth = 7; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(highlightPath[0].x, highlightPath[0].y);
                 const limit = Math.floor(highlightPath.length * progress);
-                for(let k=1; k<limit; k++) ctx.lineTo(highlightPath[k].x, highlightPath[k].y);
+                for (let k = 1; k < limit; k++) ctx.lineTo(highlightPath[k].x, highlightPath[k].y);
                 ctx.stroke();
             }
         }
 
         function resetLadderOnly() {
-            if(isLadderRunning) return; ladderLines = [];
+            if (isLadderRunning) return; ladderLines = [];
             document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이 빈 곳을 누르면 다리가 추가됩니다.";
             initLadderGame();
         }
 
         function selectLadderPlayer(playerIdx) {
-            if(isLadderRunning) return;
+            if (isLadderRunning) return;
             document.querySelectorAll('.ladder-labels.top-labels span').forEach(el => el.classList.remove('active-player'));
             document.querySelectorAll('.ladder-labels.bottom-labels span').forEach(el => el.classList.remove('hit-result'));
             document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player');
@@ -726,30 +963,28 @@
             isLadderRunning = true;
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
             const rInput = document.getElementById('ladderResults').value.split(',').map(n => n.trim());
-            
             const canvas = document.getElementById('ladderCanvas');
             const w = canvas.width; const h = canvas.height; const padding = w / (ladderCount * 2);
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
             const rowHeight = (h - 20) / totalRowsSlots;
 
             let fullPath = []; let curIdx = targetIdx; let curY = 10;
-            fullPath.push({x: getX(curIdx), y: curY});
-
+            fullPath.push({ x: getX(curIdx), y: curY });
             for (let r = 0; r < totalRowsSlots; r++) {
                 const targetY = 10 + r * rowHeight + rowHeight / 2;
-                fullPath.push({x: getX(curIdx), y: targetY});
+                fullPath.push({ x: getX(curIdx), y: targetY });
                 const leftBridge = ladderLines.find(l => l.row === r && l.col === curIdx - 1);
                 const rightBridge = ladderLines.find(l => l.row === r && l.col === curIdx);
-                if (leftBridge) { curIdx--; fullPath.push({x: getX(curIdx), y: targetY}); }
-                else if (rightBridge) { curIdx++; fullPath.push({x: getX(curIdx), y: targetY}); }
+                if (leftBridge) { curIdx--; fullPath.push({ x: getX(curIdx), y: targetY }); }
+                else if (rightBridge) { curIdx++; fullPath.push({ x: getX(curIdx), y: targetY }); }
             }
-            fullPath.push({x: getX(curIdx), y: h - 10});
+            fullPath.push({ x: getX(curIdx), y: h - 10 });
 
             let start = null;
             function anim(t) {
-                if(!start) start = t; const el = t - start; const prog = Math.min(el/1100, 1);
+                if (!start) start = t; const el = t - start; const prog = Math.min(el / 1100, 1);
                 drawLadderBase(fullPath, prog);
-                if(prog < 1) requestAnimationFrame(anim);
+                if (prog < 1) requestAnimationFrame(anim);
                 else {
                     document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
                     document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${rInput[curIdx] || '통과'} ]</strong> 당첨!`;
@@ -759,12 +994,24 @@
             requestAnimationFrame(anim);
         }
 
-        function startLadderDraw() { if(!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
+        function startLadderDraw() { if (!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
 
+        // ==========================================
+        // 초기화
+        // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
             toggleKingInputStyle();
-            initLadderGame();
-            window.addEventListener('resize', () => { drawLadderBase(); drawNameRoulette(); });
+            // game1이 기본 활성 탭이므로 레이아웃 확정 후 룰렛 그리기
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    drawNameRoulette();
+                    initLadderGame();
+                });
+            });
+            window.addEventListener('resize', () => {
+                drawLadderBase();
+                drawNameRoulette();
+            });
         });
     </script>
 </body>
