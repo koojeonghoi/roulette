@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v24.1</title>
+    <title>초호화 술자리 패키지 오락실 | v24.2</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -46,17 +46,18 @@
         .sub-btn { background: #475569; color: white; border: none; padding: 12px 16px; font-size: 0.95rem; font-weight: bold; border-radius: 12px; cursor: pointer; }
 
         .setup-row { display: flex; justify-content: space-between; align-items: center; background: #0b0f19; padding: 12px 14px; border-radius: 12px; width: 100%; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; gap: 8px; }
-        .setup-row.column-layout { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .setup-row.column-layout { flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px; }
         .setup-row select, .setup-row input { background: #1e293b; color: white; border: 1px solid #334155; padding: 8px 10px; font-weight: bold; border-radius: 8px; font-size: 0.9rem; outline: none; width: auto; }
         .setup-row .full-width { width: 100%; }
+        .setup-row label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; }
 
-        /* --- 🎯 게임 1: 룰렛 --- */
+        /* --- 🎯 게임 1: 룰렛 (크기 긴급 축소 반영) --- */
         .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
         .stage-container.active { display: flex; }
-        .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 10px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
-        .roulette-container { position: relative; width: 260px; height: 260px; margin: 5px 0; display: flex; justify-content: center; align-items: center; }
+        .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
+        .roulette-container { position: relative; width: 220px; height: 220px; margin: 5px 0; display: flex; justify-content: center; align-items: center; }
         .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #475569; background: #0b0f19; }
-        .canvas-pointer { position: absolute; top: -10px; left: calc(50% - 12px); width: 24px; height: 24px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
+        .canvas-pointer { position: absolute; top: -8px; left: calc(50% - 10px); width: 20px; height: 20px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
         /* --- 💣 게임 2: 폭탄 찾기 --- */
         .bomb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: auto 0; width: 100%; }
@@ -87,8 +88,8 @@
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
-        /* --- 🪜 게임 6: 사다리 타기 --- */
-        .ladder-zone { background: #15151a; width: 100%; height: 210px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 4px 0; }
+        /* --- 🪜 게임 6: 사다리 타기 (설명란 및 입력란 완벽 가시화) --- */
+        .ladder-zone { background: #15151a; width: 100%; height: 190px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 4px 0; }
         .ladder-zone canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
         .ladder-labels { display: flex; justify-content: space-between; width: 100%; padding: 0 5px; font-size: 0.75rem; font-weight: bold; color: #94a3b8; }
         .ladder-labels.bottom-labels { color: var(--warning); margin-top: 2px; }
@@ -213,16 +214,21 @@
         <!-- 게임 6: 사다리 타기 -->
         <div id="game6" class="game-panel">
             <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">기둥 사이 공간을 터치하면 가로선이 추가/삭제됩니다! 기둥 위 이름을 누르면 출발합니다.</div></div>
-            <div class="setup-row column-layout" style="padding:8px 10px; margin-bottom:6px;">
+            
+            <!-- 사다리 참여자 명단 및 벌칙 입력칸 완벽 노출 -->
+            <div class="setup-row column-layout">
+                <label for="ladderMembers">📝 참여자 명단 입력 (쉼표 구분):</label>
                 <input type="text" id="ladderMembers" value="정회, 용원, 정렬" oninput="initLadderGame()" class="full-width" style="font-size:0.85rem; padding:6px;">
             </div>
-            <div class="setup-row column-layout" style="padding:8px 10px; margin-bottom:6px;">
+            <div class="setup-row column-layout">
+                <label for="ladderResults">🍺 벌칙/결과 입력 (쉼표 구분):</label>
                 <input type="text" id="ladderResults" value="통과, 원샷, 통과" oninput="initLadderGame()" class="full-width" style="font-size:0.85rem; padding:6px;">
             </div>
+
             <div class="ladder-labels top-labels" id="ladderTopLabels"></div>
             <div class="ladder-zone"><canvas id="ladderCanvas"></canvas></div>
             <div class="ladder-labels bottom-labels" id="ladderBottomLabels"></div>
-            <button class="main-btn" style="background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3); margin-top:6px;" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
+            <button class="main-btn" style="background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3); margin-top:4px;" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
         </div>
 
     </div>
@@ -581,7 +587,7 @@
         }
 
         // ==========================================
-        // 🪜 게임 6: 사다리 타기 엔진 (중간 가로선 삽입/터치 완전 동기화)
+        // 🪜 게임 6: 사다리 타기 엔진
         // ==========================================
         let ladderLines = []; let ladderCount = 3; let isLadderRunning = false;
         const totalRowsSlots = 8;
@@ -622,7 +628,6 @@
             canvas.replaceWith(canvas.cloneNode(true));
             const newCanvas = document.getElementById('ladderCanvas');
             
-            // 모바일 터치 및 데스크톱 클릭 전용 리스너 완벽 등록
             newCanvas.addEventListener('click', handleLadderCanvasClick);
             newCanvas.addEventListener('touchstart', function(e) {
                 const touch = e.touches[0];
@@ -640,20 +645,18 @@
         function drawLadderBase(highlightPath = null, progress = 1) {
             const canvas = document.getElementById('ladderCanvas'); if(!canvas) return;
             const ctx = canvas.getContext('2d');
-            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 210;
+            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 190;
             ctx.clearRect(0, 0, w, canvas.height);
 
             const padding = w / (ladderCount * 2);
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
             const rowHeight = (canvas.height - 30) / totalRowsSlots;
 
-            // 1. 세로축 뼈대선
             ctx.lineWidth = 5; ctx.strokeStyle = '#64748b'; ctx.lineCap = 'round';
             for(let i=0; i<ladderCount; i++) {
                 ctx.beginPath(); ctx.moveTo(getX(i), 15); ctx.lineTo(getX(i), canvas.height - 15); ctx.stroke();
             }
 
-            // 2. 가로다리선
             ladderLines.forEach(line => {
                 const y = 20 + line.row * rowHeight + rowHeight / 2;
                 const xStart = getX(line.col);
@@ -663,13 +666,11 @@
                 ctx.moveTo(xStart, y);
                 ctx.lineTo(xEnd, y);
                 
-                // 직접 삽입한 커스텀 선은 선명한 네온 하늘색(#3b82f6)으로 굵고 뚜렷하게 연출
                 ctx.lineWidth = line.custom ? 6 : 4;
                 ctx.strokeStyle = line.custom ? '#3b82f6' : '#64748b';
                 ctx.stroke();
             });
 
-            // 3. 트래킹 핑크 패스 애니메이션
             if (highlightPath && highlightPath.length > 0) {
                 ctx.lineWidth = 6; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(highlightPath[0].x, highlightPath[0].y);
@@ -693,11 +694,9 @@
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
             const rowHeight = (canvas.height - 30) / totalRowsSlots;
 
-            // 터치/클릭한 Y축 슬롯 구역(행) 계산
             const clickedRow = Math.floor((mouseY - 20) / rowHeight);
             if(clickedRow < 0 || clickedRow >= totalRowsSlots) return;
 
-            // 터치한 X축 위치가 어느 기둥과 기둥 사이에 들어와 있는지 파악
             let clickedCol = -1;
             for(let i=0; i<ladderCount-1; i++) {
                 if(mouseX >= getX(i) && mouseX <= getX(i+1)) {
@@ -706,7 +705,6 @@
             }
             if(clickedCol === -1) return;
 
-            // 이미 선이 있으면 지우고, 없으면 하늘색 커스텀 선 추가
             const matchedIdx = ladderLines.findIndex(line => line.row === clickedRow && line.col === clickedCol);
             if (matchedIdx > -1) {
                 ladderLines.splice(matchedIdx, 1);
