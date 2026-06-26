@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v24.5</title>
+    <title>초호화 술자리 패키지 오락실 | v24.6</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -33,7 +33,7 @@
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
 
-        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
+        .main-container { flex: 1; display: flex; justify(content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
         .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .game-panel.active { display: flex; }
 
@@ -51,12 +51,11 @@
         .setup-row .full-width { width: 100%; }
         .setup-row label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; }
 
-        /* --- 🎯 게임 1: 룰렛 가로 확장 --- */
+        /* --- 🎯 게임 1: 룰렛 --- */
         .stage-container { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; margin: auto 0; }
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
         
-        /* 룰렛 크기를 가로 너비에 맞게 꽉 채우도록 수정 */
         .roulette-container { position: relative; width: 100%; max-width: 330px; aspect-ratio: 1; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
         .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #475569; background: #0b0f19; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .canvas-pointer { position: absolute; top: -12px; left: calc(50% - 14px); width: 28px; height: 28px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
@@ -129,17 +128,18 @@
 <body id="bodyContext">
 
     <div class="nav-tabs">
-        <button id="tab-game1" class="tab-btn" onclick="switchTab('game1')">🎯 벌칙룰렛</button>
+        <button id="tab-game1" class="tab-btn active" onclick="switchTab('game1')">🎯 벌칙룰렛</button>
         <button id="tab-game2" class="tab-btn" onclick="switchTab('game2')">💣 폭탄찾기</button>
         <button id="tab-game3" class="tab-btn" onclick="switchTab('game3')">🤫 라이어게임</button>
         <button id="tab-game4" class="tab-btn" onclick="switchTab('game4')">📐 도형그리기</button>
         <button id="tab-game5" class="tab-btn" onclick="switchTab('game5')">👑 왕게임</button>
-        <button id="tab-game6" class="tab-btn active" onclick="switchTab('game6')">🪜 사다리타기</button>
+        <button id="tab-game6" class="tab-btn" onclick="switchTab('game6')">🪜 사다리타기</button>
     </div>
 
     <div class="main-container">
 
-        <div id="game1" class="game-panel">
+        <!-- 게임 1: 이름 벌칙 룰렛 -->
+        <div id="game1" class="game-panel active">
             <div class="panel-header"><h2>릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
@@ -152,6 +152,7 @@
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
         </div>
 
+        <!-- 게임 2: 복불복 폭탄 찾기 -->
         <div id="game2" class="game-panel">
             <div class="panel-header"><h2>복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
             <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option></select></div>
@@ -159,6 +160,7 @@
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
         </div>
 
+        <!-- 게임 3: 라이어 게임 -->
         <div id="game3" class="game-panel">
             <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc" id="g3Desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
             <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="3" min="3" style="width:60px; text-align:center;"></div>
@@ -170,6 +172,7 @@
             <div class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</div>
         </div>
 
+        <!-- 게임 4: 도형 그리기 게임 -->
         <div id="game4" class="game-panel">
             <div class="panel-header"><h2>도형 고정 대결 모드</h2><div class="desc" id="g4ShapeDesc">그리기를 시작하면 즉시 5초 타이머가 작동합니다!</div></div>
             <div class="setup-row column-layout">
@@ -194,6 +197,7 @@
             </div>
         </div>
 
+        <!-- 게임 5: 진짜 왕게임 -->
         <div id="game5" class="game-panel">
             <div class="panel-header"><h2>진짜 권력형 왕게임</h2><div class="desc" id="g5Desc">배정 방식 또는 마스터 실명 다이렉트 오더를 선택하세요.</div></div>
             <div class="mode-selector">
@@ -228,7 +232,8 @@
             <button class="main-btn" id="g5Btn" style="background:var(--purple); box-shadow:0 4px 12px rgba(139,92,246,0.4);" onclick="startKingIdentityLoop()">⚡ 즉시 마스터 오더 실행</button>
         </div>
 
-        <div id="game6" class="game-panel active">
+        <!-- 게임 6: 사다리 타기 -->
+        <div id="game6" class="game-panel">
             <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">이름을 터치하면 출발합니다! 기둥 사이 빈 곳을 누르면 다리가 추가됩니다.</div></div>
             
             <div class="setup-row column-layout">
@@ -262,7 +267,7 @@
     </div>
 
     <script>
-        // 탭 전환 기능 전면 수정 및 정상화 보장 코드
+        // 탭 전환 기능
         function switchTab(tabId) {
             document.querySelectorAll('.game-panel').forEach(panel => {
                 panel.classList.remove('active');
@@ -279,7 +284,6 @@
                 targetTabBtn.classList.add('active');
             }
 
-            // 각 탭별 전용 캔버스/그래픽 초기화 트리거
             if(tabId === 'game1') {
                 setTimeout(() => { drawNameRoulette(); }, 50);
             } else if(tabId === 'game2') {
@@ -295,7 +299,7 @@
         const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"];
 
         // ==========================================
-        // 🎯 게임 1: 룰렛 관리 엔진 (크기 확장 및 리사이징 보정)
+        // 🎯 게임 1: 룰렛 관리 엔진 (리셋 로직 전면 수정)
         // ==========================================
         let currentStep = 1; let isG1Running = false; let currentSelectedTarget = "";
         const penalties = ["한 잔 마시기", "양옆 마시기", "나만 살기", "안주 금지", "술 2잔 마시기", "마시고 한명 지목"];
@@ -306,7 +310,7 @@
             const ctx = canvas.getContext('2d'); const names = parseNames(); const len = names.length; 
             
             const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width * 2; canvas.height = rect.width * 2; // 고해상도 대응
+            canvas.width = rect.width * 2; canvas.height = rect.width * 2;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); if(len === 0) return;
             const center = canvas.width / 2; const radius = center - 10;
@@ -340,10 +344,12 @@
 
         function runIntegratedRoulette() {
             if (isG1Running) return; const names = parseNames(); if(names.length===0) return;
-            isG1Running = true; const btn = document.getElementById('g1Btn'); btn.disabled = true;
-            let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+            const btn = document.getElementById('g1Btn');
             
             if (currentStep === 1) {
+                isG1Running = true; btn.disabled = true;
+                let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+                
                 function animName(t) {
                     if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
                     const ease = 1 - Math.pow(1-prog, 4); const curAng = targetRot * ease; drawNameRoulette(curAng);
@@ -355,7 +361,7 @@
                         document.getElementById('g1Desc').innerHTML = `🎯 당첨자: 🎉 <strong>[ ${currentSelectedTarget} ]</strong>`;
                         setTimeout(() => {
                             document.getElementById('stage1').classList.remove('active'); document.getElementById('stage2').classList.add('active');
-                            document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님의 벌칙 마칭 시작!`;
+                            document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님의 벌칙 추첨 시작!`;
                             drawPenaltyRoulette(0); btn.textContent = "2단계: 벌칙판 돌리기"; btn.style.background = "var(--secondary)"; btn.disabled = false;
                             currentStep = 2; isG1Running = false;
                         }, 1200);
@@ -363,6 +369,9 @@
                 }
                 requestAnimationFrame(animName);
             } else if (currentStep === 2) {
+                isG1Running = true; btn.disabled = true;
+                let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+                
                 function animPen(t) {
                     if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el/duration, 1);
                     const ease = 1 - Math.pow(1-prog, 4); const curAng = targetRot * ease; drawPenaltyRoulette(curAng);
@@ -372,13 +381,20 @@
                         let idx = Math.floor(((1.5*Math.PI) - finalAng + 2*Math.PI) % (2*Math.PI) / arc);
                         document.getElementById('g1Desc').innerHTML = `🍺 <strong>${currentSelectedTarget}</strong> 👉 💥 <strong>[ ${penalties[idx]} ]</strong> 당첨!`;
                         triggerVibrate([300, 100, 200]);
-                        btn.textContent = "다음 판 리셋하기"; btn.style.background = "var(--accent)"; btn.disabled = false; currentStep = 3; isG1Running = false;
+                        btn.textContent = "다음 판 리셋하기"; btn.style.background = "var(--accent)"; btn.disabled = false; 
+                        currentStep = 3; isG1Running = false;
                     }
                 }
                 requestAnimationFrame(animPen);
-            } else {
-                currentStep = 1; document.getElementById('stage1').classList.add('active'); document.getElementById('stage2').classList.remove('active');
-                btn.textContent = "1단계: 이름판 돌리기"; btn.style.background = "var(--primary)"; drawNameRoulette(0);
+            } else if (currentStep === 3) {
+                // 리셋 상태: 1단계 화면으로 즉시 원복
+                currentStep = 1; 
+                document.getElementById('stage1').classList.add('active'); 
+                document.getElementById('stage2').classList.remove('active');
+                document.getElementById('g1Desc').textContent = "참여자 명단을 쉼표로 입력해 주세요.";
+                btn.textContent = "1단계: 이름판 돌리기"; 
+                btn.style.background = "var(--primary)"; 
+                setTimeout(() => { drawNameRoulette(0); }, 50);
             }
         }
 
