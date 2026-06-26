@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v23.0</title>
+    <title>초호화 술자리 패키지 오락실 | v24.0</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -55,7 +55,7 @@
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 10px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
         .roulette-container { position: relative; width: 260px; height: 260px; margin: 5px 0; display: flex; justify-content: center; align-items: center; }
-        .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #475569; background: #0b0f19; }
+        .rou roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #475569; background: #0b0f19; }
         .canvas-pointer { position: absolute; top: -10px; left: calc(50% - 12px); width: 24px; height: 24px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
         /* --- 💣 게임 2: 폭탄 찾기 --- */
@@ -87,31 +87,17 @@
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
-        /* --- 🪜 게임 6: 사다리 타기 (업그레이드) --- */
-        .ladder-zone { background: #15151a; width: 100%; height: 240px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 5px 0; }
-        .ladder-zone canvas { width: 100%; height: 100%; display: block; }
+        /* --- 🪜 게임 6: 사다리 타기 (네온 가시성 특화 업그레이드) --- */
+        .ladder-zone { background: #15151a; width: 100%; height: 210px; border-radius: 16px; border: 2px solid #334155; position: relative; margin: 4px 0; }
+        .ladder-zone canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
         .ladder-labels { display: flex; justify-content: space-between; width: 100%; padding: 0 5px; font-size: 0.75rem; font-weight: bold; color: #94a3b8; }
         .ladder-labels.bottom-labels { color: var(--warning); margin-top: 2px; }
         .ladder-labels span { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* 이름 클릭 상호작용용 스타일 추가 */
-        .ladder-labels.top-labels span { cursor: pointer; color: #fff; background: #334155; border-radius: 6px; padding: 2px 4px; margin: 0 2px; transition: all 0.2s; border: 1px solid #475569; }
+        .ladder-labels.top-labels span { cursor: pointer; color: #fff; background: #334155; border-radius: 6px; padding: 3px 4px; margin: 0 2px; transition: all 0.2s; border: 1px solid #475569; }
         .ladder-labels.top-labels span:hover { background: var(--secondary); }
         .ladder-labels.top-labels span.active-player { background: var(--primary); border-color: #fff; box-shadow: 0 0 8px var(--primary); }
         .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--accent); border-radius: 4px; font-weight: bold; }
-
-        /* --- 🎟️ 게임 7: 제비뽑기 (쪽지 3D 오픈 연출) --- */
-        .draw-box-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: auto 0; width: 100%; max-height: 240px; overflow-y: auto; padding: 4px; }
-        .draw-card { height: 65px; perspective: 1000px; cursor: pointer; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
-        .draw-card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; border-radius: 12px; font-size: 0.95rem; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        
-        /* 아날로그 노란 점선 쪽지 테두리 느낌 구현 */
-        .card-front { background: #fef08a; border: 2px dashed #ca8a04; color: #854d0e; }
-        .card-back { transform: rotateY(180deg); background: #0b0f19; border: 2px solid #334155; color: #94a3b8; }
-        .card-back.win-card { background: var(--accent); color: white; border-color: #22c55e; }
-        .card-back.lose-card { background: var(--primary); color: white; border-color: #f43f5e; }
 
         @keyframes flash { from { background: rgba(244,63,94,0.95); } to { background: rgba(159,18,44,0.95); } }
         @keyframes shake { 0%, 100% { transform: translate(0, 4px) rotate(0deg); } 20% { transform: translate(-2px, 4px) rotate(-1deg); } 40% { transform: translate(2px, 4px) rotate(1deg); } }
@@ -126,7 +112,6 @@
         <button class="tab-btn" onclick="switchTab(this, 'game4')">📐 도형그리기</button>
         <button class="tab-btn" onclick="switchTab(this, 'game5')">👑 왕게임</button>
         <button class="tab-btn" onclick="switchTab(this, 'game6')">🪜 사다리타기</button>
-        <button class="tab-btn" onclick="switchTab(this, 'game7')">🎟️ 제비뽑기</button>
     </div>
 
     <div class="main-container">
@@ -221,29 +206,17 @@
         </div>
 
         <div id="game6" class="game-panel">
-            <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">위의 참여자 이름을 터치하면 해당 라인이 하이라이트되면서 이동합니다!</div></div>
-            <div class="setup-row column-layout">
-                <span>📝 참여자 명단 (수정 가능):</span>
-                <input type="text" id="ladderMembers" value="정회, 용원, 정렬" oninput="initLadderGame()" class="full-width">
+            <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">이름을 누르면 선을 타고 움직입니다! 세로줄 사이를 터치해 중간 선을 직접 지목해서 추가해보세요!</div></div>
+            <div class="setup-row column-layout" style="padding:8px 10px; margin-bottom:6px;">
+                <input type="text" id="ladderMembers" value="정회, 용원, 정렬" oninput="initLadderGame()" class="full-width" style="font-size:0.85rem; padding:6px;">
             </div>
-            <div class="setup-row column-layout">
-                <span>🎁 사다리 결과 입력 (쉼표 구분):</span>
-                <input type="text" id="ladderResults" value="통과, 원샷, 통과" oninput="initLadderGame()" class="full-width">
+            <div class="setup-row column-layout" style="padding:8px 10px; margin-bottom:6px;">
+                <input type="text" id="ladderResults" value="통과, 원샷, 통과" oninput="initLadderGame()" class="full-width" style="font-size:0.85rem; padding:6px;">
             </div>
             <div class="ladder-labels top-labels" id="ladderTopLabels"></div>
             <div class="ladder-zone"><canvas id="ladderCanvas"></canvas></div>
             <div class="ladder-labels bottom-labels" id="ladderBottomLabels"></div>
-            <button class="main-btn" style="background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3);" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
-        </div>
-
-        <div id="game7" class="game-panel">
-            <div class="panel-header"><h2>럭키 제비뽑기</h2><div class="desc" id="g7Desc">총 개수와 벌칙(꽝) 제비 수를 세팅하고 하나씩 고르세요!</div></div>
-            <div style="display:flex; gap:8px; width:100%;">
-                <div class="setup-row" style="flex:1;"><span>📦 총 제비:</span><input type="number" id="drawTotalCount" value="6" min="2" max="16" style="width:50px; text-align:center;" onchange="initDrawGame()"></div>
-                <div class="setup-row" style="flex:1;"><span>💥 벌칙(꽝):</span><input type="number" id="drawLoseCount" value="2" min="1" max="15" style="width:50px; text-align:center;" onchange="initDrawGame()"></div>
-            </div>
-            <div class="draw-box-grid" id="drawBoxGrid"></div>
-            <button class="main-btn" style="background:var(--orange); box-shadow:0 4px 12px rgba(249,115,22,0.3);" onclick="initDrawGame()">🎟️ 제비 다시 섞기</button>
+            <button class="main-btn" style="background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3); margin-top:6px;" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
         </div>
 
     </div>
@@ -268,7 +241,6 @@
             if(tabId === 'game2') initBombGame();
             if(tabId === 'game4') initShapeGame();
             if(tabId === 'game6') initLadderGame();
-            if(tabId === 'game7') initDrawGame();
         }
 
         function triggerVibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
@@ -603,9 +575,10 @@
         }
 
         // ==========================================
-        // 🪜 게임 6: 사다리 타기 엔진 (이름 터치 색칠선 추적 방식 업그레이드)
+        // 🪜 게임 6: 사다리 타기 엔진 (네온 가시성 특화 및 커스텀 중간 가로선 추가)
         // ==========================================
         let ladderLines = []; let ladderCount = 3; let isLadderRunning = false;
+        const totalRowsSlots = 8; // 세로 공간을 8개 구역으로 가상 분할
 
         function initLadderGame() {
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
@@ -628,38 +601,62 @@
                 bottomLabels.innerHTML += `<span id="ladderBottom-${idx}">${r}</span>`;
             });
 
+            // 초기 기본 랜덤 다리 배치
             ladderLines = [];
-            for (let i = 0; i < ladderCount - 1; i++) {
-                let bridges = [];
-                for (let j = 0; j < 4; j++) {
-                    if (Math.random() > 0.4) bridges.push(0.15 + j * 0.2 + Math.random() * 0.08);
+            for (let r = 0; r < totalRowsSlots; r++) {
+                for (let c = 0; c < ladderCount - 1; c++) {
+                    if (Math.random() > 0.55) {
+                        // 연속 겹침 검증 방지 후 푸시
+                        if (c === 0 || !ladderLines.some(line => line.row === r && line.col === c - 1)) {
+                            ladderLines.push({ row: r, col: c, custom: false });
+                        }
+                    }
                 }
-                ladderLines.push(bridges);
             }
+
+            const canvas = document.getElementById('ladderCanvas');
+            canvas.replaceWith(canvas.cloneNode(true));
+            const newCanvas = document.getElementById('ladderCanvas');
+            newCanvas.addEventListener('click', handleLadderCanvasClick);
+
             drawLadderBase();
         }
 
         function drawLadderBase(highlightPath = null, progress = 1) {
             const canvas = document.getElementById('ladderCanvas'); if(!canvas) return;
             const ctx = canvas.getContext('2d');
-            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 240;
+            const w = canvas.parentNode.getBoundingClientRect().width; canvas.width = w; canvas.height = 210;
             ctx.clearRect(0, 0, w, canvas.height);
 
             const padding = w / (ladderCount * 2);
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
+            const rowHeight = (canvas.height - 30) / totalRowsSlots;
 
-            ctx.lineWidth = 4; ctx.strokeStyle = '#475569'; ctx.lineCap = 'round';
+            // 1. 기본 뼈대 세로줄 그리기 (가시성을 극대화한 네온 실버 그레이 색상 채택)
+            ctx.lineWidth = 5; ctx.strokeStyle = '#64748b'; ctx.lineCap = 'round';
             for(let i=0; i<ladderCount; i++) {
-                ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), canvas.height - 10); ctx.stroke();
-            }
-            for(let i=0; i<ladderCount - 1; i++) {
-                ladderLines[i].forEach(yPct => {
-                    ctx.beginPath(); ctx.moveTo(getX(i), yPct * canvas.height); ctx.lineTo(getX(i+1), yPct * canvas.height); ctx.stroke();
-                });
+                ctx.beginPath(); ctx.moveTo(getX(i), 15); ctx.lineTo(getX(i), canvas.height - 15); ctx.stroke();
             }
 
+            // 2. 가로선 다리 그리기
+            ladderLines.forEach(line => {
+                const y = 20 + line.row * rowHeight + rowHeight / 2;
+                const xStart = getX(line.col);
+                const xEnd = getX(line.col + 1);
+
+                ctx.beginPath();
+                ctx.moveTo(xStart, y);
+                ctx.lineTo(xEnd, y);
+                
+                // 직접 추가한 선은 선명한 하늘색(#3b82f6), 기본 자동선은 실버회색
+                ctx.lineWidth = line.custom ? 5 : 4;
+                ctx.strokeStyle = line.custom ? '#3b82f6' : '#64748b';
+                ctx.stroke();
+            });
+
+            // 3. 당첨 라인 트래킹 하이라이트 애니메이션 그리기 (형광 핑크색)
             if (highlightPath && highlightPath.length > 0) {
-                ctx.lineWidth = 6; ctx.strokeStyle = 'var(--primary)'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                ctx.lineWidth = 6; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(highlightPath[0].x, highlightPath[0].y);
                 const limit = Math.floor(highlightPath.length * progress);
                 for(let k=1; k<limit; k++) ctx.lineTo(highlightPath[k].x, highlightPath[k].y);
@@ -668,6 +665,50 @@
                 }
                 ctx.stroke();
             }
+        }
+
+        function handleLadderCanvasClick(e) {
+            if(isLadderRunning) return;
+            const canvas = document.getElementById('ladderCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const w = canvas.width; const padding = w / (ladderCount * 2);
+            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
+            const rowHeight = (canvas.height - 30) / totalRowsSlots;
+
+            // 클릭한 Y축 슬롯 행 계산
+            const clickedRow = Math.floor((mouseY - 20) / rowHeight);
+            if(clickedRow < 0 || clickedRow >= totalRowsSlots) return;
+
+            // 클릭한 X축이 어느 기둥 사이에 있는지 탐색
+            let clickedCol = -1;
+            for(let i=0; i<ladderCount-1; i++) {
+                if(mouseX >= getX(i) && mouseX <= getX(i+1)) {
+                    clickedCol = i; break;
+                }
+            }
+            if(clickedCol === -1) return;
+
+            // 이미 존재하는 다리인지 체크하여 삭제/추가 토글 연출
+            const matchedIdx = ladderLines.findIndex(line => line.row === clickedRow && line.col === clickedCol);
+            if (matchedIdx > -1) {
+                ladderLines.splice(matchedIdx, 1);
+                triggerVibrate(30);
+            } else {
+                // 연속 배치 꼬임 우려 검증
+                const leftOverlap = clickedCol > 0 && ladderLines.some(l => l.row === clickedRow && l.col === clickedCol - 1);
+                const rightOverlap = clickedCol < ladderCount - 2 && ladderLines.some(l => l.row === clickedRow && l.col === clickedCol + 1);
+                
+                if(!leftOverlap && !rightOverlap) {
+                    ladderLines.push({ row: clickedRow, col: clickedCol, custom: true });
+                    triggerVibrate(40);
+                } else {
+                    return;
+                }
+            }
+            drawLadderBase();
         }
 
         function selectLadderPlayer(playerIdx) {
@@ -686,39 +727,41 @@
             const canvas = document.getElementById('ladderCanvas');
             const w = canvas.width; const padding = w / (ladderCount * 2);
             const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
+            const rowHeight = (canvas.height - 30) / totalRowsSlots;
 
-            let fullPath = []; let curIdx = targetIdx; let curY = 10;
+            let fullPath = []; let curIdx = targetIdx; let curY = 15;
             fullPath.push({x: getX(curIdx), y: curY});
 
-            let allSteps = [];
-            for(let i=0; i<ladderCount-1; i++) {
-                ladderLines[i].forEach(yPct => {
-                    allSteps.push({type: 'bridge', leftIdx: i, rightIdx: i+1, y: yPct * canvas.height});
-                });
-            }
-            allSteps.sort((a, b) => a.y - b.y);
+            // 매칭된 슬롯을 위에서 아래로 정렬하여 순차 트래킹 코스 빌드
+            let sortedLines = [...ladderLines].sort((a, b) => a.row - b.row);
 
-            allSteps.forEach(step => {
-                if(step.y > curY) {
-                    if(curIdx === step.leftIdx) {
-                        fullPath.push({x: getX(curIdx), y: step.y}); curIdx = step.rightIdx; fullPath.push({x: getX(curIdx), y: step.y});
-                    } else if(curIdx === step.rightIdx) {
-                        fullPath.push({x: getX(curIdx), y: step.y}); curIdx = step.leftIdx; fullPath.push({x: getX(curIdx), y: step.y});
-                    }
-                    curY = step.y;
+            for (let r = 0; r < totalRowsSlots; r++) {
+                const targetY = 20 + r * rowHeight + rowHeight / 2;
+                
+                // 가로선 교차로 지점 도달 전까지 일직선 하강 경로 추가
+                fullPath.push({x: getX(curIdx), y: targetY});
+
+                const leftBridge = sortedLines.find(l => l.row === r && l.col === curIdx - 1);
+                const rightBridge = sortedLines.find(l => l.row === r && l.col === curIdx);
+
+                if (leftBridge) {
+                    curIdx = curIdx - 1; fullPath.push({x: getX(curIdx), y: targetY});
+                } else if (rightBridge) {
+                    curIdx = curIdx + 1; fullPath.push({x: getX(curIdx), y: targetY});
                 }
-            });
-            fullPath.push({x: getX(curIdx), y: canvas.height - 10});
+                curY = targetY;
+            }
+            fullPath.push({x: getX(curIdx), y: canvas.height - 15});
 
             let start = null;
             function anim(t) {
-                if(!start) start = t; const el = t - start; const prog = Math.min(el/1200, 1);
+                if(!start) start = t; const el = t - start; const prog = Math.min(el/1100, 1);
                 drawLadderBase(fullPath, prog);
                 if(prog < 1) requestAnimationFrame(anim);
                 else {
                     triggerVibrate([150, 80]);
                     document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
-                    document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 님의 사다리 결과 👉 🎉 <strong>[ ${rInput[curIdx] || '통과'} ]</strong>`;
+                    document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${rInput[curIdx] || '통과'} ]</strong> 당첨!`;
                     isLadderRunning = false;
                 }
             }
@@ -726,46 +769,9 @@
         }
 
         function startLadderDraw() {
+            if(isLadderRunning) return;
             let rnd = Math.floor(Math.random() * ladderCount);
             selectLadderPlayer(rnd);
-        }
-
-        // ==========================================
-        // 🎟️ 게임 7: 럭키 제비뽑기 엔진 (3D 종이쪽지 회전 뷰 업그레이드)
-        // ==========================================
-        let drawItemsPool = [];
-        function initDrawGame() {
-            const total = parseInt(document.getElementById('drawTotalCount').value) || 6;
-            let lose = parseInt(document.getElementById('drawLoseCount').value) || 2;
-            if(lose >= total) { lose = total - 1; document.getElementById('drawLoseCount').value = lose; }
-            
-            document.getElementById('g7Desc').textContent = "접힌 종이쪽지를 하나 선택해 펼쳐보세요! 폭탄 서바이벌과는 또 다른 복불복!";
-            drawItemsPool = [];
-            for(let i=0; i<total; i++) drawItemsPool.push(i < lose ? '💥 벌칙(꽝)' : '🟢 통과');
-            drawItemsPool.sort(() => Math.random() - 0.5);
-
-            const grid = document.getElementById('drawBoxGrid'); grid.innerHTML = '';
-            drawItemsPool.forEach((val, idx) => {
-                const card = document.createElement('div'); card.className = 'draw-card';
-                card.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-front">📄 쪽지 ${idx + 1}</div>
-                        <div class="card-back"></div>
-                    </div>
-                `;
-                card.onclick = () => {
-                    if(card.classList.contains('opened')) return;
-                    card.classList.add('opened'); card.classList.add('flipped');
-                    const backStyle = card.querySelector('.card-back');
-                    if(val.includes('벌칙')) {
-                        backStyle.classList.add('lose-card'); backStyle.textContent = '💥 꽝!'; triggerVibrate([400, 100]);
-                        document.getElementById('g7Desc').innerHTML = `🚨 <strong>${idx+1}번 쪽지 오픈 결과: [벌칙 당첨]</strong> 걸리셨습니다!`;
-                    } else {
-                        backStyle.classList.add('win-card'); backStyle.textContent = '🟢 통과'; triggerVibrate(40);
-                    }
-                };
-                grid.appendChild(card);
-            });
         }
 
         window.addEventListener('DOMContentLoaded', () => {
