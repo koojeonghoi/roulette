@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v26.7.10</title>
+    <title>초호화 술자리 패키지 오락실 | v26.7.11</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -90,7 +90,7 @@
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
-        /* --- 🪜 게임 6: 사다리 타기 --- */
+        /* --- 🪜 게임 6: 사다리 타기 (레이아웃 겹침 개선) --- */
         .ladder-game-container {
             flex: 1;
             display: flex;
@@ -100,7 +100,7 @@
             overflow: hidden;
             margin: 4px 0;
         }
-        .ladder-zone { background: #15151a; width: 100%; flex: 1; min-height: 260px; border-radius: 16px; border: 2px solid #334155; position: relative; }
+        .ladder-zone { background: #15151a; width: 100%; flex: 1; min-height: 200px; border-radius: 16px; border: 2px solid #334155; position: relative; }
         .ladder-zone canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
         
         .ladder-labels { display: flex; justify-content: space-between; width: 100%; padding: 0 4px; font-size: 0.85rem; font-weight: bold; color: #94a3b8; flex-shrink: 0; }
@@ -109,22 +109,28 @@
         .ladder-labels.top-labels { margin-bottom: 6px; }
         .ladder-labels.top-labels span { 
             cursor: pointer; color: #fff; background: #334155; border-radius: 10px; 
-            height: 48px; margin: 0 4px; transition: all 0.2s; border: 1px solid #475569; 
+            height: 40px; margin: 0 4px; transition: all 0.2s; border: 1px solid #475569; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .ladder-labels.top-labels span:hover { background: var(--secondary); }
         .ladder-labels.top-labels span.active-player { background: var(--primary); border-color: #fff; box-shadow: 0 0 10px var(--primary); }
         
-        .ladder-labels.bottom-labels { color: var(--warning); margin-top: 6px; }
+        .ladder-labels.bottom-labels { margin-top: 6px; margin-bottom: 6px; } /* 마진 조정으로 겹침 완벽 방지 */
         .ladder-labels.bottom-labels span {
-            background: #0b0f19; border-radius: 10px; height: 48px; margin: 0 4px;
-            border: 1px solid #233146; color: var(--orange);
+            background: #0b0f19; border-radius: 10px; height: 40px; margin: 0 4px;
+            border: 1px solid #233146; color: var(--orange); padding: 2px;
         }
         .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--accent); border-radius: 10px; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px var(--accent); }
 
+        /* 결과 알림 오버레이 팝업 */
+        .result-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.85); z-index: 1000; justify-content: center; align-items: center; text-align: center; }
+        .result-popup-content { background: var(--card-bg); border: 3px solid var(--accent); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
+        
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         /* --- 🔞 게임 7: 29금 진실게임 --- */
         .truth-box { background: #0b0f19; border-radius: 18px; padding: 22px; margin: auto 0; min-height: 190px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed var(--pink); width: 100%; }
-        .truth-content { font-size: 1.2rem; font-weight: bold; line-height: 1.6; color: #f8fafc; text-align: center; word-break: keep-all; }
+        .truth-content { font-size: 1.25rem; font-weight: bold; line-height: 1.6; color: #f8fafc; text-align: center; word-break: keep-all; transition: opacity 0.15s ease-in-out; }
 
         @keyframes flash { from { background: rgba(244,63,94,0.95); } to { background: rgba(159,18,44,0.95); } }
         @keyframes shake { 0%, 100% { transform: translate(0, 4px) rotate(0deg); } 20% { transform: translate(-2px, 4px) rotate(-1deg); } 40% { transform: translate(2px, 4px) rotate(1deg); } }
@@ -240,7 +246,7 @@
 
         <!-- 게임 6: 사다리 타기 -->
         <div id="game6" class="game-panel">
-            <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">이름을 터치하면 출발합니다! 기둥 사이 빈 곳을 누르면 다리가 추가됩니다.</div></div>
+            <div class="panel-header"><h2>두근두근 사다리 타기</h2><div class="desc" id="g6Desc">이름을 터치하면 출발합니다! 기둥 사리를 누르면 자동 매칭됩니다.</div></div>
             
             <div class="setup-row column-layout">
                 <label for="ladderMembers">📝 참여자 명단 입력 (쉼표 구분):</label>
@@ -257,13 +263,13 @@
                 <div class="ladder-labels bottom-labels" id="ladderBottomLabels"></div>
             </div>
             
-            <div style="display:flex; gap:8px; width:100%; margin-top:6px; flex-shrink: 0;">
+            <div style="display:flex; gap:8px; width:100%; margin-top:4px; flex-shrink: 0;">
                 <button class="sub-btn" style="flex:1; padding:12px; font-size:0.9rem; background:#475569;" onclick="resetLadderOnly()">🔄 새 사다리 시작</button>
                 <button class="main-btn" style="flex:1.5; margin-top:0; background:var(--secondary); box-shadow:0 4px 12px rgba(59,130,246,0.3);" onclick="startLadderDraw()">🎲 랜덤 자동 전체 타기</button>
             </div>
         </div>
 
-        <!-- 신규 게임 7: 29금 진실게임 -->
+        <!-- 게임 7: 29금 진실게임 -->
         <div id="game7" class="game-panel">
             <div class="panel-header"><h2>🔞 후끈한 29금 진실게임</h2><div class="desc" id="g7Desc">질문에 거짓 없이 답변하거나, 감당 못 하겠다면 술 한 잔 원샷!</div></div>
             <div class="truth-box">
@@ -274,10 +280,20 @@
 
     </div>
 
+    <!-- 💥 폭탄 폭발 오버레이 -->
     <div id="boomOverlay" class="boom-overlay" onclick="this.style.display='none'">
         <div style="text-align:center; color:white;">
             <h1 style="font-size:3.5rem; margin-bottom:12px;">💥 BOOM! 💥</h1>
             <p style="font-size:1.4rem; font-weight:bold;">당첨! 시원하게 원샷하세요! 🍻</p>
+        </div>
+    </div>
+
+    <!-- 🪜 사다리 결과 알림 오버레이 팝업 (신설) -->
+    <div id="resultPopup" class="result-popup-overlay" onclick="this.style.display='none'">
+        <div class="result-popup-content">
+            <h2 id="popupPlayerName" style="color:#fff; font-size:1.4rem; margin-bottom:10px;">플레이어</h2>
+            <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:15px;">사다리 타기 결과</div>
+            <div id="popupResultText" style="font-size:2.2rem; font-weight:bold; color:var(--warning); text-shadow: 0 0 10px rgba(245,158,11,0.3);">결과</div>
         </div>
     </div>
 
@@ -306,7 +322,7 @@
         const colorPalette = ["#f43f5e", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#06b6d4", "#a855f7", "#6366f1", "#10b981"];
 
         // ==========================================
-        // 🎯 게임 1: 룰렛 엔진 (벌칙 12개로 증설)
+        // 🎯 게임 1: 룰렛 엔진
         // ==========================================
         let currentStep = 1; let isG1Running = false; let currentSelectedTarget = "";
         const penalties = [
@@ -637,11 +653,11 @@
         }
 
         // ==========================================
-        // 👑 게임 5: 왕게임 엔진 (성별 시스템 탑재)
+        // 👑 게임 5: 왕게임 엔진
         // ==========================================
         let currentKingMode = 'normal'; let kingGamePool = []; let kingGameIdx = 0; let totalKingPlayers = 3; let kingParticipantNames = [];
 
-         const normalIdeas = [
+        const normalIdeas = [
             "💡 [일반] 오른쪽 사람과 눈빛 교환 후 진한 러브샷 시키기",
             "💡 [일반] 특정 번호 지목해서 소주 반 잔 깔끔하게 원샷 시키기",
             "💡 [일반] 두 명 골라서 서로 볼 꼬집고 귀엽다고 애교 떨게 하기",
@@ -776,7 +792,6 @@
             "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 상의를 살짝 들어 올리고 배에 뽀뽀."
         ];
 
-
         function setKingMode(mode) {
             currentKingMode = mode;
             document.getElementById('modeNormal').classList.toggle('active', mode === 'normal');
@@ -813,30 +828,19 @@
 
                 titleEl.textContent = `⚡ 절대 마스터의 실명 오더`;
                 
-                let pName1 = "";
-                let pName2 = "";
-
-                // 성별 기반 필터링 매칭 로직 추가
+                let pName1 = ""; let pName2 = "";
                 let males = kingParticipantNames.filter(n => n.includes('(남)'));
                 let females = kingParticipantNames.filter(n => n.includes('(여)'));
 
                 if (males.length > 0 && females.length > 0) {
-                    // 남녀 성별 정보가 명확히 존재할 경우 이성간 매칭
                     pName1 = males[Math.floor(Math.random() * males.length)];
                     pName2 = females[Math.floor(Math.random() * females.length)];
-                    // 연출을 위해 랜덤하게 출력 주체 전환
-                    if(Math.random() > 0.5) {
-                        let temp = pName1; pName1 = pName2; pName2 = temp;
-                    }
+                    if(Math.random() > 0.5) { let temp = pName1; pName1 = pName2; pName2 = temp; }
                 } else {
-                    // 성별 구분이 없거나 한쪽 성별만 있으면 완전 랜덤
                     let idx1 = Math.floor(Math.random() * kingParticipantNames.length);
                     let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
-                    while (idx1 === idx2 && kingParticipantNames.length > 1) {
-                        idx2 = Math.floor(Math.random() * kingParticipantNames.length);
-                    }
-                    pName1 = kingParticipantNames[idx1];
-                    pName2 = kingParticipantNames[idx2];
+                    while (idx1 === idx2 && kingParticipantNames.length > 1) { idx2 = Math.floor(Math.random() * kingParticipantNames.length); }
+                    pName1 = kingParticipantNames[idx1]; pName2 = kingParticipantNames[idx2];
                 }
 
                 let targetCommand = "";
@@ -892,10 +896,7 @@
                 const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
                 textEl.innerHTML = `<div class='king-action'>${pool[Math.floor(Math.random() * pool.length)]}</div>`;
                 btnEl.textContent = "새 판 세팅";
-                btnEl.onclick = () => {
-                    document.getElementById('kingTypeSelect').disabled = false;
-                    toggleKingInputStyle();
-                };
+                btnEl.onclick = () => { document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
             }
         }
 
@@ -905,8 +906,7 @@
             const btnEl = document.getElementById('g5Btn');
             let myRole = type === 'anonymous' ? kingGamePool[kingGameIdx] : kingGamePool[kingGameIdx].role;
             textEl.innerHTML = `<div><span style='font-size:2rem; color:var(--warning); font-weight:bold;'>${myRole}</span></div>`;
-            btnEl.disabled = true;
-            kingGameIdx++;
+            btnEl.disabled = true; kingGameIdx++;
             setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
         }
 
@@ -975,7 +975,7 @@
 
         function resetLadderOnly() {
             if (isLadderRunning) return; ladderLines = [];
-            document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이 빈 곳을 누르면 다리가 추가됩니다.";
+            document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다.";
             initLadderGame();
         }
 
@@ -1014,9 +1014,21 @@
                 drawLadderBase(fullPath, prog);
                 if (prog < 1) requestAnimationFrame(anim);
                 else {
+                    const finalResultStr = rInput[curIdx] || '통과';
                     document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
-                    document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${rInput[curIdx] || '통과'} ]</strong> 당첨!`;
+                    document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${finalResultStr} ]</strong> 당첨!`;
+                    
+                    // 🎯 결과 레이어 팝업 노출 로직 추가
+                    const popup = document.getElementById('resultPopup');
+                    document.getElementById('popupPlayerName').innerHTML = `👤 <strong>${mInput[targetIdx]}</strong> 님의 결과`;
+                    document.getElementById('popupResultText').textContent = finalResultStr;
+                    popup.style.display = 'flex';
+                    
+                    triggerVibrate([150, 50, 100]);
                     isLadderRunning = false;
+                    
+                    // 2.5초 뒤 자동 페이드아웃 탈출
+                    setTimeout(() => { popup.style.display = 'none'; }, 2500);
                 }
             }
             requestAnimationFrame(anim);
@@ -1025,7 +1037,7 @@
         function startLadderDraw() { if (!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
 
         // ==========================================
-        // 🔞 게임 7: 29금 진실게임 데이터 및 엔진 (50문항 오리지널)
+        // 🔞 게임 7: 29금 진실게임 엔진 (넘버링 전면 제거)
         // ==========================================
         const adultTruthQuestions = [
             "가장 최근에 했던 야한 꿈에서 가장 자극적이었던 장면은?",
@@ -1097,7 +1109,8 @@
             
             displayEl.style.opacity = 0;
             setTimeout(() => {
-                displayEl.innerHTML = `Q.${truthQuestionIdx + 1} <br><br><span style='color:var(--pink); font-size:1.3rem;'>${shuffledQuestions[truthQuestionIdx]}</span>`;
+                // Q1 등의 수식어구 없이 핵심 질문 본문만 완전 무작위 표출되도록 커스텀
+                displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`;
                 displayEl.style.opacity = 1;
                 truthQuestionIdx++;
             }, 150);
