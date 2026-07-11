@@ -120,38 +120,36 @@
             background: #0b0f19; border-radius: 10px; height: 40px; margin: 0 4px;
             border: 1px solid #233146; color: var(--orange); padding: 2px;
         }
-        .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--accent); border-radius: 10px; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px var(--accent); }
+        /* 사다리 매칭 결과 단추 컬러를 기존 녹색에서 전체 테마에 맞춘 핑크레드로 수정 */
+        .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--primary); border-radius: 10px; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px var(--primary); }
 
         .result-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.85); z-index: 1000; justify-content: center; align-items: center; text-align: center; }
-        .result-popup-content { background: var(--card-bg); border: 3px solid var(--accent); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
+        .result-popup-content { background: var(--card-bg); border: 3px solid var(--primary); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
         
-        /* 🪜 사다리 결과 텍스트 배경색 하이라이트 및 볼딩 스타일 추가 */
         .ladder-highlight-text {
             display: inline-block;
-            background-color: #fff3cd; /* 부드러운 노란색 하이라이트 배경 */
-            color: #856404;            /* 진한 골드 빛 브라운 글자색 */
-            font-weight: 900;          /* 완전 굵은 글씨 (볼딩) */
-            padding: 4px 14px;         /* 글자 좌우 여백 */
-            border-radius: 8px;        /* 하이라이트 박스 라운딩 */
-            box-shadow: 0 2px 8px rgba(245,158,11,0.3); /* 하이라이트 가독성 증폭 광채 효과 */
+            font-weight: 900;          
+            padding: 4px 14px;         
+            border-radius: 8px;        
         }
 
-        /* 🪜 사다리 전용 모바일 최적화 큰 자막 오버레이 */
+        /* 사다리 결과 전용 모바일 최적화 큰 자막 오버레이 - 불필요한 배경 설정 제거 및 투명 처리 */
         .ladder-big-text-overlay {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 16vw; /* 화면 넓이에 맞추어 반응형 자동 조절 */
+            font-size: 16vw; 
             font-weight: 900;
-            text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.8);
-            z-index: 9999; /* 모바일에서 최상위 레이어 보장 */
+            text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.9);
+            z-index: 9999; 
             pointer-events: none;
             opacity: 0;
+            background: transparent; /* 배경 제거 */
             transition: opacity 0.25s ease-in-out;
         }
-        .ladder-big-text-overlay.pass { color: #2ecc71; } /* 통과는 녹색 */
-        .ladder-big-text-overlay.oneshot { color: #e74c3c; } /* 원샷은 빨간색 */
+        .ladder-big-text-overlay.pass { color: #2ecc71; } 
+        .ladder-big-text-overlay.oneshot { color: #e74c3c; } 
         .ladder-big-text-overlay.show { opacity: 1; }
 
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -325,25 +323,16 @@
         </div>
     </div>
 
-    <!-- 🪜 사다리 큰 자막 전용 엘리먼트 추가 -->
+    <!-- 🪜 사다리 큰 자막 전용 엘리먼트 -->
     <div id="ladderBigText" class="ladder-big-text-overlay"></div>
 
     <script>
         // 우클릭 및 개발자 도구 단축키 방지 기능
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12') {
-                e.preventDefault();
-            }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
-                e.preventDefault();
-            }
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-                e.preventDefault();
-            }
+            if (e.key === 'F12') e.preventDefault();
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) e.preventDefault();
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) e.preventDefault();
         });
 
         // ==========================================
@@ -380,183 +369,78 @@
             "의리주 시작 (제일 마지막)", "이번 판 나만 술 패스", "벌주 양도권 당첨 (다음 턴)"
         ];
 
-        function parseNames() {
-            return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
-        }
-
+        function parseNames() { return document.getElementById('memberNames').value.split(',').map(n => n.trim()).filter(n => n.length > 0); }
         function resizeCanvas(canvas) {
             const container = canvas.parentElement;
             const size = container.offsetWidth || container.clientWidth;
-            if (size > 0) {
-                canvas.width = size * 2;
-                canvas.height = size * 2;
-            } else {
-                const fallback = Math.min(window.innerWidth * 0.7, 330) * 2;
-                canvas.width = fallback;
-                canvas.height = fallback;
-            }
+            if (size > 0) { canvas.width = size * 2; canvas.height = size * 2; } 
+            else { const fallback = Math.min(window.innerWidth * 0.7, 330) * 2; canvas.width = fallback; canvas.height = fallback; }
         }
 
-        // 벌칙 룰렛 1단계 전용 이름판 드로잉 로직
         function drawNameRoulette(ang = 0) {
-            const canvas = document.getElementById('nameCanvas');
-            if (!canvas) return;
-            resizeCanvas(canvas);
-            const ctx = canvas.getContext('2d');
-            const names = parseNames();
-            const len = names.length;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (len === 0) return;
-
-            const center = canvas.width / 2;
-            const radius = center - 10;
-            const arc = (2 * Math.PI) / len;
-            const fontSize = Math.max(20, Math.floor(canvas.width * 0.07));
-
-            ctx.save();
-            ctx.translate(center, center);
-            ctx.rotate(ang);
+            const canvas = document.getElementById('nameCanvas'); if (!canvas) return;
+            resizeCanvas(canvas); const ctx = canvas.getContext('2d'); const names = parseNames(); const len = names.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); if (len === 0) return;
+            const center = canvas.width / 2; const radius = center - 10; const arc = (2 * Math.PI) / len; const fontSize = Math.max(20, Math.floor(canvas.width * 0.07));
+            ctx.save(); ctx.translate(center, center); ctx.rotate(ang);
             for (let i = 0; i < len; i++) {
-                ctx.beginPath();
-                ctx.fillStyle = colorPalette[i % colorPalette.length];
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "#1e293b";
-                ctx.stroke();
-
-                ctx.save();
-                ctx.fillStyle = "#fff";
-                ctx.font = `bold ${fontSize}px sans-serif`;
-                ctx.textAlign = "right";
-                ctx.textBaseline = "middle";
-                ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(names[i], radius - 25, 0);
-                ctx.restore();
+                ctx.beginPath(); ctx.fillStyle = colorPalette[i % colorPalette.length]; ctx.moveTo(0, 0); ctx.arc(0, 0, radius, i * arc, (i + 1) * arc); ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = "#1e293b"; ctx.stroke();
+                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = `bold ${fontSize}px sans-serif`; ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.rotate(i * arc + arc / 2); ctx.fillText(names[i], radius - 25, 0); ctx.restore();
             }
             ctx.restore();
         }
 
-        // 벌칙 룰렛 2단계 전용 벌칙판 드로잉 로직
         function drawPenaltyRoulette(ang = 0) {
-            const canvas = document.getElementById('penaltyCanvas');
-            if (!canvas) return;
-            resizeCanvas(canvas);
-            const ctx = canvas.getContext('2d');
-            const len = penalties.length;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const center = canvas.width / 2;
-            const radius = center - 10;
-            const arc = (2 * Math.PI) / len;
-            const fontSize = Math.max(14, Math.floor(canvas.width * 0.045));
-
-            ctx.save();
-            ctx.translate(center, center);
-            ctx.rotate(ang);
+            const canvas = document.getElementById('penaltyCanvas'); if (!canvas) return;
+            resizeCanvas(canvas); const ctx = canvas.getContext('2d'); const len = penalties.length; ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const center = canvas.width / 2; const radius = center - 10; const arc = (2 * Math.PI) / len; const fontSize = Math.max(14, Math.floor(canvas.width * 0.045));
+            ctx.save(); ctx.translate(center, center); ctx.rotate(ang);
             for (let i = 0; i < len; i++) {
-                ctx.beginPath();
-                ctx.fillStyle = colorPalette[(i + 3) % colorPalette.length];
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, radius, i * arc, (i + 1) * arc);
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "#1e293b";
-                ctx.stroke();
-
-                ctx.save();
-                ctx.fillStyle = "#fff";
-                ctx.font = `bold ${fontSize}px sans-serif`;
-                ctx.textAlign = "right";
-                ctx.textBaseline = "middle";
-                ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(penalties[i], radius - 20, 0);
-                ctx.restore();
+                ctx.beginPath(); ctx.fillStyle = colorPalette[(i + 3) % colorPalette.length]; ctx.moveTo(0, 0); ctx.arc(0, 0, radius, i * arc, (i + 1) * arc); ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = "#1e293b"; ctx.stroke();
+                ctx.save(); ctx.fillStyle = "#fff"; ctx.font = `bold ${fontSize}px sans-serif`; ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.rotate(i * arc + arc / 2); ctx.fillText(penalties[i], radius - 20, 0); ctx.restore();
             }
             ctx.restore();
         }
 
         function runIntegratedRoulette() {
-            if (isG1Running) return;
-            const names = parseNames();
-            if (names.length === 0) return;
-            const btn = document.getElementById('g1Btn');
-
+            if (isG1Running) return; const names = parseNames(); if (names.length === 0) return; const btn = document.getElementById('g1Btn');
             if (currentStep === 1) {
-                isG1Running = true; btn.disabled = true;
-                let startTime = null;
-                const duration = 2500;
-                const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
-
+                isG1Running = true; btn.disabled = true; let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
                 function animName(t) {
-                    if (!startTime) startTime = t;
-                    const el = t - startTime;
-                    const prog = Math.min(el / duration, 1);
-                    const ease = 1 - Math.pow(1 - prog, 4);
-                    const curAng = targetRot * ease;
+                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el / duration, 1); const ease = 1 - Math.pow(1 - prog, 4); const curAng = targetRot * ease;
                     drawNameRoulette(curAng);
-                    if (prog < 1) {
-                        requestAnimationFrame(animName);
-                    } else {
-                        const finalAng = curAng % (2 * Math.PI);
-                        const arc = (2 * Math.PI) / names.length;
-                        let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
-                        currentSelectedTarget = names[idx] || names[0];
-                        triggerVibrate([100, 50]);
+                    if (prog < 1) { requestAnimationFrame(animName); } 
+                    else {
+                        const finalAng = curAng % (2 * Math.PI); const arc = (2 * Math.PI) / names.length; let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
+                        currentSelectedTarget = names[idx] || names[0]; triggerVibrate([100, 50]);
                         document.getElementById('g1Desc').innerHTML = `🎯 당첨자: 🎉 <strong>[ ${currentSelectedTarget} ]</strong>`;
                         setTimeout(() => {
-                            document.getElementById('stage1').classList.remove('active');
-                            document.getElementById('stage2').classList.add('active');
+                            document.getElementById('stage1').classList.remove('active'); document.getElementById('stage2').classList.add('active');
                             document.getElementById('g1Desc').innerHTML = `👤 <strong>${currentSelectedTarget}</strong> 님의 벌칙 추첨 시작!`;
                             requestAnimationFrame(() => { drawPenaltyRoulette(0); });
-                            btn.textContent = "2단계: 벌칙판 돌리기";
-                            btn.style.background = "var(--secondary)";
-                            btn.disabled = false;
-                            currentStep = 2;
-                            isG1Running = false;
+                            btn.textContent = "2단계: 벌칙판 돌리기"; btn.style.background = "var(--secondary)"; btn.disabled = false; currentStep = 2; isG1Running = false;
                         }, 1200);
                     }
                 }
                 requestAnimationFrame(animName);
-
             } else if (currentStep === 2) {
-                isG1Running = true; btn.disabled = true;
-                let startTime = null;
-                const duration = 2500;
-                const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
-
+                isG1Running = true; btn.disabled = true; let startTime = null; const duration = 2500; const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
                 function animPen(t) {
-                    if (!startTime) startTime = t;
-                    const el = t - startTime;
-                    const prog = Math.min(el / duration, 1);
-                    const ease = 1 - Math.pow(1 - prog, 4);
-                    const curAng = targetRot * ease;
+                    if (!startTime) startTime = t; const el = t - startTime; const prog = Math.min(el / duration, 1); const ease = 1 - Math.pow(1 - prog, 4); const curAng = targetRot * ease;
                     drawPenaltyRoulette(curAng);
-                    if (prog < 1) {
-                        requestAnimationFrame(animPen);
-                    } else {
-                        const finalAng = curAng % (2 * Math.PI);
-                        const arc = (2 * Math.PI) / penalties.length;
-                        let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
+                    if (prog < 1) { requestAnimationFrame(animPen); } 
+                    else {
+                        const finalAng = curAng % (2 * Math.PI); const arc = (2 * Math.PI) / penalties.length; let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
                         document.getElementById('g1Desc').innerHTML = `🍺 <strong>${currentSelectedTarget}</strong> 👉 💥 <strong>[ ${penalties[idx]} ]</strong> 당첨!`;
-                        triggerVibrate([300, 100, 200]);
-                        btn.textContent = "다음 판 리셋하기";
-                        btn.style.background = "var(--accent)";
-                        btn.disabled = false;
-                        currentStep = 3;
-                        isG1Running = false;
+                        triggerVibrate([300, 100, 200]); btn.textContent = "다음 판 리셋하기"; btn.style.background = "var(--accent)"; btn.disabled = false; currentStep = 3; isG1Running = false;
                     }
                 }
                 requestAnimationFrame(animPen);
-
             } else if (currentStep === 3) {
-                currentStep = 1;
-                document.getElementById('stage1').classList.add('active');
-                document.getElementById('stage2').classList.remove('active');
-                document.getElementById('g1Desc').textContent = "참여자 명단을 쉼표로 입력해 주세요.";
-                btn.textContent = "1단계: 이름판 돌리기";
-                btn.style.background = "var(--primary)";
+                currentStep = 1; document.getElementById('stage1').classList.add('active'); document.getElementById('stage2').classList.remove('active');
+                document.getElementById('g1Desc').textContent = "참여자 명단을 쉼표로 입력해 주세요."; btn.textContent = "1단계: 이름판 돌리기"; btn.style.background = "var(--primary)";
                 requestAnimationFrame(() => { drawNameRoulette(0); });
             }
         }
@@ -591,38 +475,30 @@
             { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지", "리모컨", "이어폰", "선풍기", "냉장고", "세탁기", "안마의자", "우산", "베개", "거울", "화장지", "칫솔", "드라이기", "키보드", "마우스"] },
             { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장", "놀이공원", "백화점", "카페", "맛집", "바다", "계곡", "찜질방", "호텔", "펜션", "공항", "학교", "회사", "PC방", "포차"] }
         ];
-
         let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 3; let revealState = false;
 
         function startLiarSetup() {
-            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 3;
-            if (totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
-            const randomCatIdx = Math.floor(Math.random() * liarDb.length);
-            const selectedPack = liarDb[randomCatIdx]; curCat = selectedPack.cat;
-            const randomWordIdx = Math.floor(Math.random() * selectedPack.words.length);
-            curWord = selectedPack.words[randomWordIdx]; liarIdx = Math.floor(Math.random() * totUsers) + 1; curUser = 1;
-            document.getElementById('g3Btn').disabled = true;
-            document.getElementById('g3Desc').textContent = "한 명씩 스마트폰을 들고 비밀 창을 터치해 확인하세요!";
-            const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block';
-            nextLiarTurn();
+            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 3; if (totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
+            const randomCatIdx = Math.floor(Math.random() * liarDb.length); const selectedPack = liarDb[randomCatIdx]; curCat = selectedPack.cat;
+            const randomWordIdx = Math.floor(Math.random() * selectedPack.words.length); curWord = selectedPack.words[randomWordIdx]; liarIdx = Math.floor(Math.random() * totUsers) + 1; curUser = 1;
+            document.getElementById('g3Btn').disabled = true; document.getElementById('g3Desc').textContent = "한 명씩 스마트폰을 들고 비밀 창을 터치해 확인하세요!";
+            const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block'; nextLiarTurn();
         }
 
         function nextLiarTurn() {
             revealState = false; const b = document.getElementById('liarSecretBox'); b.className = "word-hidden"; b.style.background = "var(--secondary)"; b.textContent = "터치하여 확인하기";
-            if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; }
+            if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; } 
             else {
-                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!";
-                b.textContent = "서로 질문을 던지며 라이어를 찾으세요!"; b.style.background = "var(--accent)";
+                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!"; b.textContent = "서로 질문을 던지며 라이어를 찾으세요!"; b.style.background = "var(--accent)";
                 document.getElementById('g3Btn').disabled = false; document.getElementById('g3Btn').textContent = "한 판 더 하기";
             }
         }
 
         function toggleLiarWord() {
             if (curUser > totUsers || revealState) return; const b = document.getElementById('liarSecretBox');
-            if (curUser === liarIdx) { b.innerHTML = "🤫 당신은 <br><span style='font-size:1.8rem; color:#ff2a5f; font-weight:bold;'>[ 라이어 ]</span> 입니다."; }
+            if (curUser === liarIdx) { b.innerHTML = "🤫 당신은 <br><span style='font-size:1.8rem; color:#ff2a5f; font-weight:bold;'>[ 라이어 ]</span> 입니다."; } 
             else { b.innerHTML = `🎯 제시어:<br><span style='font-size:1.8rem; color:#00ff66; font-weight:bold;'>${curWord}</span>`; }
-            revealState = true; triggerVibrate(50);
-            setTimeout(() => { curUser++; nextLiarTurn(); }, 2500);
+            revealState = true; triggerVibrate(50); setTimeout(() => { curUser++; nextLiarTurn(); }, 2500);
         }
 
         // ==========================================
@@ -638,8 +514,7 @@
             dCanvas.addEventListener('mousedown', startDraw); dCanvas.addEventListener('mousemove', moveDraw); dCanvas.addEventListener('mouseup', endDraw);
             dCanvas.addEventListener('touchstart', (e) => { const t = e.touches[0]; startDraw(t); e.preventDefault(); }, { passive: false });
             dCanvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; moveDraw(t); e.preventDefault(); }, { passive: false });
-            dCanvas.addEventListener('touchend', endDraw);
-            selectTargetShape();
+            dCanvas.addEventListener('touchend', endDraw); selectTargetShape();
         }
 
         function selectTargetShape() {
@@ -666,8 +541,7 @@
                 if (shapeTimeLeft <= 0) {
                     shapeTimeLeft = 0; clearInterval(shapeTimer); isShapeLocked = true; isDrawing = false;
                     document.getElementById('timerBarFill').style.width = '0%'; document.getElementById('g4ShapeDesc').innerHTML = "⏰ <strong>시간 초과!</strong> 자동 채점됩니다.";
-                    document.getElementById('shapeScoreBtn').disabled = true; triggerVibrate([200, 100]);
-                    setTimeout(() => { evaluateDrawing(); }, 600);
+                    document.getElementById('shapeScoreBtn').disabled = true; triggerVibrate([200, 100]); setTimeout(() => { evaluateDrawing(); }, 600);
                 } else {
                     let percentage = (shapeTimeLeft / 5.0) * 100; document.getElementById('timerBarFill').style.width = `${percentage}%`;
                     document.getElementById('g4ShapeDesc').innerHTML = `⏱️ 남은 시간: <strong style='color:var(--warning);'>${shapeTimeLeft.toFixed(2)}초</strong>`;
@@ -678,8 +552,7 @@
         function startDraw(e) {
             if (isShapeLocked) return; if (!isTimerActive) startShapeTimer();
             isDrawing = true; dCtx.lineWidth = 6; dCtx.strokeStyle = '#f43f5e'; dCtx.lineCap = 'round'; dCtx.lineJoin = 'round'; dCtx.beginPath();
-            const rect = dCanvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-            dCtx.moveTo(x, y); userPoints.push({ x, y });
+            const rect = dCanvas.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; dCtx.moveTo(x, y); userPoints.push({ x, y });
         }
         function moveDraw(e) {
             if (!isDrawing || isShapeLocked) return; const rect = dCanvas.getBoundingClientRect();
@@ -688,92 +561,35 @@
         function endDraw() { isDrawing = false; }
 
         function evaluateDrawing() {
-            clearInterval(shapeTimer); isShapeLocked = true;
-            if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
-            
-            let sumX = 0, sumY = 0;
-            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            
+            clearInterval(shapeTimer); isShapeLocked = true; if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
+            let sumX = 0, sumY = 0; let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             userPoints.forEach(p => {
                 sumX += p.x; sumY += p.y;
-                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
-                if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
             });
-            
-            const centerX = sumX / userPoints.length;
-            const centerY = sumY / userPoints.length;
-            const w = maxX - minX; const h = maxY - minY;
-            const aspect = w / (h || 1);
-            
-            let radii = [];
-            userPoints.forEach(p => {
-                const dx = p.x - centerX;
-                const dy = p.y - centerY;
-                const r = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx);
-                radii.push({ r, angle });
-            });
-            
+            const centerX = sumX / userPoints.length; const centerY = sumY / userPoints.length; const w = maxX - minX; const h = maxY - minY; const aspect = w / (h || 1);
+            let radii = []; userPoints.forEach(p => { const dx = p.x - centerX; const dy = p.y - centerY; const r = Math.sqrt(dx * dx + dy * dy); const angle = Math.atan2(dy, dx); radii.push({ r, angle }); });
             let baseScore = 70;
-            
             if (currentShapeType === 'circle') {
-                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
-                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
-                const stdDev = Math.sqrt(variance);
-                
-                const consistency = Math.max(0, 1 - (stdDev / (avgRadius || 1)));
-                const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect));
-                
-                baseScore = (consistency * 75) + (aspectFit * 21);
-            } 
-            else if (currentShapeType === 'triangle') {
-                const aspectErr = Math.abs(1.15 - aspect);
-                const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5);
-                
-                let fitScore = 95 - (aspectErr * 80) - (symmetryErr * 120);
-                baseScore = Math.max(50, fitScore);
-            } 
-            else if (currentShapeType === 'heart') {
-                let leftSum = 0, rightSum = 0, leftCnt = 0, rightCnt = 0;
-                radii.forEach(item => {
-                    if (item.angle < -Math.PI/2 || item.angle > Math.PI/2) { leftSum += item.r; leftCnt++; }
-                    else { rightSum += item.r; rightCnt++; }
-                });
-                const leftAvg = leftSum / (leftCnt || 1);
-                const rightAvg = rightSum / (rightCnt || 1);
-                const symmetryErr = Math.abs(leftAvg - rightAvg) / ((leftAvg + rightAvg) / 2 || 1);
-                
-                let fitScore = 94 - (symmetryErr * 150) - (Math.abs(1.1 - aspect) * 40);
-                baseScore = Math.max(45, fitScore);
-            } 
-            else if (currentShapeType === 'star' || currentShapeType === 'lightning') {
-                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
-                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
-                const stdDev = Math.sqrt(variance);
-                
-                const waveFactor = stdDev / (avgRadius || 1);
-                let fitScore = 65;
-                if (waveFactor > 0.15 && waveFactor < 0.45) {
-                    fitScore = 85 + (30 * (0.3 - Math.abs(0.3 - waveFactor)));
-                } else {
-                    fitScore = 55 + (waveFactor * 60);
-                }
-                baseScore = Math.max(40, Math.min(95, fitScore));
+                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length; const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
+                const stdDev = Math.sqrt(variance); const consistency = Math.max(0, 1 - (stdDev / (avgRadius || 1))); const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect)); baseScore = (consistency * 75) + (aspectFit * 21);
+            } else if (currentShapeType === 'triangle') {
+                const aspectErr = Math.abs(1.15 - aspect); const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5); let fitScore = 95 - (aspectErr * 80) - (symmetryErr * 120); baseScore = Math.max(50, fitScore);
+            } else if (currentShapeType === 'heart') {
+                let leftSum = 0, rightSum = 0, leftCnt = 0, rightCnt = 0; radii.forEach(item => { if (item.angle < -Math.PI/2 || item.angle > Math.PI/2) { leftSum += item.r; leftCnt++; } else { rightSum += item.r; rightCnt++; } });
+                const leftAvg = leftSum / (leftCnt || 1); const rightAvg = rightSum / (rightCnt || 1); const symmetryErr = Math.abs(leftAvg - rightAvg) / ((leftAvg + rightAvg) / 2 || 1); let fitScore = 94 - (symmetryErr * 150) - (Math.abs(1.1 - aspect) * 40); baseScore = Math.max(45, fitScore);
+            } else if (currentShapeType === 'star' || currentShapeType === 'lightning') {
+                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length; const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
+                const stdDev = Math.sqrt(variance); const waveFactor = stdDev / (avgRadius || 1); let fitScore = 65; if (waveFactor > 0.15 && waveFactor < 0.45) { fitScore = 85 + (30 * (0.3 - Math.abs(0.3 - waveFactor))); } else { fitScore = 55 + (waveFactor * 60); } baseScore = Math.max(40, Math.min(95, fitScore));
             }
-            
-            let finalScore = Math.floor(baseScore) + Math.floor(Math.random() * 5);
-            if (finalScore > 100) finalScore = 100;
-            if (finalScore < 10) finalScore = 10;
-            
-            document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
-            document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
+            let finalScore = Math.floor(baseScore) + Math.floor(Math.random() * 5); if (finalScore > 100) finalScore = 100; if (finalScore < 10) finalScore = 10;
+            document.getElementById('scoreOutput').textContent = `${finalScore}점!`; document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
         }
 
         // ==========================================
         // 👑 게임 5: 왕게임 엔진
         // ==========================================
         let currentKingMode = 'normal'; let kingGamePool = []; let kingGameIdx = 0; let totalKingPlayers = 3; let kingParticipantNames = [];
-
         const normalIdeas = [
             "💡 [일반] 오른쪽 사람과 눈빛 교환 후 진한 러브샷 시키기",
             "💡 [일반] 특정 번호 지목해서 소주 반 잔 깔끔하게 원샷 시키기",
@@ -906,129 +722,56 @@
             "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 상의를 살짝 들어 올리고 배에 뽀뽀."
         ];
 
-        function setKingMode(mode) {
-            currentKingMode = mode;
-            document.getElementById('modeNormal').classList.toggle('active', mode === 'normal');
-            document.getElementById('modeAdult').classList.toggle('active', mode === 'adult');
-        }
-
+        function setKingMode(mode) { currentKingMode = mode; document.getElementById('modeNormal').classList.toggle('active', mode === 'normal'); document.getElementById('modeAdult').classList.toggle('active', mode === 'adult'); }
         function toggleKingInputStyle() {
-            const type = document.getElementById('kingTypeSelect').value;
-            const countRow = document.getElementById('kingCountRow');
-            const nameRow = document.getElementById('kingNameRow');
-            const btnEl = document.getElementById('g5Btn');
-            const labelEl = document.getElementById('kingNameLabel');
-            if (type === 'master') {
-                if (countRow) countRow.style.display = 'none';
-                nameRow.style.display = 'flex';
-                labelEl.textContent = "📝 참여자 이름 입력 (성별 매칭 시 '이름(남)', '이름(여)' 형식):";
-                btnEl.textContent = "⚡ 즉시 마스터 오더 실행";
-            } else {
-                if (countRow) countRow.style.display = type === 'anonymous' ? 'flex' : 'none';
-                nameRow.style.display = type === 'named' ? 'flex' : 'none';
-                btnEl.textContent = "👑 신분 배정 시작하기";
-            }
+            const type = document.getElementById('kingTypeSelect').value; const countRow = document.getElementById('kingCountRow'); const nameRow = document.getElementById('kingNameRow'); const btnEl = document.getElementById('g5Btn'); const labelEl = document.getElementById('kingNameLabel');
+            if (type === 'master') { if (countRow) countRow.style.display = 'none'; nameRow.style.display = 'flex'; labelEl.textContent = "📝 참여자 이름 입력 (성별 매칭 시 '이름(남)', '이름(여)' 형식):"; btnEl.textContent = "⚡ 즉시 마스터 오더 실행"; } 
+            else { if (countRow) countRow.style.display = type === 'anonymous' ? 'flex' : 'none'; nameRow.style.display = type === 'named' ? 'flex' : 'none'; btnEl.textContent = "👑 신분 배정 시작하기"; }
         }
 
         function startKingIdentityLoop() {
-            const type = document.getElementById('kingTypeSelect').value;
-            const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText');
-
+            const type = document.getElementById('kingTypeSelect').value; const titleEl = document.getElementById('kingStatusTitle'); const textEl = document.getElementById('kingMainText');
             if (type === 'master') {
-                const namesStr = document.getElementById('kingNameInput').value;
-                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
-                if (kingParticipantNames.length < 2) { alert("최소 2명 이상의 이름이 필요합니다!"); return; }
-
-                titleEl.textContent = `⚡ 절대 마스터의 실명 오더`;
-                
-                let pName1 = ""; let pName2 = "";
-                let males = kingParticipantNames.filter(n => n.includes('(남)'));
-                let females = kingParticipantNames.filter(n => n.includes('(여)'));
-
-                if (males.length > 0 && females.length > 0) {
-                    pName1 = males[Math.floor(Math.random() * males.length)];
-                    pName2 = females[Math.floor(Math.random() * females.length)];
-                    if(Math.random() > 0.5) { let temp = pName1; pName1 = pName2; pName2 = temp; }
-                } else {
-                    let idx1 = Math.floor(Math.random() * kingParticipantNames.length);
-                    let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
-                    while (idx1 === idx2 && kingParticipantNames.length > 1) { idx2 = Math.floor(Math.random() * kingParticipantNames.length); }
-                    pName1 = kingParticipantNames[idx1]; pName2 = kingParticipantNames[idx2];
-                }
-
+                const namesStr = document.getElementById('kingNameInput').value; kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0); if (kingParticipantNames.length < 2) { alert("최소 2명 이상의 이름이 필요합니다!"); return; }
+                titleEl.textContent = `⚡ 디지털 절대 마스터 오더`; let pName1 = ""; let pName2 = ""; let males = kingParticipantNames.filter(n => n.includes('(남)')); let females = kingParticipantNames.filter(n => n.includes('(여)'));
+                if (males.length > 0 && females.length > 0) { pName1 = males[Math.floor(Math.random() * males.length)]; pName2 = females[Math.floor(Math.random() * females.length)]; if(Math.random() > 0.5) { let temp = pName1; pName1 = pName2; pName2 = temp; } } 
+                else { let idx1 = Math.floor(Math.random() * kingParticipantNames.length); let idx2 = Math.floor(Math.random() * kingParticipantNames.length); while (idx1 === idx2 && kingParticipantNames.length > 1) { idx2 = Math.floor(Math.random() * kingParticipantNames.length); } pName1 = kingParticipantNames[idx1]; pName2 = kingParticipantNames[idx2]; }
                 let targetCommand = "";
-                if (currentKingMode === 'normal') {
-                    const rawIdea = masterNormalIdeas[Math.floor(Math.random() * masterNormalIdeas.length)];
-                    targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
-                } else {
-                    const rawIdea = masterAdultIdeas[Math.floor(Math.random() * masterAdultIdeas.length)];
-                    targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2);
-                }
-                textEl.innerHTML = `<div style='color:var(--primary); font-size:1.1rem; margin-bottom:10px;'>🚨 마스터의 지령 타겟팅 완료!</div><div class='king-action'>${targetCommand}</div>`;
-                return;
+                if (currentKingMode === 'normal') { const rawIdea = masterNormalIdeas[Math.floor(Math.random() * masterNormalIdeas.length)]; targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2); } 
+                else { const rawIdea = masterAdultIdeas[Math.floor(Math.random() * masterAdultIdeas.length)]; targetCommand = rawIdea.replace(/{X}/g, pName1).replace(/{Y}/g, pName2); }
+                textEl.innerHTML = `<div style='color:var(--primary); font-size:1.1rem; margin-bottom:10px;'>🚨 마스터의 지령 타겟팅 완료!</div><div class='king-action'>${targetCommand}</div>`; return;
             }
-
             kingGamePool = [];
-            if (type === 'anonymous') {
-                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3;
-                kingGamePool.push('👑 왕');
-                for (let i = 1; i <= totalKingPlayers - 1; i++) kingGamePool.push(`👤 신하 [ ${i}번 ]`);
-                kingGamePool.sort(() => Math.random() - 0.5);
-            } else {
-                const namesStr = document.getElementById('kingNameInput').value;
-                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
-                totalKingPlayers = kingParticipantNames.length;
-                let roles = ['👑 왕'];
-                for (let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`);
-                roles.sort(() => Math.random() - 0.5);
-                for (let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
+            if (type === 'anonymous') { totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3; kingGamePool.push('👑 왕'); for (let i = 1; i <= totalKingPlayers - 1; i++) kingGamePool.push(`👤 신하 [ ${i}번 ]`); kingGamePool.sort(() => Math.random() - 0.5); } 
+            else {
+                const namesStr = document.getElementById('kingNameInput').value; kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0); totalKingPlayers = kingParticipantNames.length;
+                let roles = ['👑 왕']; for (let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`); roles.sort(() => Math.random() - 0.5); for (let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
             }
-            kingGameIdx = 0;
-            document.getElementById('kingTypeSelect').disabled = true;
-            showIdentityWaitScreen();
+            kingGameIdx = 0; document.getElementById('kingTypeSelect').disabled = true; showIdentityWaitScreen();
         }
 
         function showIdentityWaitScreen() {
-            const type = document.getElementById('kingTypeSelect').value;
-            const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText');
-            const btnEl = document.getElementById('g5Btn');
+            const type = document.getElementById('kingTypeSelect').value; const titleEl = document.getElementById('kingStatusTitle'); const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
             if (kingGameIdx < totalKingPlayers) {
-                if (type === 'anonymous') {
-                    titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`;
-                    textEl.innerHTML = `<div>[플레이어 ${kingGameIdx + 1}] 님만 확인하세요.</div>`;
-                } else {
-                    const targetPerson = kingGamePool[kingGameIdx].name;
-                    titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`;
-                    textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`;
-                }
-                btnEl.textContent = "역할 역할 확인하기";
-                btnEl.onclick = revealIdentityToPlayer;
+                if (type === 'anonymous') { titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`; textEl.innerHTML = `<div>[플레이어 ${kingGameIdx + 1}] 님만 확인하세요.</div>`; } 
+                else { const targetPerson = kingGamePool[kingGameIdx].name; titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`; textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`; }
+                btnEl.textContent = "역할 확인하기"; btnEl.onclick = revealIdentityToPlayer;
             } else {
-                titleEl.textContent = "👑 왕의 오더 하차!";
-                const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
-                textEl.innerHTML = `<div class='king-action'>${pool[Math.floor(Math.random() * pool.length)]}</div>`;
-                btnEl.textContent = "새 판 세팅";
-                btnEl.onclick = () => { document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
+                titleEl.textContent = "👑 왕의 오더 하차!"; const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas; textEl.innerHTML = `<div class='king-action'>${pool[Math.floor(Math.random() * pool.length)]}</div>`;
+                btnEl.textContent = "새 판 세팅"; btnEl.onclick = () => { document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
             }
         }
 
         function revealIdentityToPlayer() {
-            const type = document.getElementById('kingTypeSelect').value;
-            const textEl = document.getElementById('kingMainText');
-            const btnEl = document.getElementById('g5Btn');
-            let myRole = type === 'anonymous' ? kingGamePool[kingGameIdx] : kingGamePool[kingGameIdx].role;
-            textEl.innerHTML = `<div><span style='font-size:2rem; color:var(--warning); font-weight:bold;'>${myRole}</span></div>`;
-            btnEl.disabled = true; kingGameIdx++;
-            setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
+            const type = document.getElementById('kingTypeSelect').value; const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
+            let myRole = type === 'anonymous' ? kingGamePool[kingGameIdx] : kingGamePool[kingGameIdx].role; textEl.innerHTML = `<div><span style='font-size:2rem; color:var(--warning); font-weight:bold;'>${myRole}</span></div>`;
+            btnEl.disabled = true; kingGameIdx++; setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
         }
 
         // ==========================================
         // 🪜 게임 6: 사다리 타기 엔진
         // ==========================================
-        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false;
-        const totalRowsSlots = 9;
+        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false; const totalRowsSlots = 9;
 
         function initLadderGame() {
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
@@ -1059,73 +802,52 @@
 
         function drawLadderBase(highlightPath = null, progress = 1) {
             const canvas = document.getElementById('ladderCanvas'); if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.parentNode.getBoundingClientRect().width;
-            const h = canvas.parentNode.getBoundingClientRect().height;
-            canvas.width = w; canvas.height = h;
-            ctx.clearRect(0, 0, w, h);
-            const padding = w / (ladderCount * 2);
-            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
-            const rowHeight = (h - 20) / totalRowsSlots;
+            const ctx = canvas.getContext('2d'); const w = canvas.parentNode.getBoundingClientRect().width; const h = canvas.parentNode.getBoundingClientRect().height;
+            canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h);
+            const padding = w / (ladderCount * 2); const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1)); const rowHeight = (h - 20) / totalRowsSlots;
 
             ctx.lineWidth = 6; ctx.strokeStyle = '#475569'; ctx.lineCap = 'round';
-            for (let i = 0; i < ladderCount; i++) {
-                ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), h - 10); ctx.stroke();
-            }
+            for (let i = 0; i < ladderCount; i++) { ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), h - 10); ctx.stroke(); }
             ladderLines.forEach(line => {
                 const y = 10 + line.row * rowHeight + rowHeight / 2;
                 ctx.beginPath(); ctx.moveTo(getX(line.col), y); ctx.lineTo(getX(line.col + 1), y);
-                ctx.lineWidth = line.custom ? 7 : 5;
-                ctx.strokeStyle = line.custom ? '#3b82f6' : '#475569'; ctx.stroke();
+                ctx.lineWidth = line.custom ? 7 : 5; ctx.strokeStyle = line.custom ? '#3b82f6' : '#475569'; ctx.stroke();
             });
             if (highlightPath && highlightPath.length > 0) {
-                ctx.lineWidth = 7; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(highlightPath[0].x, highlightPath[0].y);
+                ctx.lineWidth = 7; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(highlightPath[0].x, highlightPath[0].y);
                 const limit = Math.floor(highlightPath.length * progress);
                 for (let k = 1; k < limit; k++) ctx.lineTo(highlightPath[k].x, highlightPath[k].y);
                 ctx.stroke();
             }
         }
 
-        function resetLadderOnly() {
-            if (isLadderRunning) return; ladderLines = [];
-            document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다.";
-            initLadderGame();
-        }
-
+        function resetLadderOnly() { if (isLadderRunning) return; ladderLines = []; document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다."; initLadderGame(); }
         function selectLadderPlayer(playerIdx) {
             if (isLadderRunning) return;
             document.querySelectorAll('.ladder-labels.top-labels span').forEach(el => el.classList.remove('active-player'));
             document.querySelectorAll('.ladder-labels.bottom-labels span').forEach(el => el.classList.remove('hit-result'));
-            document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player');
-            runLadderTrace(playerIdx);
+            document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player'); runLadderTrace(playerIdx);
         }
 
         function runLadderTrace(targetIdx) {
             isLadderRunning = true;
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
             const rInput = document.getElementById('ladderResults').value.split(',').map(n => n.trim());
-            const canvas = document.getElementById('ladderCanvas');
-            const w = canvas.width; const h = canvas.height; const padding = w / (ladderCount * 2);
-            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
-            const rowHeight = (h - 20) / totalRowsSlots;
+            const canvas = document.getElementById('ladderCanvas'); const w = canvas.width; const h = canvas.height; const padding = w / (ladderCount * 2);
+            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1)); const rowHeight = (h - 20) / totalRowsSlots;
 
-            let fullPath = []; let curIdx = targetIdx; let curY = 10;
-            fullPath.push({ x: getX(curIdx), y: curY });
+            let fullPath = []; let curIdx = targetIdx; let curY = 10; fullPath.push({ x: getX(curIdx), y: curY });
             for (let r = 0; r < totalRowsSlots; r++) {
-                const targetY = 10 + r * rowHeight + rowHeight / 2;
-                fullPath.push({ x: getX(curIdx), y: targetY });
-                const leftBridge = ladderLines.find(l => l.row === r && l.col === curIdx - 1);
-                const rightBridge = ladderLines.find(l => l.row === r && l.col === curIdx);
-                if (leftBridge) { curIdx--; fullPath.push({ x: getX(curIdx), y: targetY }); }
+                const targetY = 10 + r * rowHeight + rowHeight / 2; fullPath.push({ x: getX(curIdx), y: targetY });
+                const leftBridge = ladderLines.find(l => l.row === r && l.col === curIdx - 1); const rightBridge = ladderLines.find(l => l.row === r && l.col === curIdx);
+                if (leftBridge) { curIdx--; fullPath.push({ x: getX(curIdx), y: targetY }); } 
                 else if (rightBridge) { curIdx++; fullPath.push({ x: getX(curIdx), y: targetY }); }
             }
             fullPath.push({ x: getX(curIdx), y: h - 10 });
 
             let start = null;
             function anim(t) {
-                if (!start) start = t; const el = t - start; const prog = Math.min(el / 1100, 1);
-                drawLadderBase(fullPath, prog);
+                if (!start) start = t; const el = t - start; const prog = Math.min(el / 1100, 1); drawLadderBase(fullPath, prog);
                 if (prog < 1) requestAnimationFrame(anim);
                 else {
                     const finalResultStr = rInput[curIdx] || '통과';
@@ -1134,39 +856,20 @@
                     
                     const popup = document.getElementById('resultPopup');
                     document.getElementById('popupPlayerName').innerHTML = `👤 <strong>${mInput[targetIdx]}</strong> 님의 결과`;
-                    document.getElementById('popupResultText').textContent = finalResultStr;
-                    popup.style.display = 'flex';
+                    document.getElementById('popupResultText').textContent = finalResultStr; popup.style.display = 'flex';
                     
-                    // 🪜 [추가 구현] 모바일용 화면 중앙 거대 결과 텍스트 연출 로직
-                    const bigTextEl = document.getElementById('ladderBigText');
-                    bigTextEl.className = 'ladder-big-text-overlay'; // 클래스 초기화
-                    
-                    if (finalResultStr.includes('통과')) {
-                        bigTextEl.textContent = '통과!';
-                        bigTextEl.classList.add('pass');
-                    } else if (finalResultStr.includes('원샷')) {
-                        bigTextEl.textContent = '원샷!';
-                        bigTextEl.classList.add('oneshot');
-                    } else {
-                        bigTextEl.textContent = finalResultStr;
-                        bigTextEl.style.color = 'var(--warning)';
-                    }
-                    
+                    const bigTextEl = document.getElementById('ladderBigText'); bigTextEl.className = 'ladder-big-text-overlay';
+                    if (finalResultStr.includes('통과')) { bigTextEl.textContent = '통과!'; bigTextEl.classList.add('pass'); } 
+                    else if (finalResultStr.includes('원샷')) { bigTextEl.textContent = '원샷!'; bigTextEl.classList.add('oneshot'); } 
+                    else { bigTextEl.textContent = finalResultStr; bigTextEl.style.color = 'var(--warning)'; }
                     bigTextEl.classList.add('show');
                     
-                    triggerVibrate([150, 50, 100]);
-                    isLadderRunning = false;
-                    
-                    // 1.8초 뒤 팝업 및 큰 글씨 서서히 제거
-                    setTimeout(() => { 
-                        popup.style.display = 'none'; 
-                        bigTextEl.classList.remove('show');
-                    }, 1800);
+                    triggerVibrate([150, 50, 100]); isLadderRunning = false;
+                    setTimeout(() => { popup.style.display = 'none'; bigTextEl.classList.remove('show'); }, 1800);
                 }
             }
             requestAnimationFrame(anim);
         }
-
         function startLadderDraw() { if (!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
 
         // ==========================================
@@ -1223,48 +926,19 @@
             "과거 연인과 비교해 현재 연인의 섹스 매력 포인트는?",
             "하루 종일 연인과 침대에서만 보낸다면 어떤 플레이를 가장 하고 싶나?"
         ];
-
-        let shuffledQuestions = [];
-        let truthQuestionIdx = 0;
-
-        function shuffleTruthQuestions() {
-            shuffledQuestions = [...adultTruthQuestions];
-            shuffledQuestions.sort(() => Math.random() - 0.5);
-            truthQuestionIdx = 0;
-        }
-
+        let shuffledQuestions = []; let truthQuestionIdx = 0;
+        function shuffleTruthQuestions() { shuffledQuestions = [...adultTruthQuestions]; shuffledQuestions.sort(() => Math.random() - 0.5); truthQuestionIdx = 0; }
         function nextTruthQuestion() {
-            if (shuffledQuestions.length === 0 || truthQuestionIdx >= shuffledQuestions.length) {
-                shuffleTruthQuestions();
-            }
-            const displayEl = document.getElementById('truthDisplay');
-            triggerVibrate([100, 50]);
-            
-            displayEl.style.opacity = 0;
-            setTimeout(() => {
-                displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`;
-                displayEl.style.opacity = 1;
-                truthQuestionIdx++;
-            }, 150);
+            if (shuffledQuestions.length === 0 || truthQuestionIdx >= shuffledQuestions.length) { shuffleTruthQuestions(); }
+            const displayEl = document.getElementById('truthDisplay'); triggerVibrate([100, 50]); displayEl.style.opacity = 0;
+            setTimeout(() => { displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`; displayEl.style.opacity = 1; truthQuestionIdx++; }, 150);
         }
 
-        // ==========================================
         // 초기화
-        // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
-            toggleKingInputStyle();
-            shuffleTruthQuestions();
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    drawNameRoulette();
-                    initLadderGame();
-                });
-            });
-            window.addEventListener('resize', () => {
-                drawLadderBase();
-                drawNameRoulette();
-                if(currentStep === 2) drawPenaltyRoulette();
-            });
+            toggleKingInputStyle(); shuffleTruthQuestions();
+            requestAnimationFrame(() => { requestAnimationFrame(() => { drawNameRoulette(); initLadderGame(); }); });
+            window.addEventListener('resize', () => { drawLadderBase(); drawNameRoulette(); if(currentStep === 2) drawPenaltyRoulette(); });
         });
     </script>
 </body>
