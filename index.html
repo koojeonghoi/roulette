@@ -90,7 +90,7 @@
         .king-title { font-size: 1.3rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; }
         .king-action { font-size: 1.05rem; font-weight: bold; line-height: 1.5; color: #fff; text-align: center; word-break: keep-all; width: 100%; }
 
-        /* --- 🪜 게임 6: 사다리 타기 (레이아웃 겹침 개선) --- */
+        /* --- 🪜 게임 6: 사다리 타기 --- */
         .ladder-game-container {
             flex: 1;
             display: flex;
@@ -115,14 +115,13 @@
         .ladder-labels.top-labels span:hover { background: var(--secondary); }
         .ladder-labels.top-labels span.active-player { background: var(--primary); border-color: #fff; box-shadow: 0 0 10px var(--primary); }
         
-        .ladder-labels.bottom-labels { margin-top: 6px; margin-bottom: 6px; } /* 마진 조정으로 겹침 완벽 방지 */
+        .ladder-labels.bottom-labels { margin-top: 6px; margin-bottom: 6px; }
         .ladder-labels.bottom-labels span {
             background: #0b0f19; border-radius: 10px; height: 40px; margin: 0 4px;
             border: 1px solid #233146; color: var(--orange); padding: 2px;
         }
         .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--accent); border-radius: 10px; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px var(--accent); }
 
-        /* 결과 알림 오버레이 팝업 */
         .result-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.85); z-index: 1000; justify-content: center; align-items: center; text-align: center; }
         .result-popup-content { background: var(--card-bg); border: 3px solid var(--accent); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
         
@@ -288,7 +287,7 @@
         </div>
     </div>
 
-    <!-- 🪜 사다리 결과 알림 오버레이 팝업 (신설) -->
+    <!-- 🪜 사다리 결과 알림 오버레이 팝업 -->
     <div id="resultPopup" class="result-popup-overlay" onclick="this.style.display='none'">
         <div class="result-popup-content">
             <h2 id="popupPlayerName" style="color:#fff; font-size:1.4rem; margin-bottom:10px;">플레이어</h2>
@@ -304,15 +303,12 @@
         });
 
         document.addEventListener('keydown', function(e) {
-            // F12 방지
             if (e.key === 'F12') {
                 e.preventDefault();
             }
-            // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C 방지
             if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
                 e.preventDefault();
             }
-            // Ctrl+U (소스 보기) 방지
             if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
                 e.preventDefault();
             }
@@ -369,6 +365,7 @@
             }
         }
 
+        // 벌칙 룰렛 1단계 전용 이름판 드로잉 로직
         function drawNameRoulette(ang = 0) {
             const canvas = document.getElementById('nameCanvas');
             if (!canvas) return;
@@ -409,6 +406,7 @@
             ctx.restore();
         }
 
+        // 벌칙 룰렛 2단계 전용 벌칙판 드로잉 로직
         function drawPenaltyRoulette(ang = 0) {
             const canvas = document.getElementById('penaltyCanvas');
             if (!canvas) return;
@@ -558,7 +556,7 @@
         const liarDb = [
             { cat: "연예/방송 📺", words: ["유재석", "아이유", "BTS", "봉준호", "오징어게임", "손흥민", "뉴진스", "에스파", "블랙핑크", "임영웅", "김종국", "차은우", "박보검", "장원영", "런닝맨", "무한도전", "나는솔로", "더글로리", "피식대학", "유튜브", "넷플릭스", "슈퍼맨이돌아왔다"] },
             { cat: "음식/야식 🍗", words: ["마라탕", "삼겹살", "불닭볶음면", "치즈볼", "탕후루", "떡볶이", "양꼬치", "짜장면", "치킨", "피자", "족발", "곱창", "닭발", "김치찌개", "라면", "초밥", "햄버거", "아이스크림", "붕어빵", "호떡", "김밥", "냉면", "순대"] },
-            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트brush", "텀블러", "전자레인지", "리모컨", "이어폰", "선풍기", "냉장고", "세탁기", "안마의자", "우산", "베개", "거울", "화장지", "칫솔", "드라이기", "키보드", "마우스"] },
+            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지", "리모컨", "이어폰", "선풍기", "냉장고", "세탁기", "안마의자", "우산", "베개", "거울", "화장지", "칫솔", "드라이기", "키보드", "마우스"] },
             { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장", "놀이공원", "백화점", "카페", "맛집", "바다", "계곡", "찜질방", "호텔", "펜션", "공항", "학교", "회사", "PC방", "포차"] }
         ];
 
@@ -618,6 +616,7 @@
             else if (currentShapeType === 'triangle') svg.innerHTML = `<polygon points="40,10 10,70 70,70"/>`;
             else if (currentShapeType === 'heart') svg.innerHTML = `<path d="M40,25 C40,10 15,10 15,32 C15,53 40,72 40,72 C40,72 65,53 65,32 C65,10 40,10 40,25 Z"/>`;
             else if (currentShapeType === 'star') svg.innerHTML = `<polygon points="40,5 50,30 78,30 55,47 64,74 40,56 16,74 25,47 2,30 30,30"/>`;
+            else if (currentShapeType === 'lightning') svg.innerHTML = `<polygon points="50,5 15,50 40,50 25,95 70,45 45,45"/>`;
         }
 
         function clearCanvasOnly() {
@@ -660,7 +659,6 @@
             clearInterval(shapeTimer); isShapeLocked = true;
             if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
             
-            // 1. 도형의 중심점(Center) 및 바운딩 박스 계산
             let sumX = 0, sumY = 0;
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             
@@ -675,7 +673,6 @@
             const w = maxX - minX; const h = maxY - minY;
             const aspect = w / (h || 1);
             
-            // 2. 중심점으로부터 각 정점까지의 거리(반지름) 및 각도 수집
             let radii = [];
             userPoints.forEach(p => {
                 const dx = p.x - centerX;
@@ -687,29 +684,24 @@
             
             let baseScore = 70;
             
-            // 3. 도형 유형별 정밀 수학 채점
             if (currentShapeType === 'circle') {
-                // [동그라미]: 중심에서 모든 점까지의 거리(반지름)가 얼마나 일정한지 변동계수 계산
                 const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
                 const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
                 const stdDev = Math.sqrt(variance);
                 
-                // 반지름의 표준편차가 평균 반지름 대비 작을수록 고득점 (최대 96점)
                 const consistency = Math.max(0, 1 - (stdDev / (avgRadius || 1)));
-                const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect)); // 가로세로 비율 1:1에 가까울수록
+                const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect));
                 
                 baseScore = (consistency * 75) + (aspectFit * 21);
             } 
             else if (currentShapeType === 'triangle') {
-                // [삼각형]: 아래쪽 두 꼭짓점과 위쪽 한 꼭짓점의 대칭성 및 가로세로 비율 매칭
-                const aspectErr = Math.abs(1.0 - aspect); // 정삼각형에 가까운 비율 타겟
-                const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5); // 좌우 대칭 검사
+                const aspectErr = Math.abs(1.15 - aspect);
+                const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5);
                 
                 let fitScore = 95 - (aspectErr * 80) - (symmetryErr * 120);
                 baseScore = Math.max(50, fitScore);
             } 
             else if (currentShapeType === 'heart') {
-                // [하트]: 좌우 대칭성 및 굴곡 형태 변정 검사
                 let leftSum = 0, rightSum = 0, leftCnt = 0, rightCnt = 0;
                 radii.forEach(item => {
                     if (item.angle < -Math.PI/2 || item.angle > Math.PI/2) { leftSum += item.r; leftCnt++; }
@@ -723,12 +715,10 @@
                 baseScore = Math.max(45, fitScore);
             } 
             else if (currentShapeType === 'star' || currentShapeType === 'lightning') {
-                // [별/번개]: 정점의 개수와 선의 굴곡에 의한 반지름의 주기적 변화(분산 값) 신뢰도 측정
                 const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
                 const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
                 const stdDev = Math.sqrt(variance);
                 
-                // 별과 번개는 외곽선과 골짜기선이 반복되므로 표준편차가 적당히 커야(굴곡이 깊어야) 예쁜 모양이 나옵니다.
                 const waveFactor = stdDev / (avgRadius || 1);
                 let fitScore = 65;
                 if (waveFactor > 0.15 && waveFactor < 0.45) {
@@ -739,10 +729,9 @@
                 baseScore = Math.max(40, Math.min(95, fitScore));
             }
             
-            // 4. 인간미를 위한 미세 보정 (+0 ~ +4점 랜덤 변수만 허용) 및 100점 상한선 제어
             let finalScore = Math.floor(baseScore) + Math.floor(Math.random() * 5);
             if (finalScore > 100) finalScore = 100;
-            if (finalScore < 10) finalScore = 10; // 최소 점수 보장
+            if (finalScore < 10) finalScore = 10;
             
             document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
             document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
@@ -786,7 +775,6 @@
             "💡 [일반] 한 명 골라 왕 앞에서 1분 안에 혀 꼬이는 말 3개 연속 성공시키기"
         ];
 
-        // 29금 왕게임 지령 (왕 선출 후 사용) — 30개
         const adultIdeas = [
             "🔥 [29금] 두 명 지정해서 옷 속에 손 넣고 15초 동안 눈 떼지 말고 눈빛 교환",
             "🔥 [29금] 두 명 지정해서 목이나 쇄골에 3초간 볼뽀뽀 남기기 시키기",
@@ -820,7 +808,6 @@
             "🔥 [29금] 지목한 사람 포옹 10초, 버티지 못하면 왕이 추가 지령"
         ];
 
-        // 마스터 오더 - 순한맛 (실명 대입) — 30개
         const masterNormalIdeas = [
             "⚡ [마스터] <strong>{X}</strong>은(는) 30초 동안 로봇 성대모사로만 모든 대화를 처리하시오.",
             "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 서로의 외모 칭찬을 3개씩 폭격하시오.",
@@ -854,7 +841,6 @@
             "⚡ [마스터] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 각자 10초 안에 상대방에 관한 사실 하나를 맞히시오. 틀리면 벌주."
         ];
 
-        // 마스터 오더 - 29금 (실명 대입) — 30개
         const masterAdultIdeas = [
             "🔥 [마스터 29금] <strong>{X}</strong>와(과) <strong>{Y}</strong>은(는) 15초간 옷속에 손을 넣어 맨살 어깨를 만지며 눈빛을 교환하시오.",
             "🔥 [마스터 29금] <strong>{X}</strong>은(는) <strong>{Y}</strong>의 목에 3초간 키스하시오.",
@@ -1114,7 +1100,6 @@
                     document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
                     document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${finalResultStr} ]</strong> 당첨!`;
                     
-                    // 🎯 결과 레이어 팝업 노출 로직 추가
                     const popup = document.getElementById('resultPopup');
                     document.getElementById('popupPlayerName').innerHTML = `👤 <strong>${mInput[targetIdx]}</strong> 님의 결과`;
                     document.getElementById('popupResultText').textContent = finalResultStr;
@@ -1123,7 +1108,6 @@
                     triggerVibrate([150, 50, 100]);
                     isLadderRunning = false;
                     
-                    // 2.5초 뒤 자동 페이드아웃 탈출
                     setTimeout(() => { popup.style.display = 'none'; }, 2500);
                 }
             }
@@ -1133,7 +1117,7 @@
         function startLadderDraw() { if (!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
 
         // ==========================================
-        // 🔞 게임 7: 29금 진실게임 엔진 (넘버링 전면 제거)
+        // 🔞 게임 7: 29금 진실게임 엔진
         // ==========================================
         const adultTruthQuestions = [
             "가장 최근에 했던 야한 꿈에서 가장 자극적이었던 장면은?",
@@ -1205,7 +1189,6 @@
             
             displayEl.style.opacity = 0;
             setTimeout(() => {
-                // Q1 등의 수식어구 없이 핵심 질문 본문만 완전 무작위 표출되도록 커스텀
                 displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`;
                 displayEl.style.opacity = 1;
                 truthQuestionIdx++;
