@@ -125,6 +125,24 @@
         .result-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.85); z-index: 1000; justify-content: center; align-items: center; text-align: center; }
         .result-popup-content { background: var(--card-bg); border: 3px solid var(--accent); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
         
+        /* 🪜 사다리 전용 모바일 최적화 큰 자막 오버레이 */
+        .ladder-big-text-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16vw; /* 화면 넓이에 맞추어 반응형 자동 조절 */
+            font-weight: 900;
+            text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.8);
+            z-index: 9999; /* 모바일에서 최상위 레이어 보장 */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease-in-out;
+        }
+        .ladder-big-text-overlay.pass { color: #2ecc71; } /* 통과는 녹색 */
+        .ladder-big-text-overlay.oneshot { color: #e74c3c; } /* 원샷은 빨간색 */
+        .ladder-big-text-overlay.show { opacity: 1; }
+
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* --- 🔞 게임 7: 29금 진실게임 --- */
@@ -295,6 +313,9 @@
             <div id="popupResultText" style="font-size:2.2rem; font-weight:bold; color:var(--warning); text-shadow: 0 0 10px rgba(245,158,11,0.3);">결과</div>
         </div>
     </div>
+
+    <!-- 🪜 사다리 큰 자막 전용 엘리먼트 추가 -->
+    <div id="ladderBigText" class="ladder-big-text-overlay"></div>
 
     <script>
         // 우클릭 및 개발자 도구 단축키 방지 기능
@@ -971,7 +992,7 @@
                     titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`;
                     textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`;
                 }
-                btnEl.textContent = "역할 확인하기";
+                btnEl.textContent = "역할 역할 확인하기";
                 btnEl.onclick = revealIdentityToPlayer;
             } else {
                 titleEl.textContent = "👑 왕의 오더 하차!";
@@ -1105,10 +1126,31 @@
                     document.getElementById('popupResultText').textContent = finalResultStr;
                     popup.style.display = 'flex';
                     
+                    // 🪜 [추가 구현] 모바일용 화면 중앙 거대 결과 텍스트 연출 로직
+                    const bigTextEl = document.getElementById('ladderBigText');
+                    bigTextEl.className = 'ladder-big-text-overlay'; // 클래스 초기화
+                    
+                    if (finalResultStr.includes('통과')) {
+                        bigTextEl.textContent = '통과!';
+                        bigTextEl.classList.add('pass');
+                    } else if (finalResultStr.includes('원샷')) {
+                        bigTextEl.textContent = '원샷!';
+                        bigTextEl.classList.add('oneshot');
+                    } else {
+                        bigTextEl.textContent = finalResultStr;
+                        bigTextEl.style.color = 'var(--warning)';
+                    }
+                    
+                    bigTextEl.classList.add('show');
+                    
                     triggerVibrate([150, 50, 100]);
                     isLadderRunning = false;
                     
-                    setTimeout(() => { popup.style.display = 'none'; }, 2500);
+                    // 1.8초 뒤 팝업 및 큰 글씨 서서히 제거
+                    setTimeout(() => { 
+                        popup.style.display = 'none'; 
+                        bigTextEl.classList.remove('show');
+                    }, 1800);
                 }
             }
             requestAnimationFrame(anim);
