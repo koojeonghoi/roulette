@@ -125,6 +125,17 @@
         .result-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.85); z-index: 1000; justify-content: center; align-items: center; text-align: center; }
         .result-popup-content { background: var(--card-bg); border: 3px solid var(--accent); border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s ease-out; }
         
+        /* 🪜 사다리 결과 텍스트 배경색 하이라이트 및 볼딩 스타일 추가 */
+        .ladder-highlight-text {
+            display: inline-block;
+            background-color: #fff3cd; /* 부드러운 노란색 하이라이트 배경 */
+            color: #856404;            /* 진한 골드 빛 브라운 글자색 */
+            font-weight: 900;          /* 완전 굵은 글씨 (볼딩) */
+            padding: 4px 14px;         /* 글자 좌우 여백 */
+            border-radius: 8px;        /* 하이라이트 박스 라운딩 */
+            box-shadow: 0 2px 8px rgba(245,158,11,0.3); /* 하이라이트 가독성 증폭 광채 효과 */
+        }
+
         /* 🪜 사다리 전용 모바일 최적화 큰 자막 오버레이 */
         .ladder-big-text-overlay {
             position: fixed;
@@ -308,9 +319,9 @@
     <!-- 🪜 사다리 결과 알림 오버레이 팝업 -->
     <div id="resultPopup" class="result-popup-overlay" onclick="this.style.display='none'">
         <div class="result-popup-content">
-            <h2 id="popupPlayerName" style="color:#fff; font-size:1.4rem; margin-bottom:10px;">플레이어</h2>
+            <h2 id="popupPlayerName" style="color:#fff; font-size:1.4rem; margin-bottom:15px;">플레이어</h2>
             <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:15px;">사다리 타기 결과</div>
-            <div id="popupResultText" style="font-size:2.2rem; font-weight:bold; color:var(--warning); text-shadow: 0 0 10px rgba(245,158,11,0.3);">결과</div>
+            <div id="popupResultBox"><span id="popupResultText" class="ladder-highlight-text">결과</span></div>
         </div>
     </div>
 
