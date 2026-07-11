@@ -140,43 +140,65 @@
         }
         .result-popup-content { background: #111827; border: 3px solid #334155; border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); animation: scaleUp 0.25s ease-out; }
         
-        /* 🪜 결과에 따른 글자 색상 수정 (녹색/빨간색 테마화) */
+        /* 🪜 결과에 따른 뱃지형 스타일 (배경 + 아이콘으로 식별성 강화) */
         .ladder-highlight-text {
-            display: inline-block;
-            font-size: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.7rem;
             font-weight: 900;          
-            padding: 4px 14px;         
-            border-radius: 8px;        
+            padding: 8px 20px;         
+            border-radius: 14px;
+            border: 2px solid transparent;
         }
         .ladder-highlight-text.pass {
             color: #10b981; /* 통과는 녹색 */
+            background: rgba(16,185,129,0.15);
+            border-color: #10b981;
             text-shadow: 0 0 15px rgba(16,185,129,0.6);
         }
         .ladder-highlight-text.oneshot {
             color: #f43f5e; /* 원샷은 빨간색 */
+            background: rgba(244,63,94,0.15);
+            border-color: #f43f5e;
             text-shadow: 0 0 15px rgba(244,63,94,0.6);
         }
         .ladder-highlight-text.default {
             color: var(--warning);
+            background: rgba(245,158,11,0.15);
+            border-color: var(--warning);
             text-shadow: 0 0 15px rgba(245,158,11,0.6);
         }
 
-        /* 🪜 사다리 전용 모바일 최적화 큰 자막 오버레이 */
+        /* 🪜 사다리 전용 모바일 최적화 큰 결과 카드 오버레이 (도형 배지 + 아이콘으로 식별성 강화) */
         .ladder-big-text-overlay {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18vw; /* 가독성을 위해 크기 소폭 확대 */
-            font-weight: 900;
+            transform: translate(-50%, -50%) scale(0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 78vw;
+            max-width: 380px;
+            padding: 34px 20px;
+            border-radius: 32px;
             z-index: 9999; 
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.25s ease-in-out;
+            border: 4px solid rgba(255,255,255,0.35);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+            transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
         }
-        .ladder-big-text-overlay.pass { color: #10b981; text-shadow: 0px 0px 25px rgba(16,185,129,0.8), 0px 4px 10px rgba(0,0,0,0.9); } /* 통과는 녹색 */
-        .ladder-big-text-overlay.oneshot { color: #f43f5e; text-shadow: 0px 0px 25px rgba(244,63,94,0.8), 0px 4px 10px rgba(0,0,0,0.9); } /* 원샷은 빨간색 */
-        .ladder-big-text-overlay.show { opacity: 1; }
+        .ladder-big-text-overlay .ladder-big-icon { font-size: 4.2rem; line-height: 1; margin-bottom: 8px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+        .ladder-big-text-overlay .ladder-big-label { font-size: 2.6rem; font-weight: 900; line-height: 1.2; color: #fff; text-align: center; text-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
+        /* 통과는 녹색 배지 */
+        .ladder-big-text-overlay.pass { background: linear-gradient(155deg, rgba(16,185,129,0.97), rgba(4,80,55,0.97)); }
+        /* 원샷은 빨간색 배지 */
+        .ladder-big-text-overlay.oneshot { background: linear-gradient(155deg, rgba(244,63,94,0.97), rgba(130,10,35,0.97)); }
+        .ladder-big-text-overlay.default { background: linear-gradient(155deg, rgba(245,158,11,0.97), rgba(130,75,5,0.97)); }
+        .ladder-big-text-overlay.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -349,8 +371,11 @@
         </div>
     </div>
 
-    <!-- 🪜 사다리 큰 자막 전용 엘리먼트 -->
-    <div id="ladderBigText" class="ladder-big-text-overlay"></div>
+    <!-- 🪜 사다리 큰 결과 카드 전용 엘리먼트 (아이콘 + 라벨로 색상 없이도 식별 가능) -->
+    <div id="ladderBigText" class="ladder-big-text-overlay">
+        <div class="ladder-big-icon" id="ladderBigIcon"></div>
+        <div class="ladder-big-label" id="ladderBigLabel"></div>
+    </div>
 
     <script>
         // 우클릭 및 개발자 도구 단축키 방지 기능
@@ -709,83 +734,160 @@
         }
         function endDraw() { isDrawing = false; }
 
+        // 📐 실제 도형 윤곽선(타겟 미리보기와 동일한 좌표)을 기준으로 사용자가 그린 경로와의
+        // 형태 유사도를 정밀 비교하는 채점 엔진 (Chamfer Distance 기반)
+
+        // 두 정점 사이를 직선으로 보간해 다각형 윤곽선 위의 점들을 생성
+        function sampleEdgePoints(vertices, total) {
+            const pts = [];
+            const n = vertices.length;
+            const perEdge = Math.max(1, Math.floor(total / n));
+            for (let i = 0; i < n; i++) {
+                const a = vertices[i], b = vertices[(i + 1) % n];
+                for (let j = 0; j < perEdge; j++) {
+                    const t = j / perEdge;
+                    pts.push({ x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t });
+                }
+            }
+            return pts;
+        }
+
+        // 3차 베지어 곡선 위의 한 점 계산 (하트 모양용)
+        function cubicBezierPoint(p0, c1, c2, p1, t) {
+            const mt = 1 - t;
+            const x = mt*mt*mt*p0[0] + 3*mt*mt*t*c1[0] + 3*mt*t*t*c2[0] + t*t*t*p1[0];
+            const y = mt*mt*mt*p0[1] + 3*mt*mt*t*c1[1] + 3*mt*t*t*c2[1] + t*t*t*p1[1];
+            return { x, y };
+        }
+
+        // 미리보기 SVG와 완전히 동일한 좌표로 도형의 "정답 윤곽선" 좌표들을 생성
+        function generateShapeTemplatePoints(type) {
+            const N = 200;
+            if (type === 'circle') {
+                const cx = 40, cy = 40, r = 30;
+                const pts = [];
+                for (let i = 0; i < N; i++) {
+                    const t = (2 * Math.PI * i) / N;
+                    pts.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) });
+                }
+                return pts;
+            }
+            if (type === 'triangle') {
+                return sampleEdgePoints([[40,10],[10,70],[70,70]], N);
+            }
+            if (type === 'star') {
+                return sampleEdgePoints([[40,5],[50,30],[78,30],[55,47],[64,74],[40,56],[16,74],[25,47],[2,30],[30,30]], N);
+            }
+            if (type === 'lightning') {
+                return sampleEdgePoints([[50,5],[15,50],[40,50],[25,95],[70,45],[45,45]], N);
+            }
+            if (type === 'heart') {
+                const segs = [
+                    { p0:[40,25], c1:[40,10], c2:[15,10], p1:[15,32] },
+                    { p0:[15,32], c1:[15,53], c2:[40,72], p1:[40,72] },
+                    { p0:[40,72], c1:[40,72], c2:[65,53], p1:[65,32] },
+                    { p0:[65,32], c1:[65,10], c2:[40,10], p1:[40,25] }
+                ];
+                const perSeg = Math.floor(N / segs.length);
+                const pts = [];
+                segs.forEach(seg => {
+                    for (let i = 0; i < perSeg; i++) {
+                        pts.push(cubicBezierPoint(seg.p0, seg.c1, seg.c2, seg.p1, i / perSeg));
+                    }
+                });
+                return pts;
+            }
+            return [];
+        }
+
+        // 점들의 중심을 원점으로, 가장 긴 변을 기준으로 크기를 1로 정규화 (위치/크기 무관하게 형태만 비교)
+        // 상하위 3%를 트림한 바운딩박스를 사용해, 시작점에서 튄 점 하나 때문에 전체 스케일이
+        // 왜곡되는 것을 방지 (예: 펜을 대는 순간 살짝 어긋난 좌표가 찍히는 경우)
+        function robustAxisBounds(values) {
+            const sorted = [...values].sort((a, b) => a - b);
+            const n = sorted.length;
+            const lo = Math.floor(n * 0.03);
+            const hi = Math.min(n - 1, Math.ceil(n * 0.97));
+            return { min: sorted[lo], max: sorted[hi] };
+        }
+        function normalizeShapePoints(points) {
+            const xs = points.map(p => p.x), ys = points.map(p => p.y);
+            const bx = robustAxisBounds(xs), by = robustAxisBounds(ys);
+            const cx = (bx.min + bx.max) / 2, cy = (by.min + by.max) / 2;
+            const scale = Math.max(bx.max - bx.min, by.max - by.min, 1e-6) / 2;
+            return points.map(p => ({ x: (p.x - cx) / scale, y: (p.y - cy) / scale }));
+        }
+
+        // 마우스를 빠르게 움직이면 실제 화면엔 매끄러운 선이 그려지지만 기록되는 좌표는 듬성듬성해질 수 있음.
+        // 렌더링 때와 동일하게 점 사이를 직선으로 이어서 점을 촘촘하게 보강해줘야 채점이 실제로 그린 모양과 일치함
+        function densifyUserPoints(points, maxGap) {
+            if (points.length < 2) return points;
+            const out = [points[0]];
+            for (let i = 1; i < points.length; i++) {
+                const a = points[i - 1], b = points[i];
+                const dist = Math.hypot(b.x - a.x, b.y - a.y);
+                const steps = Math.min(20, Math.floor(dist / maxGap));
+                for (let s = 1; s <= steps; s++) {
+                    const t = s / (steps + 1);
+                    out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+                }
+                out.push(b);
+            }
+            return out;
+        }
+
+        // 상위 일부 극단치를 제외한 평균(trimmed mean) — 손이 순간적으로 튄 지점 한두 개 때문에
+        // 전체 점수가 과도하게 깎이지 않도록 함
+        function trimmedAvgMinDist(src, dst, trimRatio) {
+            const dists = src.map(p => {
+                let minD = Infinity;
+                for (const q of dst) {
+                    const dx = p.x - q.x, dy = p.y - q.y;
+                    const d = dx*dx + dy*dy;
+                    if (d < minD) minD = d;
+                }
+                return Math.sqrt(minD);
+            }).sort((a, b) => a - b);
+            const cut = Math.floor(dists.length * (1 - trimRatio));
+            const kept = dists.slice(0, Math.max(1, cut));
+            return kept.reduce((s, v) => s + v, 0) / kept.length;
+        }
+
+        // Chamfer Distance: (내가 그린 선이 정답 윤곽선에서 얼마나 벗어났는지) + (정답 윤곽선을 얼마나 빠짐없이 따라갔는지)
+        // 두 값을 함께 봐서 "삐뚤빼뚤하게 그림" 과 "일부만 그리고 만 것" 모두를 정확히 감점
+        function chamferDistance(a, b) {
+            const precision = trimmedAvgMinDist(a, b, 0.08); // 내가 그린 점 중 순간적으로 튄 상위 8%는 무시
+            const recall = trimmedAvgMinDist(b, a, 0.03);     // 정답 도형을 빠짐없이 따라갔는지는 거의 그대로 반영
+            return (precision + recall) / 2;
+        }
+
         function evaluateDrawing() {
             clearInterval(shapeTimer); isShapeLocked = true;
             if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
-            
-            let sumX = 0, sumY = 0;
+
+            // 점 몇 개만 콕콕 찍은 수준으로 너무 작게 그렸다면 바로 저점 처리
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            
             userPoints.forEach(p => {
-                sumX += p.x; sumY += p.y;
                 if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
                 if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
             });
-            
-            const centerX = sumX / userPoints.length;
-            const centerY = sumY / userPoints.length;
-            const w = maxX - minX; const h = maxY - minY;
-            const aspect = w / (h || 1);
-            
-            let radii = [];
-            userPoints.forEach(p => {
-                const dx = p.x - centerX;
-                const dy = p.y - centerY;
-                const r = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx);
-                radii.push({ r, angle });
-            });
-            
-            let baseScore = 70;
-            
-            if (currentShapeType === 'circle') {
-                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
-                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
-                const stdDev = Math.sqrt(variance);
-                
-                const consistency = Math.max(0, 1 - (stdDev / (avgRadius || 1)));
-                const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect));
-                
-                baseScore = (consistency * 75) + (aspectFit * 21);
-            } 
-            else if (currentShapeType === 'triangle') {
-                const aspectErr = Math.abs(1.15 - aspect);
-                const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5);
-                
-                let fitScore = 95 - (aspectErr * 80) - (symmetryErr * 120);
-                baseScore = Math.max(50, fitScore);
-            } 
-            else if (currentShapeType === 'heart') {
-                let leftSum = 0, rightSum = 0, leftCnt = 0, rightCnt = 0;
-                radii.forEach(item => {
-                    if (item.angle < -Math.PI/2 || item.angle > Math.PI/2) { leftSum += item.r; leftCnt++; }
-                    else { rightSum += item.r; rightCnt++; }
-                });
-                const leftAvg = leftSum / (leftCnt || 1);
-                const rightAvg = rightSum / (rightCnt || 1);
-                const symmetryErr = Math.abs(leftAvg - rightAvg) / ((leftAvg + rightAvg) / 2 || 1);
-                
-                let fitScore = 94 - (symmetryErr * 150) - (Math.abs(1.1 - aspect) * 40);
-                baseScore = Math.max(45, fitScore);
-            } 
-            else if (currentShapeType === 'star' || currentShapeType === 'lightning') {
-                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
-                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
-                const stdDev = Math.sqrt(variance);
-                
-                const waveFactor = stdDev / (avgRadius || 1);
-                let fitScore = 65;
-                if (waveFactor > 0.15 && waveFactor < 0.45) {
-                    fitScore = 85 + (30 * (0.3 - Math.abs(0.3 - waveFactor)));
-                } else {
-                    fitScore = 55 + (waveFactor * 60);
-                }
-                baseScore = Math.max(40, Math.min(95, fitScore));
+            const drawnSize = Math.max(maxX - minX, maxY - minY);
+            if (drawnSize < 15) {
+                document.getElementById('scoreOutput').textContent = `5점!`;
+                document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>5점</strong> (너무 작게 그렸어요!)`;
+                triggerVibrate([120, 50]);
+                return;
             }
-            
-            let finalScore = Math.floor(baseScore) + Math.floor(Math.random() * 5);
-            if (finalScore > 100) finalScore = 100;
-            if (finalScore < 10) finalScore = 10;
+
+            const templatePoints = generateShapeTemplatePoints(currentShapeType);
+            const densifiedUser = densifyUserPoints(userPoints, 3);
+            const normalizedUser = normalizeShapePoints(densifiedUser);
+            const normalizedTemplate = normalizeShapePoints(templatePoints);
+
+            const error = chamferDistance(normalizedUser, normalizedTemplate);
+            // 오차가 작을수록(정확히 그렸을수록) 점수가 높아지는 지수 감쇠 함수
+            let finalScore = Math.round(100 * Math.exp(-3.6 * error));
+            finalScore = Math.max(1, Math.min(100, finalScore));
             
             document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
             document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
@@ -1158,32 +1260,39 @@
                     const textContainer = document.getElementById('popupResultText');
                     document.getElementById('popupPlayerName').innerHTML = `👤 <strong>${mInput[targetIdx]}</strong> 님의 결과`;
                     
-                    // 사다리 결과에 따른 텍스트 스타일/컬러 조건부 클래스 바인딩 (녹색 / 빨간색 구현)
+                    // 사다리 결과에 따른 뱃지 스타일/아이콘 조건부 바인딩 (색상 + 아이콘 이중 식별)
                     textContainer.className = 'ladder-highlight-text';
+                    let resultIcon = '🎯';
                     if (finalResultStr.includes('통과')) {
                         textContainer.classList.add('pass');
+                        resultIcon = '✅';
                     } else if (finalResultStr.includes('원샷')) {
                         textContainer.classList.add('oneshot');
+                        resultIcon = '🍻';
                     } else {
                         textContainer.classList.add('default');
                     }
-                    textContainer.textContent = finalResultStr;
+                    textContainer.textContent = `${resultIcon} ${finalResultStr}`;
                     popup.style.display = 'flex';
                     
-                    // 🪜 모바일용 화면 중앙 거대 결과 텍스트 연출 로직 (녹색 / 빨간색 구현)
+                    // 🪜 모바일용 화면 중앙 거대 결과 카드 연출 로직 (배경 배지 + 아이콘으로 식별성 강화)
                     const bigTextEl = document.getElementById('ladderBigText');
+                    const bigIconEl = document.getElementById('ladderBigIcon');
+                    const bigLabelEl = document.getElementById('ladderBigLabel');
                     bigTextEl.className = 'ladder-big-text-overlay'; 
                     
                     if (finalResultStr.includes('통과')) {
-                        bigTextEl.textContent = '통과!';
+                        bigIconEl.textContent = '✅';
+                        bigLabelEl.textContent = '통과!';
                         bigTextEl.classList.add('pass');
                     } else if (finalResultStr.includes('원샷')) {
-                        bigTextEl.textContent = '원샷!';
+                        bigIconEl.textContent = '🍻';
+                        bigLabelEl.textContent = '원샷!';
                         bigTextEl.classList.add('oneshot');
                     } else {
-                        bigTextEl.textContent = finalResultStr;
-                        bigTextEl.style.color = 'var(--warning)';
-                        bigTextEl.style.textShadow = '0px 0px 25px rgba(245,158,11,0.8), 0px 4px 10px rgba(0,0,0,0.9)';
+                        bigIconEl.textContent = '🎯';
+                        bigLabelEl.textContent = finalResultStr;
+                        bigTextEl.classList.add('default');
                     }
                     
                     bigTextEl.classList.add('show');
