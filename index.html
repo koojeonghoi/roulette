@@ -1135,22 +1135,5 @@
             });
         });
     </script>
-    <script>
-      // 1. 마우스 우클릭 방지
-      document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-      });
-
-      // 2. F12 및 주요 개발자 도구 단축키 방지
-      document.addEventListener('keydown', function(e) {
-        if (
-          e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) || 
-          (e.ctrlKey && e.key === 'U')
-            ) {
-          e.preventDefault();
-        }
-      });
-    </script>
 </body>
 </html>
