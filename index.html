@@ -659,15 +659,91 @@
         function evaluateDrawing() {
             clearInterval(shapeTimer); isShapeLocked = true;
             if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
+            
+            // 1. 도형의 중심점(Center) 및 바운딩 박스 계산
+            let sumX = 0, sumY = 0;
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            
             userPoints.forEach(p => {
-                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+                sumX += p.x; sumY += p.y;
+                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
             });
-            const w = maxX - minX; const h = maxY - minY; const aspect = w / h; let baseScore = 65;
-            if (currentShapeType === 'circle') { let ratio = Math.min(w, h) / Math.max(w, h); baseScore = Math.floor(ratio * 95); }
-            else if (currentShapeType === 'triangle') baseScore = (aspect > 0.8 && aspect < 1.2) ? 85 : 60;
-            else baseScore = (userPoints.length > 25) ? 80 : 55;
-            let finalScore = baseScore + Math.floor(Math.random() * 8); if (finalScore > 100) finalScore = 100;
+            
+            const centerX = sumX / userPoints.length;
+            const centerY = sumY / userPoints.length;
+            const w = maxX - minX; const h = maxY - minY;
+            const aspect = w / (h || 1);
+            
+            // 2. 중심점으로부터 각 정점까지의 거리(반지름) 및 각도 수집
+            let radii = [];
+            userPoints.forEach(p => {
+                const dx = p.x - centerX;
+                const dy = p.y - centerY;
+                const r = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                radii.push({ r, angle });
+            });
+            
+            let baseScore = 70;
+            
+            // 3. 도형 유형별 정밀 수학 채점
+            if (currentShapeType === 'circle') {
+                // [동그라미]: 중심에서 모든 점까지의 거리(반지름)가 얼마나 일정한지 변동계수 계산
+                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
+                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
+                const stdDev = Math.sqrt(variance);
+                
+                // 반지름의 표준편차가 평균 반지름 대비 작을수록 고득점 (최대 96점)
+                const consistency = Math.max(0, 1 - (stdDev / (avgRadius || 1)));
+                const aspectFit = Math.max(0, 1 - Math.abs(1 - aspect)); // 가로세로 비율 1:1에 가까울수록
+                
+                baseScore = (consistency * 75) + (aspectFit * 21);
+            } 
+            else if (currentShapeType === 'triangle') {
+                // [삼각형]: 아래쪽 두 꼭짓점과 위쪽 한 꼭짓점의 대칭성 및 가로세로 비율 매칭
+                const aspectErr = Math.abs(1.0 - aspect); // 정삼각형에 가까운 비율 타겟
+                const symmetryErr = Math.abs((centerX - minX) / (w || 1) - 0.5); // 좌우 대칭 검사
+                
+                let fitScore = 95 - (aspectErr * 80) - (symmetryErr * 120);
+                baseScore = Math.max(50, fitScore);
+            } 
+            else if (currentShapeType === 'heart') {
+                // [하트]: 좌우 대칭성 및 굴곡 형태 변정 검사
+                let leftSum = 0, rightSum = 0, leftCnt = 0, rightCnt = 0;
+                radii.forEach(item => {
+                    if (item.angle < -Math.PI/2 || item.angle > Math.PI/2) { leftSum += item.r; leftCnt++; }
+                    else { rightSum += item.r; rightCnt++; }
+                });
+                const leftAvg = leftSum / (leftCnt || 1);
+                const rightAvg = rightSum / (rightCnt || 1);
+                const symmetryErr = Math.abs(leftAvg - rightAvg) / ((leftAvg + rightAvg) / 2 || 1);
+                
+                let fitScore = 94 - (symmetryErr * 150) - (Math.abs(1.1 - aspect) * 40);
+                baseScore = Math.max(45, fitScore);
+            } 
+            else if (currentShapeType === 'star' || currentShapeType === 'lightning') {
+                // [별/번개]: 정점의 개수와 선의 굴곡에 의한 반지름의 주기적 변화(분산 값) 신뢰도 측정
+                const avgRadius = radii.reduce((sum, item) => sum + item.r, 0) / radii.length;
+                const variance = radii.reduce((sum, item) => sum + Math.pow(item.r - avgRadius, 2), 0) / radii.length;
+                const stdDev = Math.sqrt(variance);
+                
+                // 별과 번개는 외곽선과 골짜기선이 반복되므로 표준편차가 적당히 커야(굴곡이 깊어야) 예쁜 모양이 나옵니다.
+                const waveFactor = stdDev / (avgRadius || 1);
+                let fitScore = 65;
+                if (waveFactor > 0.15 && waveFactor < 0.45) {
+                    fitScore = 85 + (30 * (0.3 - Math.abs(0.3 - waveFactor)));
+                } else {
+                    fitScore = 55 + (waveFactor * 60);
+                }
+                baseScore = Math.max(40, Math.min(95, fitScore));
+            }
+            
+            // 4. 인간미를 위한 미세 보정 (+0 ~ +4점 랜덤 변수만 허용) 및 100점 상한선 제어
+            let finalScore = Math.floor(baseScore) + Math.floor(Math.random() * 5);
+            if (finalScore > 100) finalScore = 100;
+            if (finalScore < 10) finalScore = 10; // 최소 점수 보장
+            
             document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
             document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
         }
