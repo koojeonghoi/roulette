@@ -960,6 +960,40 @@
             document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player'); runLadderTrace(playerIdx);
         }
 
+        // 기존 팝업과 완전히 별개로 동작하는 결과 표시용 - CSS 클래스나 애니메이션에 의존하지 않고
+        // 모든 스타일을 인라인으로 직접 지정해서, 브라우저별 CSS 처리 차이로 인한 렌더링 문제를 원천 차단
+        function showLadderResultToast(playerName, resultStr, resultIcon) {
+            let toast = document.getElementById('ladderResultToastV2');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'ladderResultToastV2';
+                document.body.appendChild(toast);
+            }
+            toast.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(11,15,25,0.95);z-index:2147483647;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;box-sizing:border-box;';
+            toast.onclick = () => { toast.style.display = 'none'; };
+
+            let color = '#f59e0b';
+            if (resultStr.includes('통과')) color = '#10b981';
+            else if (resultStr.includes('원샷')) color = '#f43f5e';
+
+            const box = document.createElement('div');
+            box.style.cssText = `background:#111827;border:3px solid ${color};border-radius:24px;padding:36px 24px;max-width:340px;width:85%;box-sizing:border-box;box-shadow:0 20px 40px rgba(0,0,0,0.8);`;
+
+            const nameEl = document.createElement('div');
+            nameEl.style.cssText = 'color:#ffffff;font-size:1.3rem;font-weight:bold;margin-bottom:16px;';
+            nameEl.textContent = `👤 ${playerName} 님의 결과`;
+
+            const resultEl = document.createElement('div');
+            resultEl.style.cssText = `font-size:2rem;font-weight:900;color:${color};`;
+            resultEl.textContent = `${resultIcon} ${resultStr}`;
+
+            box.appendChild(nameEl); box.appendChild(resultEl);
+            toast.innerHTML = ''; toast.appendChild(box);
+
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 1800);
+        }
+
         function runLadderTrace(targetIdx) {
             isLadderRunning = true;
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
@@ -995,6 +1029,8 @@
                     popupContent.classList.remove('popup-animate');
                     void popupContent.offsetWidth; // 강제 리플로우로 애니메이션 재시작 (모바일 사파리 대응)
                     popupContent.classList.add('popup-animate');
+
+                    showLadderResultToast(mInput[targetIdx], finalResultStr, resultIcon);
 
                     triggerVibrate([150, 50, 100]); isLadderRunning = false;
                     setTimeout(() => { popup.style.display = 'none'; }, 1800);
