@@ -146,7 +146,8 @@
             align-items: center; 
             text-align: center; 
         }
-        .result-popup-content { background: #111827; border: 3px solid #334155; border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); animation: scaleUp 0.25s ease-out; }
+        .result-popup-content { background: #111827; border: 3px solid #334155; border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); opacity: 1; transform: scale(1); }
+        .result-popup-content.popup-animate { animation: scaleUp 0.25s ease-out; }
         
         .ladder-highlight-text {
             display: inline-flex;
@@ -990,6 +991,10 @@
                     else if (finalResultStr.includes('원샷')) { textContainer.classList.add('oneshot'); resultIcon = '🍻'; }
                     else { textContainer.classList.add('default'); }
                     textContainer.textContent = `${resultIcon} ${finalResultStr}`; popup.style.display = 'flex';
+                    const popupContent = popup.querySelector('.result-popup-content');
+                    popupContent.classList.remove('popup-animate');
+                    void popupContent.offsetWidth; // 강제 리플로우로 애니메이션 재시작 (모바일 사파리 대응)
+                    popupContent.classList.add('popup-animate');
 
                     triggerVibrate([150, 50, 100]); isLadderRunning = false;
                     setTimeout(() => { popup.style.display = 'none'; }, 1800);
