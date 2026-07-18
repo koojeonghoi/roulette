@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>초호화 술자리 패키지 오락실 | v26.7.11</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>초호화 술자리 패키지 오락실 | v26.7.18</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -24,9 +24,19 @@
             -webkit-tap-highlight-color: transparent; user-select: none;
         }
 
+        html, body {
+            height: 100%;
+            height: -webkit-fill-available;
+            height: 100dvh; /* 모바일 동적 뷰포트 높이 맞춤으로 스크롤 어긋남 방지 */
+            width: 100vw;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            overscroll-behavior: none; /* 두손가락으로 내릴 때 당겨지는 바운스 현상 방지 */
+        }
+
         body { 
-            background-color: var(--bg-color); color: var(--text); 
-            height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; 
+            color: var(--text); 
+            display: flex; flex-direction: column; 
         }
 
         .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -38,6 +48,7 @@
         .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .game-panel.active { display: flex; }
 
+        .panel-header { flex-shrink: 0; }
         .panel-header h2 { font-size: 1.3rem; color: #fff; margin-bottom: 2px; }
         .panel-header .desc { font-size: 0.82rem; color: #94a3b8; line-height: 1.3; min-height: 34px; display: flex; align-items: center; justify-content: center; }
 
@@ -68,10 +79,17 @@
         .tile-btn.exploded { background: var(--primary); animation: shake 0.1s infinite; }
         .boom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(244, 63, 94, 0.95); z-index: 999; justify-content: center; align-items: center; flex-direction: column; animation: flash 0.3s infinite alternate; }
 
-        /* --- 🤫 게임 3: 라이어 게임 --- */
-        .liar-box { background: #0b0f19; border-radius: 18px; padding: 20px; margin: auto 0; min-height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #334155; width: 100%; }
-        .word-hidden { background: var(--secondary); color: white; padding: 20px; font-weight: bold; border-radius: 14px; width: 100%; font-size: 1.4rem; text-align: center; cursor: pointer; line-height: 1.4; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
-        .category-badge { font-size: 1rem; color: var(--warning); font-weight: bold; margin-bottom: 10px; background: #1e293b; padding: 4px 14px; border-radius: 20px; border: 1px solid #475569; }
+        /* --- 🔮 게임 3: 운명카드 게임 (신규 반영) --- */
+        .card-game-wrap { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; perspective: 1000px; margin: auto 0; }
+        .destiny-card { width: 85%; max-width: 280px; aspect-ratio: 0.65; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .destiny-card.flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; }
+        .card-front { background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; border-color: #818cf8; }
+        .card-back { background: #0f172a; color: white; transform: rotateY(180deg); border-color: var(--warning); justify-content: space-between; }
+        .card-front .logo { font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); margin-bottom: 10px; animation: pulse 2s infinite; }
+        .card-back .mission-title { font-size: 1.25rem; font-weight: bold; color: var(--warning); border-bottom: 1px dashed #334155; width: 100%; padding-bottom: 8px; }
+        .card-back .mission-text { font-size: 1.2rem; font-weight: bold; line-height: 1.5; word-break: keep-all; flex: 1; display: flex; align-items: center; justify-content: center; }
+        .card-back .mission-tag { font-size: 0.8rem; background: #1e293b; padding: 4px 12px; border-radius: 20px; color: #94a3b8; border: 1px solid #334155; }
 
         /* --- 📐 게임 4: 도형 그리기 --- */
         .shape-preview-box { background: #0b0f19; width: 100%; padding: 10px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px dashed #475569; }
@@ -122,7 +140,6 @@
         }
         .ladder-labels.bottom-labels span.hit-result { color: #fff; background: var(--accent); border-radius: 10px; font-weight: bold; border-color: #fff; box-shadow: 0 0 10px var(--accent); }
 
-        /* 🪜 사다리 결과 팝업 배경 블러 효과 추가 및 스타일 수정 */
         .result-popup-overlay { 
             display: none; 
             position: fixed; 
@@ -131,7 +148,7 @@
             width: 100vw; 
             height: 100vh; 
             background: rgba(11, 15, 25, 0.7); 
-            backdrop-filter: blur(12px); /* 배경을 흐릿하게 만드는 이펙트 추가 */
+            backdrop-filter: blur(12px); 
             -webkit-backdrop-filter: blur(12px);
             z-index: 1000; 
             justify-content: center; 
@@ -140,7 +157,6 @@
         }
         .result-popup-content { background: #111827; border: 3px solid #334155; border-radius: 24px; padding: 30px; width: 85%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); animation: scaleUp 0.25s ease-out; }
         
-        /* 🪜 결과에 따른 뱃지형 스타일 (배경 + 아이콘으로 식별성 강화) */
         .ladder-highlight-text {
             display: inline-flex;
             align-items: center;
@@ -151,26 +167,10 @@
             border-radius: 14px;
             border: 2px solid transparent;
         }
-        .ladder-highlight-text.pass {
-            color: #10b981; /* 통과는 녹색 */
-            background: rgba(16,185,129,0.15);
-            border-color: #10b981;
-            text-shadow: 0 0 15px rgba(16,185,129,0.6);
-        }
-        .ladder-highlight-text.oneshot {
-            color: #f43f5e; /* 원샷은 빨간색 */
-            background: rgba(244,63,94,0.15);
-            border-color: #f43f5e;
-            text-shadow: 0 0 15px rgba(244,63,94,0.6);
-        }
-        .ladder-highlight-text.default {
-            color: var(--warning);
-            background: rgba(245,158,11,0.15);
-            border-color: var(--warning);
-            text-shadow: 0 0 15px rgba(245,158,11,0.6);
-        }
+        .ladder-highlight-text.pass { color: #10b981; background: rgba(16,185,129,0.15); border-color: #10b981; text-shadow: 0 0 15px rgba(16,185,129,0.6); }
+        .ladder-highlight-text.oneshot { color: #f43f5e; background: rgba(244,63,94,0.15); border-color: #f43f5e; text-shadow: 0 0 15px rgba(244,63,94,0.6); }
+        .ladder-highlight-text.default { color: var(--warning); background: rgba(245,158,11,0.15); border-color: var(--warning); text-shadow: 0 0 15px rgba(245,158,11,0.6); }
 
-        /* 🪜 사다리 전용 모바일 최적화 큰 결과 카드 오버레이 (도형 배지 + 아이콘으로 식별성 강화) */
         .ladder-big-text-overlay {
             position: fixed;
             top: 50%;
@@ -193,14 +193,13 @@
         }
         .ladder-big-text-overlay .ladder-big-icon { font-size: 4.2rem; line-height: 1; margin-bottom: 8px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
         .ladder-big-text-overlay .ladder-big-label { font-size: 2.6rem; font-weight: 900; line-height: 1.2; color: #fff; text-align: center; text-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
-        /* 통과는 녹색 배지 */
         .ladder-big-text-overlay.pass { background: linear-gradient(155deg, rgba(16,185,129,0.97), rgba(4,80,55,0.97)); }
-        /* 원샷은 빨간색 배지 */
         .ladder-big-text-overlay.oneshot { background: linear-gradient(155deg, rgba(244,63,94,0.97), rgba(130,10,35,0.97)); }
         .ladder-big-text-overlay.default { background: linear-gradient(155deg, rgba(245,158,11,0.97), rgba(130,75,5,0.97)); }
         .ladder-big-text-overlay.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
         /* --- 🔞 게임 7: 29금 진실게임 --- */
         .truth-box { background: #0b0f19; border-radius: 18px; padding: 22px; margin: auto 0; min-height: 190px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed var(--pink); width: 100%; }
@@ -215,7 +214,7 @@
     <div class="nav-tabs">
         <button id="tab-game1" class="tab-btn active" onclick="switchTab('game1')">🎯 벌칙룰렛</button>
         <button id="tab-game2" class="tab-btn" onclick="switchTab('game2')">💣 폭탄찾기</button>
-        <button id="tab-game3" class="tab-btn" onclick="switchTab('game3')">🤫 라이어게임</button>
+        <button id="tab-game3" class="tab-btn" onclick="switchTab('game3')">🔮 운명카드</button>
         <button id="tab-game4" class="tab-btn" onclick="switchTab('game4')">📐 도형그리기</button>
         <button id="tab-game5" class="tab-btn" onclick="switchTab('game5')">👑 왕게임</button>
         <button id="tab-game6" class="tab-btn" onclick="switchTab('game6')">🪜 사다리타기</button>
@@ -232,7 +231,7 @@
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:4px;">
                     <input type="text" id="memberNames" value="정회, 용원, 정렬" oninput="drawNameRoulette()" style="background:#0b0f19; border:1px solid #334155; padding:10px; color:white; border-radius:10px; font-size:0.9rem; text-align:center;">
                 </div>
-                <div class="roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas"></canvas></div>
+                <div class="rou roulette-container"><div class="canvas-pointer"></div><canvas id="nameCanvas" class="roulette-canvas"></canvas></div>
             </div>
             <div id="stage2" class="stage-container"><div class="stage-badge">STEP 2. 벌칙 결정</div><div class="roulette-container"><div class="canvas-pointer"></div><canvas id="penaltyCanvas" class="roulette-canvas"></canvas></div></div>
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
@@ -246,16 +245,26 @@
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
         </div>
 
-        <!-- 게임 3: 라이어 게임 -->
+        <!-- 게임 3: 운명카드 게임 (신규 반영) -->
         <div id="game3" class="game-panel">
-            <div class="panel-header"><h2>술자리 라이어 게임</h2><div class="desc" id="g3Desc">제시어를 확인하고 라이어를 검거하세요!</div></div>
-            <div class="setup-row"><span>👤 참여 인원:</span><input type="number" id="liarTotalInput" value="3" min="3" style="width:60px; text-align:center;"></div>
-            <div class="liar-box">
-                <div id="liarCategoryBox" class="category-badge" style="display:none;">주제: 대기중</div>
-                <div id="liarTurnInfo" style="font-size:1.1rem; margin-bottom:8px; font-weight:bold; color:var(--warning);">게임을 시작해주세요.</div>
-                <div class="word-hidden" id="liarSecretBox" onclick="toggleLiarWord()">비밀 창 (준비 필요)</div>
+            <div class="panel-header"><h2>🔮 전율의 운명카드</h2><div class="desc" id="g3Desc">카드를 가볍게 터치하면 뒤집히며 절대 운명의 지령이 내립니다.</div></div>
+            <div class="card-game-wrap">
+                <div class="destiny-card" id="destinyCard" onclick="flipDestinyCard()">
+                    <!-- 카드 앞면 (숨김 상태) -->
+                    <div class="card-face card-front">
+                        <div class="logo">🔮</div>
+                        <h3 style="letter-spacing: 2px;">TAROT</h3>
+                        <p style="font-size:0.75rem; color:rgba(255,255,255,0.7); margin-top:5px;">TOUCH TO REVEAL</p>
+                    </div>
+                    <!-- 카드 뒷면 (지령 오픈 상태) -->
+                    <div class="card-face card-back">
+                        <div class="mission-title">✨ 오늘의 절대 운명</div>
+                        <div class="mission-text" id="cardMissionText">지령 로딩 실패</div>
+                        <div class="mission-tag" id="cardMissionTag">술자리 지령</div>
+                    </div>
+                </div>
             </div>
-            <div class="main-btn" id="g3Btn" onclick="startLiarSetup()">라이어 게임 시작</div>
+            <button class="main-btn" id="g3Btn" style="background:var(--secondary); box-shadow: 0 4px 12px rgba(59,130,246,0.3);" onclick="resetDestinyCard()">🔄 새로운 카드 섞기</button>
         </div>
 
         <!-- 게임 4: 도형 그리기 게임 -->
@@ -371,7 +380,7 @@
         </div>
     </div>
 
-    <!-- 🪜 사다리 큰 결과 카드 전용 엘리먼트 (아이콘 + 라벨로 색상 없이도 식별 가능) -->
+    <!-- 🪜 사다리 큰 결과 카드 전용 엘리먼트 -->
     <div id="ladderBigText" class="ladder-big-text-overlay">
         <div class="ladder-big-icon" id="ladderBigIcon"></div>
         <div class="ladder-big-label" id="ladderBigLabel"></div>
@@ -379,20 +388,11 @@
 
     <script>
         // 우클릭 및 개발자 도구 단축키 방지 기능
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12') {
-                e.preventDefault();
-            }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
-                e.preventDefault();
-            }
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-                e.preventDefault();
-            }
+            if (e.key === 'F12') e.preventDefault();
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) e.preventDefault();
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) e.preventDefault();
         });
 
         // ==========================================
@@ -410,6 +410,7 @@
                     if(currentStep === 2) drawPenaltyRoulette();
                 }
                 else if (tabId === 'game2') initBombGame();
+                else if (tabId === 'game3') resetDestinyCard();
                 else if (tabId === 'game4') initShapeGame();
                 else if (tabId === 'game6') initLadderGame();
             });
@@ -630,46 +631,87 @@
         }
 
         // ==========================================
-        // 🤫 게임 3: 라이어 게임 엔진
+        // 🔮 게임 3: 운명카드 엔진 (약 50개 지령 구성)
         // ==========================================
-        const liarDb = [
-            { cat: "연예/방송 📺", words: ["유재석", "아이유", "BTS", "봉준호", "오징어게임", "손흥민", "뉴진스", "에스파", "블랙핑크", "임영웅", "김종국", "차은우", "박보검", "장원영", "런닝맨", "무한도전", "나는솔로", "더글로리", "피식대학", "유튜브", "넷플릭스", "슈퍼맨이돌아왔다"] },
-            { cat: "음식/야식 🍗", words: ["마라탕", "삼겹살", "불닭볶음면", "치즈볼", "탕후루", "떡볶이", "양꼬치", "짜장면", "치킨", "피자", "족발", "곱창", "닭발", "김치찌개", "라면", "초밥", "햄버거", "아이스크림", "붕어빵", "호떡", "김밥", "냉면", "순대"] },
-            { cat: "일상/사물 🏠", words: ["스마트폰", "충전기", "물티슈", "에어컨", "슬리퍼", "노트북", "텀블러", "전자레인지", "리모컨", "이어폰", "선풍기", "냉장고", "세탁기", "안마의자", "우산", "베개", "거울", "화장지", "칫솔", "드라이기", "키보드", "마우스"] },
-            { cat: "장소/핫플 🗺️", words: ["노래방", "클럽", "한강공원", "편의점", "제주도", "캠핑장", "영화관", "헬스장", "놀이공원", "백화점", "카페", "맛집", "바다", "계곡", "찜질방", "호텔", "펜션", "공항", "학교", "회사", "PC방", "포차"] }
+        const destinyMissions = [
+            { text: "오른쪽 사람과 시원하게 러브샷 1잔!", tag: "즉시 벌주 🍺" },
+            { text: "내일 아침 전원에게 아이스 아메리카노 쏘기!", tag: "다음날 커피 ☕" },
+            { text: "편의점 달려가서 숙취해소제 사오기 (or 사주기 약속)", tag: "내기 당첨 🏪" },
+            { text: "지금부터 3턴 동안 모든 말 끝에 '뿅' 붙이기. 틀리면 1잔", tag: "귀여운 패널티 🤫" },
+            { text: "테이블에서 가장 술이 가득 찬 사람과 잔 비우기 대결", tag: "동반 자폭 🍻" },
+            { text: "내일 편의점에서 원하는 음료수 1개씩 다 사주기", tag: "통큰 골든벨 💳" },
+            { text: "왕뚜껑, 컵라면 내일 아침 기프티콘 한 명에게 전송!", tag: "해장 기프티콘 🍜" },
+            { text: "왼쪽 사람에게 안주 먹여주고 소주 반 잔 마시기", tag: "술자리 로맨스 💞" },
+            { text: "스마트폰 갤러리 오픈 후 최근 사진 한 장 공개! 거부 시 1잔", tag: "진실의 문 📱" },
+            { text: "지금 잔에 남아있는 술 깔끔하게 원샷!", tag: "털어 넣어 대장 🍺" },
+            { text: "아무에게나 '나 정말 취했어'라고 카톡 보내고 답장 기다리기", tag: "취중 진담 💬" },
+            { text: "다행히 살아남았다! 패스권! 좌측 사람에게 1잔 토스 가능", tag: "운명 구출 🛡️" },
+            { text: "테이블 전체 안주 한 조각 먹기 전까지 술 마시기 금지", tag: "안주 파이터 🍗" },
+            { text: "다음 날 아침 출근길에 '지각 예방용' 비타500 쏘기", tag: "모닝 활력 🔋" },
+            { text: "카드를 뽑은 자여, 소주 2잔 연속 털어 넣기!", tag: "더블 샷 폭탄 💣" },
+            { text: "테이블에서 가장 나이 어린 사람에게 소주 반 잔 양도", tag: "공포의 연장자 👑" },
+            { text: "테이블에서 가장 나이 많은 사람에게 애교 부리고 패스", tag: "인생 처세술 🌟" },
+            { text: "지금 마시는 술 잔의 절반만큼만 채우고 원샷", tag: "반 잔의 행복 🍶" },
+            { text: "3분 동안 무음 모드 실시! 소리나 웃음 내면 벌주 1잔", tag: "사일런트 힐 🤫" },
+            { text: "모두가 잔을 채우고 건배사를 주도하여 다 함께 원샷!", tag: "분위기 메이커 🎉" },
+            { text: "좌우 양옆 사람에게 술 한 잔씩 가득 따라주기", tag: "친절한 이웃 🫗" },
+            { text: "내일 점심 메뉴 고를 권한 및 커피 내기 독점권 획득", tag: "미래 지배자 🔮" },
+            { text: "카메라 켜고 전원 단체 셀카 촬영하기! 거부자 원샷", tag: "추억 저장 📸" },
+            { text: "노래방 최애곡 1절을 생목으로 부르기! 못하면 벌주 1잔", tag: "방구석 가수 🎤" },
+            { text: "최근 받은 카톡의 마지막 문장 큰소리로 읽기", tag: "강제 박제 ✉️" },
+            { text: "지목한 사람과 눈빛 교환 5초 버티기, 웃는 사람이 마시기", tag: "이글이글 아이즈 👀" },
+            { text: "내일 아침 단톡방에 해장 인증샷 올리기! 실패 시 편의점 음료", tag: "생존 신고 🫡" },
+            { text: "조용히 술잔 들고 아무 말 없이 원샷 후 크으- 외치기", tag: "고독한 미식가 🍶" },
+            { text: "이번 한 번만 다른 사람 벌주 대신 마셔주기 권한 (양도 가능)", tag: "흑기사 면허증 ⚔️" },
+            { text: "핸드폰 배터리 가장 적은 사람과 함께 반 잔 마시기", tag: "방전 동맹 🔋" },
+            { text: "술자리 남은 시간 동안 모든 사람에게 존댓말 쓰기", tag: "유교 사상가 🙇" },
+            { text: "내일 아침 눈뜨자마자 단톡방에 제일 먼저 '카톡'치기, 꼴찌 음료수", tag: "얼리 버드 ⏰" },
+            { text: "테이블에 있는 안주 중 가장 맛없는 조합 만들어서 먹기", tag: "요리조리 지옥 🤢" },
+            { text: "오른쪽 사람의 술잔을 내가 원하는 수위로 채워주기", tag: "생사여탈권 ⚖️" },
+            { text: "술래잡기! 검지손가락으로 코 늦게 만진 꼴찌가 원샷", tag: "눈치 게임 👆" },
+            { text: "내일 점심에 마실 시원한 탄산음료 기프티콘 쏘기", tag: "청량감 폭발 🥤" },
+            { text: "지금 바로 생수 한 컵 원샷하고 술 한 잔 마시기", tag: "수분 충전 💧" },
+            { text: "가장 최근에 쇼핑한 물건과 가격 고백하기", tag: "소비 요정 💸" },
+            { text: "5분간 핸드폰 뒤집어놓고 만지지 않기! 만지면 벌주 2잔", tag: "디지털 디톡스 📵" },
+            { text: "왼쪽 두 번째 앉은 사람과 영혼을 담은 하이파이브 후 반 잔", tag: "위 아 더 원 🖐️" },
+            { text: "내일 편의점에서 얼음컵+초코우유 세트 사주기", tag: "당 충전 예약 🍫" },
+            { text: "이번 라운드는 무사 통과! 안전지대입니다.", tag: "신의 가호 🍀" },
+            { text: "지목당한 사람 한 명과 의리주로 한 잔 나눠마시기", tag: "삼국지 도원결의 🤝" },
+            { text: "현재 본인 오른쪽 사람이 시키는 황당한 개인기 수행하기", tag: "재롱 잔치 🤡" },
+            { text: "내일 출근 직후 단톡방에 모닝 인사 남기기, 어길 시 편의점 행", tag: "프로 직장인 💼" },
+            { text: "소주잔에 가득 채워 원샷하고 레몬이나 단무지 씹기", tag: "비타민 쇼크 🍋" },
+            { text: "술자리 구성원 중 첫인상이 가장 좋았던 사람 칭찬하기", tag: "훈훈한 마무라 😊" },
+            { text: "내일 아침 편의점용 숙취 음료 1+1 쿠폰 선물하기", tag: "우정의 증표 🧪" },
+            { text: "앞으로 3턴 동안 손바닥으로 바닥 짚고 대화하기", tag: "그라운드 제로 🧎" },
+            { text: "벌주 독점 당첨! 조용히 한 잔 채우고 깔끔하게 원샷하기", tag: "운명의 데스티니 💀" }
         ];
 
-        let curCat = ""; let curWord = ""; let liarIdx = 0; let curUser = 1; let totUsers = 3; let revealState = false;
+        let isCardFlipped = false;
 
-        function startLiarSetup() {
-            totUsers = parseInt(document.getElementById('liarTotalInput').value) || 3;
-            if (totUsers < 3) { alert("라이어 게임은 최소 3명 이상 필요합니다."); return; }
-            const randomCatIdx = Math.floor(Math.random() * liarDb.length);
-            const selectedPack = liarDb[randomCatIdx]; curCat = selectedPack.cat;
-            const randomWordIdx = Math.floor(Math.random() * selectedPack.words.length);
-            curWord = selectedPack.words[randomWordIdx]; liarIdx = Math.floor(Math.random() * totUsers) + 1; curUser = 1;
-            document.getElementById('g3Btn').disabled = true;
-            document.getElementById('g3Desc').textContent = "한 명씩 스마트폰을 들고 비밀 창을 터치해 확인하세요!";
-            const cb = document.getElementById('liarCategoryBox'); cb.textContent = `주제: [ ${curCat} ]`; cb.style.display = 'block';
-            nextLiarTurn();
+        function resetDestinyCard() {
+            const card = document.getElementById('destinyCard');
+            card.classList.remove('flipped');
+            isCardFlipped = false;
+            document.getElementById('g3Desc').textContent = "카드를 가볍게 터치하면 뒤집히며 절대 운명의 지령이 내립니다.";
         }
 
-        function nextLiarTurn() {
-            revealState = false; const b = document.getElementById('liarSecretBox'); b.className = "word-hidden"; b.style.background = "var(--secondary)"; b.textContent = "터치하여 확인하기";
-            if (curUser <= totUsers) { document.getElementById('liarTurnInfo').textContent = `👤 [ 플레이어 ${curUser} ]의 순서`; }
-            else {
-                document.getElementById('liarTurnInfo').textContent = "📢 모든 플레이어 확인 완료!";
-                b.textContent = "서로 질문을 던지며 라이어를 찾으세요!"; b.style.background = "var(--accent)";
-                document.getElementById('g3Btn').disabled = false; document.getElementById('g3Btn').textContent = "한 판 더 하기";
-            }
-        }
+        function flipDestinyCard() {
+            if (isCardFlipped) return; 
+            isCardFlipped = true;
+            triggerVibrate([100, 50]);
 
-        function toggleLiarWord() {
-            if (curUser > totUsers || revealState) return; const b = document.getElementById('liarSecretBox');
-            if (curUser === liarIdx) { b.innerHTML = "🤫 당신은 <br><span style='font-size:1.8rem; color:#ff2a5f; font-weight:bold;'>[ 라이어 ]</span> 입니다."; }
-            else { b.innerHTML = `🎯 제시어:<br><span style='font-size:1.8rem; color:#00ff66; font-weight:bold;'>${curWord}</span>`; }
-            revealState = true; triggerVibrate(50);
-            setTimeout(() => { curUser++; nextLiarTurn(); }, 2500);
+            // 50개 지령 중 랜덤으로 하나 선택
+            const randIdx = Math.floor(Math.random() * destinyMissions.length);
+            const selectedMission = destinyMissions[randIdx];
+
+            document.getElementById('cardMissionText').textContent = selectedMission.text;
+            document.getElementById('cardMissionTag').textContent = selectedMission.tag;
+
+            const card = document.getElementById('destinyCard');
+            card.classList.add('flipped');
+
+            document.getElementById('g3Desc').innerHTML = "🔮 <strong>당신의 운명이 결정되었습니다!</strong> 지령을 수행하세요.";
+            triggerVibrate([200, 100, 150]);
         }
 
         // ==========================================
@@ -734,25 +776,15 @@
         }
         function endDraw() { isDrawing = false; }
 
-        // 📐 실제 도형 윤곽선(타겟 미리보기와 동일한 좌표)을 기준으로 사용자가 그린 경로와의
-        // 형태 유사도를 정밀 비교하는 채점 엔진 (Chamfer Distance 기반)
-
-        // 두 정점 사이를 직선으로 보간해 다각형 윤곽선 위의 점들을 생성
         function sampleEdgePoints(vertices, total) {
-            const pts = [];
-            const n = vertices.length;
-            const perEdge = Math.max(1, Math.floor(total / n));
+            const pts = []; const n = vertices.length; const perEdge = Math.max(1, Math.floor(total / n));
             for (let i = 0; i < n; i++) {
                 const a = vertices[i], b = vertices[(i + 1) % n];
-                for (let j = 0; j < perEdge; j++) {
-                    const t = j / perEdge;
-                    pts.push({ x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t });
-                }
+                for (let j = 0; j < perEdge; j++) { const t = j / perEdge; pts.push({ x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t }); }
             }
             return pts;
         }
 
-        // 3차 베지어 곡선 위의 한 점 계산 (하트 모양용)
         function cubicBezierPoint(p0, c1, c2, p1, t) {
             const mt = 1 - t;
             const x = mt*mt*mt*p0[0] + 3*mt*mt*t*c1[0] + 3*mt*t*t*c2[0] + t*t*t*p1[0];
@@ -760,112 +792,67 @@
             return { x, y };
         }
 
-        // 미리보기 SVG와 완전히 동일한 좌표로 도형의 "정답 윤곽선" 좌표들을 생성
         function generateShapeTemplatePoints(type) {
             const N = 200;
             if (type === 'circle') {
-                const cx = 40, cy = 40, r = 30;
-                const pts = [];
-                for (let i = 0; i < N; i++) {
-                    const t = (2 * Math.PI * i) / N;
-                    pts.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) });
-                }
+                const cx = 40, cy = 40, r = 30; const pts = [];
+                for (let i = 0; i < N; i++) { const t = (2 * Math.PI * i) / N; pts.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) }); }
                 return pts;
             }
-            if (type === 'triangle') {
-                return sampleEdgePoints([[40,10],[10,70],[70,70]], N);
-            }
-            if (type === 'star') {
-                return sampleEdgePoints([[40,5],[50,30],[78,30],[55,47],[64,74],[40,56],[16,74],[25,47],[2,30],[30,30]], N);
-            }
-            if (type === 'lightning') {
-                return sampleEdgePoints([[50,5],[15,50],[40,50],[25,95],[70,45],[45,45]], N);
-            }
+            if (type === 'triangle') return sampleEdgePoints([[40,10],[10,70],[70,70]], N);
+            if (type === 'star') return sampleEdgePoints([[40,5],[50,30],[78,30],[55,47],[64,74],[40,56],[16,74],[25,47],[2,30],[30,30]], N);
+            if (type === 'lightning') return sampleEdgePoints([[50,5],[15,50],[40,50],[25,95],[70,45],[45,45]], N);
             if (type === 'heart') {
                 const segs = [
-                    { p0:[40,25], c1:[40,10], c2:[15,10], p1:[15,32] },
-                    { p0:[15,32], c1:[15,53], c2:[40,72], p1:[40,72] },
-                    { p0:[40,72], c1:[40,72], c2:[65,53], p1:[65,32] },
-                    { p0:[65,32], c1:[65,10], c2:[40,10], p1:[40,25] }
+                    { p0:[40,25], c1:[40,10], c2:[15,10], p1:[15,32] }, { p0:[15,32], c1:[15,53], c2:[40,72], p1:[40,72] },
+                    { p0:[40,72], c1:[40,72], c2:[65,53], p1:[65,32] }, { p0:[65,32], c1:[65,10], c2:[40,10], p1:[40,25] }
                 ];
-                const perSeg = Math.floor(N / segs.length);
-                const pts = [];
-                segs.forEach(seg => {
-                    for (let i = 0; i < perSeg; i++) {
-                        pts.push(cubicBezierPoint(seg.p0, seg.c1, seg.c2, seg.p1, i / perSeg));
-                    }
-                });
+                const perSeg = Math.floor(N / segs.length); const pts = [];
+                segs.forEach(seg => { for (let i = 0; i < perSeg; i++) pts.push(cubicBezierPoint(seg.p0, seg.c1, seg.c2, seg.p1, i / perSeg)); });
                 return pts;
             }
             return [];
         }
 
-        // 점들의 중심을 원점으로, 가장 긴 변을 기준으로 크기를 1로 정규화 (위치/크기 무관하게 형태만 비교)
-        // 상하위 3%를 트림한 바운딩박스를 사용해, 시작점에서 튄 점 하나 때문에 전체 스케일이
-        // 왜곡되는 것을 방지 (예: 펜을 대는 순간 살짝 어긋난 좌표가 찍히는 경우)
         function robustAxisBounds(values) {
-            const sorted = [...values].sort((a, b) => a - b);
-            const n = sorted.length;
-            const lo = Math.floor(n * 0.03);
-            const hi = Math.min(n - 1, Math.ceil(n * 0.97));
+            const sorted = [...values].sort((a, b) => a - b); const n = sorted.length;
+            const lo = Math.floor(n * 0.03); const hi = Math.min(n - 1, Math.ceil(n * 0.97));
             return { min: sorted[lo], max: sorted[hi] };
         }
         function normalizeShapePoints(points) {
-            const xs = points.map(p => p.x), ys = points.map(p => p.y);
-            const bx = robustAxisBounds(xs), by = robustAxisBounds(ys);
-            const cx = (bx.min + bx.max) / 2, cy = (by.min + by.max) / 2;
-            const scale = Math.max(bx.max - bx.min, by.max - by.min, 1e-6) / 2;
+            const xs = points.map(p => p.x), ys = points.map(p => p.y); const bx = robustAxisBounds(xs), by = robustAxisBounds(ys);
+            const cx = (bx.min + bx.max) / 2, cy = (by.min + by.max) / 2; const scale = Math.max(bx.max - bx.min, by.max - by.min, 1e-6) / 2;
             return points.map(p => ({ x: (p.x - cx) / scale, y: (p.y - cy) / scale }));
         }
 
-        // 마우스를 빠르게 움직이면 실제 화면엔 매끄러운 선이 그려지지만 기록되는 좌표는 듬성듬성해질 수 있음.
-        // 렌더링 때와 동일하게 점 사이를 직선으로 이어서 점을 촘촘하게 보강해줘야 채점이 실제로 그린 모양과 일치함
         function densifyUserPoints(points, maxGap) {
-            if (points.length < 2) return points;
-            const out = [points[0]];
+            if (points.length < 2) return points; const out = [points[0]];
             for (let i = 1; i < points.length; i++) {
-                const a = points[i - 1], b = points[i];
-                const dist = Math.hypot(b.x - a.x, b.y - a.y);
-                const steps = Math.min(20, Math.floor(dist / maxGap));
-                for (let s = 1; s <= steps; s++) {
-                    const t = s / (steps + 1);
-                    out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
-                }
+                const a = points[i - 1], b = points[i]; const dist = Math.hypot(b.x - a.x, b.y - a.y); const steps = Math.min(20, Math.floor(dist / maxGap));
+                for (let s = 1; s <= steps; s++) { const t = s / (steps + 1); out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); }
                 out.push(b);
             }
             return out;
         }
 
-        // 상위 일부 극단치를 제외한 평균(trimmed mean) — 손이 순간적으로 튄 지점 한두 개 때문에
-        // 전체 점수가 과도하게 깎이지 않도록 함
         function trimmedAvgMinDist(src, dst, trimRatio) {
             const dists = src.map(p => {
                 let minD = Infinity;
-                for (const q of dst) {
-                    const dx = p.x - q.x, dy = p.y - q.y;
-                    const d = dx*dx + dy*dy;
-                    if (d < minD) minD = d;
-                }
+                for (const q of dst) { const dx = p.x - q.x, dy = p.y - q.y; const d = dx*dx + dy*dy; if (d < minD) minD = d; }
                 return Math.sqrt(minD);
             }).sort((a, b) => a - b);
-            const cut = Math.floor(dists.length * (1 - trimRatio));
-            const kept = dists.slice(0, Math.max(1, cut));
+            const cut = Math.floor(dists.length * (1 - trimRatio)); const kept = dists.slice(0, Math.max(1, cut));
             return kept.reduce((s, v) => s + v, 0) / kept.length;
         }
 
-        // Chamfer Distance: (내가 그린 선이 정답 윤곽선에서 얼마나 벗어났는지) + (정답 윤곽선을 얼마나 빠짐없이 따라갔는지)
-        // 두 값을 함께 봐서 "삐뚤빼뚤하게 그림" 과 "일부만 그리고 만 것" 모두를 정확히 감점
         function chamferDistance(a, b) {
-            const precision = trimmedAvgMinDist(a, b, 0.08); // 내가 그린 점 중 순간적으로 튄 상위 8%는 무시
-            const recall = trimmedAvgMinDist(b, a, 0.03);     // 정답 도형을 빠짐없이 따라갔는지는 거의 그대로 반영
+            const precision = trimmedAvgMinDist(a, b, 0.08); const recall = trimmedAvgMinDist(b, a, 0.03);
             return (precision + recall) / 2;
         }
 
         function evaluateDrawing() {
             clearInterval(shapeTimer); isShapeLocked = true;
             if (userPoints.length < 5) { alert("도형을 조금 더 그려주세요!"); clearCanvasOnly(); return; }
-
-            // 점 몇 개만 콕콕 찍은 수준으로 너무 작게 그렸다면 바로 저점 처리
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             userPoints.forEach(p => {
                 if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
@@ -875,20 +862,14 @@
             if (drawnSize < 15) {
                 document.getElementById('scoreOutput').textContent = `5점!`;
                 document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>5점</strong> (너무 작게 그렸어요!)`;
-                triggerVibrate([120, 50]);
-                return;
+                triggerVibrate([120, 50]); return;
             }
-
             const templatePoints = generateShapeTemplatePoints(currentShapeType);
             const densifiedUser = densifyUserPoints(userPoints, 3);
             const normalizedUser = normalizeShapePoints(densifiedUser);
             const normalizedTemplate = normalizeShapePoints(templatePoints);
-
             const error = chamferDistance(normalizedUser, normalizedTemplate);
-            // 오차가 작을수록(정확히 그렸을수록) 점수가 높아지는 지수 감쇠 함수
-            let finalScore = Math.round(100 * Math.exp(-3.6 * error));
-            finalScore = Math.max(1, Math.min(100, finalScore));
-            
+            let finalScore = Math.round(100 * Math.exp(-3.6 * error)); finalScore = Math.max(1, Math.min(100, finalScore));
             document.getElementById('scoreOutput').textContent = `${finalScore}점!`;
             document.getElementById('g4ShapeDesc').innerHTML = `🎉 최종 채점 스코어: <strong>${finalScore}점</strong>`; triggerVibrate([120, 50]);
         }
@@ -1038,45 +1019,35 @@
 
         function toggleKingInputStyle() {
             const type = document.getElementById('kingTypeSelect').value;
-            const countRow = document.getElementById('kingCountRow');
-            const nameRow = document.getElementById('kingNameRow');
-            const btnEl = document.getElementById('g5Btn');
-            const labelEl = document.getElementById('kingNameLabel');
+            const countRow = document.getElementById('kingCountRow'); const nameRow = document.getElementById('kingNameRow');
+            const btnEl = document.getElementById('g5Btn'); const labelEl = document.getElementById('kingNameLabel');
             if (type === 'master') {
-                if (countRow) countRow.style.display = 'none';
-                nameRow.style.display = 'flex';
+                if (countRow) countRow.style.display = 'none'; nameRow.style.display = 'flex';
                 labelEl.textContent = "📝 참여자 이름 입력 (성별 매칭 시 '이름(남)', '이름(여)' 형식):";
                 btnEl.textContent = "⚡ 즉시 마스터 오더 실행";
             } else {
                 if (countRow) countRow.style.display = type === 'anonymous' ? 'flex' : 'none';
-                nameRow.style.display = type === 'named' ? 'flex' : 'none';
-                btnEl.textContent = "👑 신분 배정 시작하기";
+                nameRow.style.display = type === 'named' ? 'flex' : 'none'; btnEl.textContent = "👑 신분 배정 시작하기";
             }
         }
 
         function startKingIdentityLoop() {
             const type = document.getElementById('kingTypeSelect').value;
-            const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText');
+            const titleEl = document.getElementById('kingStatusTitle'); const textEl = document.getElementById('kingMainText');
 
             if (type === 'master') {
                 const namesStr = document.getElementById('kingNameInput').value;
                 kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
                 if (kingParticipantNames.length < 2) { alert("최소 2명 이상의 이름이 필요합니다!"); return; }
-
                 titleEl.textContent = `⚡ 절대 마스터의 실명 오더`;
-                
                 let pName1 = ""; let pName2 = "";
-                let males = kingParticipantNames.filter(n => n.includes('(남)'));
-                let females = kingParticipantNames.filter(n => n.includes('(여)'));
+                let males = kingParticipantNames.filter(n => n.includes('(남)')); let females = kingParticipantNames.filter(n => n.includes('(여)'));
 
                 if (males.length > 0 && females.length > 0) {
-                    pName1 = males[Math.floor(Math.random() * males.length)];
-                    pName2 = females[Math.floor(Math.random() * females.length)];
+                    pName1 = males[Math.floor(Math.random() * males.length)]; pName2 = females[Math.floor(Math.random() * females.length)];
                     if(Math.random() > 0.5) { let temp = pName1; pName1 = pName2; pName2 = temp; }
                 } else {
-                    let idx1 = Math.floor(Math.random() * kingParticipantNames.length);
-                    let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
+                    let idx1 = Math.floor(Math.random() * kingParticipantNames.length); let idx2 = Math.floor(Math.random() * kingParticipantNames.length);
                     while (idx1 === idx2 && kingParticipantNames.length > 1) { idx2 = Math.floor(Math.random() * kingParticipantNames.length); }
                     pName1 = kingParticipantNames[idx1]; pName2 = kingParticipantNames[idx2];
                 }
@@ -1095,71 +1066,52 @@
 
             kingGamePool = [];
             if (type === 'anonymous') {
-                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3;
-                kingGamePool.push('👑 왕');
+                totalKingPlayers = parseInt(document.getElementById('kingTotalInput').value) || 3; kingGamePool.push('👑 왕');
                 for (let i = 1; i <= totalKingPlayers - 1; i++) kingGamePool.push(`👤 신하 [ ${i}번 ]`);
                 kingGamePool.sort(() => Math.random() - 0.5);
             } else {
                 const namesStr = document.getElementById('kingNameInput').value;
-                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
-                totalKingPlayers = kingParticipantNames.length;
-                let roles = ['👑 왕'];
-                for (let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`);
-                roles.sort(() => Math.random() - 0.5);
-                for (let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
+                kingParticipantNames = namesStr.split(',').map(n => n.trim()).filter(n => n.length > 0); totalKingPlayers = kingParticipantNames.length;
+                let roles = ['👑 왕']; for (let i = 1; i <= totalKingPlayers - 1; i++) roles.push(`👤 신하 [ ${i}번 ]`);
+                roles.sort(() => Math.random() - 0.5); for (let i = 0; i < totalKingPlayers; i++) kingGamePool.push({ name: kingParticipantNames[i], role: roles[i] });
             }
-            kingGameIdx = 0;
-            document.getElementById('kingTypeSelect').disabled = true;
-            showIdentityWaitScreen();
+            kingGameIdx = 0; document.getElementById('kingTypeSelect').disabled = true; showIdentityWaitScreen();
         }
 
         function showIdentityWaitScreen() {
             const type = document.getElementById('kingTypeSelect').value;
-            const titleEl = document.getElementById('kingStatusTitle');
-            const textEl = document.getElementById('kingMainText');
-            const btnEl = document.getElementById('g5Btn');
+            const titleEl = document.getElementById('kingStatusTitle'); const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
             if (kingGameIdx < totalKingPlayers) {
                 if (type === 'anonymous') {
-                    titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`;
-                    textEl.innerHTML = `<div>[플레이어 ${kingGameIdx + 1}] 님만 확인하세요.</div>`;
+                    titleEl.textContent = `⏳ 플레이어 ${kingGameIdx + 1} 대기중`; textEl.innerHTML = `<div>[플레이어 ${kingGameIdx + 1}] 님만 확인하세요.</div>`;
                 } else {
                     const targetPerson = kingGamePool[kingGameIdx].name;
-                    titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`;
-                    textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`;
+                    titleEl.textContent = `⏳ [ ${targetPerson} ] 차례`; textEl.innerHTML = `<div>👉 ${targetPerson} 님만 화면을 확인하세요.</div>`;
                 }
-                btnEl.textContent = "역할 역할 확인하기";
-                btnEl.onclick = revealIdentityToPlayer;
+                btnEl.textContent = "역할 확인하기"; btnEl.onclick = revealIdentityToPlayer;
             } else {
-                titleEl.textContent = "👑 왕의 오더 하차!";
-                const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
+                titleEl.textContent = "👑 왕의 오더 하차!"; const pool = (currentKingMode === 'normal') ? normalIdeas : adultIdeas;
                 textEl.innerHTML = `<div class='king-action'>${pool[Math.floor(Math.random() * pool.length)]}</div>`;
-                btnEl.textContent = "새 판 세팅";
-                btnEl.onclick = () => { document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
+                btnEl.textContent = "새 판 세팅"; btnEl.onclick = () => { document.getElementById('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
             }
         }
 
         function revealIdentityToPlayer() {
-            const type = document.getElementById('kingTypeSelect').value;
-            const textEl = document.getElementById('kingMainText');
-            const btnEl = document.getElementById('g5Btn');
+            const type = document.getElementById('kingTypeSelect').value; const textEl = document.getElementById('kingMainText'); const btnEl = document.getElementById('g5Btn');
             let myRole = type === 'anonymous' ? kingGamePool[kingGameIdx] : kingGamePool[kingGameIdx].role;
             textEl.innerHTML = `<div><span style='font-size:2rem; color:var(--warning); font-weight:bold;'>${myRole}</span></div>`;
-            btnEl.disabled = true; kingGameIdx++;
-            setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
+            btnEl.disabled = true; kingGameIdx++; setTimeout(() => { btnEl.disabled = false; showIdentityWaitScreen(); }, 1800);
         }
 
         // ==========================================
         // 🪜 게임 6: 사다리 타기 엔진
         // ==========================================
-        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false;
-        const totalRowsSlots = 9;
+        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false; const totalRowsSlots = 9;
 
         function initLadderGame() {
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
             ladderCount = mInput.length; if (ladderCount < 2) return;
-
-            const rInput = document.getElementById('ladderResults');
-            let currentResults = rInput.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+            const rInput = document.getElementById('ladderResults'); let currentResults = rInput.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
             while (currentResults.length < ladderCount) currentResults.push("통과");
             if (currentResults.length > ladderCount) currentResults = currentResults.slice(0, ladderCount);
             rInput.value = currentResults.join(', ');
@@ -1171,9 +1123,7 @@
                 for (let r = 0; r < totalRowsSlots; r++) {
                     for (let c = 0; c < ladderCount - 1; c++) {
                         if (Math.random() > 0.55) {
-                            if (c === 0 || !ladderLines.some(line => line.row === r && line.col === c - 1)) {
-                                ladderLines.push({ row: r, col: c, custom: false });
-                            }
+                            if (c === 0 || !ladderLines.some(line => line.row === r && line.col === c - 1)) { ladderLines.push({ row: r, col: c, custom: false }); }
                         }
                     }
                 }
@@ -1182,25 +1132,17 @@
         }
 
         function drawLadderBase(highlightPath = null, progress = 1) {
-            const canvas = document.getElementById('ladderCanvas'); if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.parentNode.getBoundingClientRect().width;
-            const h = canvas.parentNode.getBoundingClientRect().height;
-            canvas.width = w; canvas.height = h;
-            ctx.clearRect(0, 0, w, h);
-            const padding = w / (ladderCount * 2);
-            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
-            const rowHeight = (h - 20) / totalRowsSlots;
+            const canvas = document.getElementById('ladderCanvas'); if (!canvas) return; const ctx = canvas.getContext('2d');
+            const w = canvas.parentNode.getBoundingClientRect().width; const h = canvas.parentNode.getBoundingClientRect().height;
+            canvas.width = w; canvas.height = h; ctx.clearRect(0, 0, w, h); const padding = w / (ladderCount * 2);
+            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1)); const rowHeight = (h - 20) / totalRowsSlots;
 
             ctx.lineWidth = 6; ctx.strokeStyle = '#475569'; ctx.lineCap = 'round';
-            for (let i = 0; i < ladderCount; i++) {
-                ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), h - 10); ctx.stroke();
-            }
+            for (let i = 0; i < ladderCount; i++) { ctx.beginPath(); ctx.moveTo(getX(i), 10); ctx.lineTo(getX(i), h - 10); ctx.stroke(); }
             ladderLines.forEach(line => {
                 const y = 10 + line.row * rowHeight + rowHeight / 2;
                 ctx.beginPath(); ctx.moveTo(getX(line.col), y); ctx.lineTo(getX(line.col + 1), y);
-                ctx.lineWidth = line.custom ? 7 : 5;
-                ctx.strokeStyle = line.custom ? '#3b82f6' : '#475569'; ctx.stroke();
+                ctx.lineWidth = line.custom ? 7 : 5; ctx.strokeStyle = line.custom ? '#3b82f6' : '#475569'; ctx.stroke();
             });
             if (highlightPath && highlightPath.length > 0) {
                 ctx.lineWidth = 7; ctx.strokeStyle = '#f43f5e'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -1211,100 +1153,56 @@
             }
         }
 
-        function resetLadderOnly() {
-            if (isLadderRunning) return; ladderLines = [];
-            document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다.";
-            initLadderGame();
-        }
+        function resetLadderOnly() { if (isLadderRunning) return; ladderLines = []; document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다."; initLadderGame(); }
 
         function selectLadderPlayer(playerIdx) {
             if (isLadderRunning) return;
             document.querySelectorAll('.ladder-labels.top-labels span').forEach(el => el.classList.remove('active-player'));
             document.querySelectorAll('.ladder-labels.bottom-labels span').forEach(el => el.classList.remove('hit-result'));
-            document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player');
-            runLadderTrace(playerIdx);
+            document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player'); runLadderTrace(playerIdx);
         }
 
         function runLadderTrace(targetIdx) {
             isLadderRunning = true;
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
             const rInput = document.getElementById('ladderResults').value.split(',').map(n => n.trim());
-            const canvas = document.getElementById('ladderCanvas');
-            const w = canvas.width; const h = canvas.height; const padding = w / (ladderCount * 2);
-            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1));
-            const rowHeight = (h - 20) / totalRowsSlots;
+            const canvas = document.getElementById('ladderCanvas'); const w = canvas.width; const h = canvas.height; const padding = w / (ladderCount * 2);
+            const getX = (idx) => padding + idx * ((w - padding * 2) / (ladderCount - 1 || 1)); const rowHeight = (h - 20) / totalRowsSlots;
 
-            let fullPath = []; let curIdx = targetIdx; let curY = 10;
-            fullPath.push({ x: getX(curIdx), y: curY });
+            let fullPath = []; let curIdx = targetIdx; let curY = 10; fullPath.push({ x: getX(curIdx), y: curY });
             for (let r = 0; r < totalRowsSlots; r++) {
-                const targetY = 10 + r * rowHeight + rowHeight / 2;
-                fullPath.push({ x: getX(curIdx), y: targetY });
-                const leftBridge = ladderLines.find(l => l.row === r && l.col === curIdx - 1);
-                const rightBridge = ladderLines.find(l => l.row === r && l.col === curIdx);
-                if (leftBridge) { curIdx--; fullPath.push({ x: getX(curIdx), y: targetY }); }
-                else if (rightBridge) { curIdx++; fullPath.push({ x: getX(curIdx), y: targetY }); }
+                const targetY = 10 + r * rowHeight + rowHeight / 2; fullPath.push({ x: getX(curIdx), y: targetY });
+                const leftBridge = ladderLines.find(l => l.row === r && l.col === curIdx - 1); const rightBridge = ladderLines.find(l => l.row === r && l.col === curIdx);
+                if (leftBridge) { curIdx--; fullPath.push({ x: getX(curIdx), y: targetY }); } else if (rightBridge) { curIdx++; fullPath.push({ x: getX(curIdx), y: targetY }); }
             }
             fullPath.push({ x: getX(curIdx), y: h - 10 });
 
             let start = null;
             function anim(t) {
-                if (!start) start = t; const el = t - start; const prog = Math.min(el / 1100, 1);
-                drawLadderBase(fullPath, prog);
+                if (!start) start = t; const el = t - start; const prog = Math.min(el / 1100, 1); drawLadderBase(fullPath, prog);
                 if (prog < 1) requestAnimationFrame(anim);
                 else {
-                    const finalResultStr = rInput[curIdx] || '통과';
-                    document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
+                    const finalResultStr = rInput[curIdx] || '통과'; document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
                     document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${finalResultStr} ]</strong> 당첨!`;
                     
-                    const popup = document.getElementById('resultPopup');
-                    const textContainer = document.getElementById('popupResultText');
+                    const popup = document.getElementById('resultPopup'); const textContainer = document.getElementById('popupResultText');
                     document.getElementById('popupPlayerName').innerHTML = `👤 <strong>${mInput[targetIdx]}</strong> 님의 결과`;
                     
-                    // 사다리 결과에 따른 뱃지 스타일/아이콘 조건부 바인딩 (색상 + 아이콘 이중 식별)
-                    textContainer.className = 'ladder-highlight-text';
-                    let resultIcon = '🎯';
-                    if (finalResultStr.includes('통과')) {
-                        textContainer.classList.add('pass');
-                        resultIcon = '✅';
-                    } else if (finalResultStr.includes('원샷')) {
-                        textContainer.classList.add('oneshot');
-                        resultIcon = '🍻';
-                    } else {
-                        textContainer.classList.add('default');
-                    }
-                    textContainer.textContent = `${resultIcon} ${finalResultStr}`;
-                    popup.style.display = 'flex';
+                    textContainer.className = 'ladder-highlight-text'; let resultIcon = '🎯';
+                    if (finalResultStr.includes('통과')) { textContainer.classList.add('pass'); resultIcon = '✅'; }
+                    else if (finalResultStr.includes('원샷')) { textContainer.classList.add('oneshot'); resultIcon = '🍻'; }
+                    else { textContainer.classList.add('default'); }
+                    textContainer.textContent = `${resultIcon} ${finalResultStr}`; popup.style.display = 'flex';
                     
-                    // 🪜 모바일용 화면 중앙 거대 결과 카드 연출 로직 (배경 배지 + 아이콘으로 식별성 강화)
-                    const bigTextEl = document.getElementById('ladderBigText');
-                    const bigIconEl = document.getElementById('ladderBigIcon');
-                    const bigLabelEl = document.getElementById('ladderBigLabel');
+                    const bigTextEl = document.getElementById('ladderBigText'); const bigIconEl = document.getElementById('ladderBigIcon'); const bigLabelEl = document.getElementById('ladderBigLabel');
                     bigTextEl.className = 'ladder-big-text-overlay'; 
                     
-                    if (finalResultStr.includes('통과')) {
-                        bigIconEl.textContent = '✅';
-                        bigLabelEl.textContent = '통과!';
-                        bigTextEl.classList.add('pass');
-                    } else if (finalResultStr.includes('원샷')) {
-                        bigIconEl.textContent = '🍻';
-                        bigLabelEl.textContent = '원샷!';
-                        bigTextEl.classList.add('oneshot');
-                    } else {
-                        bigIconEl.textContent = '🎯';
-                        bigLabelEl.textContent = finalResultStr;
-                        bigTextEl.classList.add('default');
-                    }
+                    if (finalResultStr.includes('통과')) { bigIconEl.textContent = '✅'; bigLabelEl.textContent = '통과!'; bigTextEl.classList.add('pass'); }
+                    else if (finalResultStr.includes('원샷')) { bigIconEl.textContent = '🍻'; bigLabelEl.textContent = '원샷!'; bigTextEl.classList.add('oneshot'); }
+                    else { bigIconEl.textContent = '🎯'; bigLabelEl.textContent = finalResultStr; bigTextEl.classList.add('default'); }
                     
-                    bigTextEl.classList.add('show');
-                    
-                    triggerVibrate([150, 50, 100]);
-                    isLadderRunning = false;
-                    
-                    // 1.8초 뒤 팝업 및 큰 글씨 서서히 제거
-                    setTimeout(() => { 
-                        popup.style.display = 'none'; 
-                        bigTextEl.classList.remove('show');
-                    }, 1800);
+                    bigTextEl.classList.add('show'); triggerVibrate([150, 50, 100]); isLadderRunning = false;
+                    setTimeout(() => { popup.style.display = 'none'; bigTextEl.classList.remove('show'); }, 1800);
                 }
             }
             requestAnimationFrame(anim);
@@ -1366,29 +1264,13 @@
             "과거 연인과 비교해 현재 연인의 섹스 매력 포인트는?",
             "하루 종일 연인과 침대에서만 보낸다면 어떤 플레이를 가장 하고 싶나?"
         ];
-
-        let shuffledQuestions = [];
-        let truthQuestionIdx = 0;
-
-        function shuffleTruthQuestions() {
-            shuffledQuestions = [...adultTruthQuestions];
-            shuffledQuestions.sort(() => Math.random() - 0.5);
-            truthQuestionIdx = 0;
-        }
-
+        let shuffledQuestions = []; let truthQuestionIdx = 0;
+        function shuffleTruthQuestions() { shuffledQuestions = [...adultTruthQuestions]; shuffledQuestions.sort(() => Math.random() - 0.5); truthQuestionIdx = 0; }
         function nextTruthQuestion() {
-            if (shuffledQuestions.length === 0 || truthQuestionIdx >= shuffledQuestions.length) {
-                shuffleTruthQuestions();
-            }
-            const displayEl = document.getElementById('truthDisplay');
-            triggerVibrate([100, 50]);
-            
+            if (shuffledQuestions.length === 0 || truthQuestionIdx >= shuffledQuestions.length) shuffleTruthQuestions();
+            const displayEl = document.getElementById('truthDisplay'); triggerVibrate([100, 50]);
             displayEl.style.opacity = 0;
-            setTimeout(() => {
-                displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`;
-                displayEl.style.opacity = 1;
-                truthQuestionIdx++;
-            }, 150);
+            setTimeout(() => { displayEl.innerHTML = `<span style='color:var(--pink); font-size:1.35rem; font-weight:bold;'>${shuffledQuestions[truthQuestionIdx]}</span>`; displayEl.style.opacity = 1; truthQuestionIdx++; }, 150);
         }
 
         // ==========================================
@@ -1397,6 +1279,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             toggleKingInputStyle();
             shuffleTruthQuestions();
+            resetDestinyCard();
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     drawNameRoulette();
