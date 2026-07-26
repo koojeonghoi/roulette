@@ -216,6 +216,40 @@
         @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
+        /* --- ⏱️ 게임 4: 스톱워치 저격 게임 --- */
+        .timer-display-wrap { display: flex; justify-content: center; align-items: center; margin: auto 0; width: 100%; }
+        .timer-ring {
+            --progress: 0;
+            width: 220px; height: 220px; border-radius: 50%;
+            background: conic-gradient(var(--secondary) calc(var(--progress) * 1%), #1e293b 0);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            transition: background 0.1s linear;
+        }
+        .timer-ring.danger { background: conic-gradient(var(--primary) calc(var(--progress) * 1%), #1e293b 0); }
+        .timer-ring.hidden-mode { background: var(--purple); animation: hiddenPulse 1s ease-in-out infinite; }
+        @keyframes hiddenPulse {
+            0%, 100% { box-shadow: 0 8px 24px rgba(139,92,246,0.35); }
+            50% { box-shadow: 0 10px 42px rgba(139,92,246,0.85); }
+        }
+        .timer-inner {
+            width: 186px; height: 186px; border-radius: 50%; background: var(--card-bg);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;
+        }
+        .timer-time { font-size: 2.3rem; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+        .timer-time.blurred { filter: blur(16px); user-select: none; }
+        .timer-target-label { font-size: 0.75rem; color: var(--warning); font-weight: bold; }
+        .timer-status { font-size: 0.82rem; color: #94a3b8; font-weight: bold; text-align: center; padding: 0 10px; }
+
+        .sw-ranking-box { background: #0b0f19; border-radius: 16px; padding: 12px 14px; width: 100%; border: 1px solid #334155; flex-shrink: 0; }
+        .sw-ranking-title { font-size: 0.85rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; }
+        .sw-ranking-empty { font-size: 0.82rem; color: #64748b; text-align: center; padding: 6px 0; }
+        .sw-ranking-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #1e293b; }
+        .sw-ranking-row:last-child { border-bottom: none; }
+        .sw-ranking-row .sw-rank-name { font-weight: bold; color: #fff; }
+        .sw-ranking-row .sw-rank-diff { font-variant-numeric: tabular-nums; color: #94a3b8; }
+        .sw-ranking-row.sw-rank-1 .sw-rank-diff { color: var(--accent); font-weight: bold; }
+
         /* --- 🔞 게임 7: 29금 진실게임 --- */
         .truth-box { background: #0b0f19; border-radius: 18px; padding: 22px; margin: auto 0; min-height: 190px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed var(--pink); width: 100%; }
         .truth-content { font-size: 1.25rem; font-weight: bold; line-height: 1.6; color: #f8fafc; text-align: center; word-break: keep-all; transition: opacity 0.15s ease-in-out; }
@@ -230,6 +264,7 @@
         <button id="tab-game1" class="tab-btn active" onclick="switchTab('game1')">🎯 벌칙룰렛</button>
         <button id="tab-game2" class="tab-btn" onclick="switchTab('game2')">💣 폭탄찾기</button>
         <button id="tab-game3" class="tab-btn" onclick="switchTab('game3')">🔮 운명카드</button>
+        <button id="tab-game4" class="tab-btn" onclick="switchTab('game4')">⏱️ 타이머게임</button>
         <button id="tab-game5" class="tab-btn" onclick="switchTab('game5')">👑 왕게임</button>
         <button id="tab-game6" class="tab-btn" onclick="switchTab('game6')">🪜 사다리타기</button>
         <button id="tab-game7" class="tab-btn" onclick="switchTab('game7')">🔞 29금 진실</button>
@@ -279,6 +314,58 @@
                 </div>
             </div>
             <button class="main-btn" id="g3Btn" style="background:var(--secondary); box-shadow: 0 4px 12px rgba(59,130,246,0.3);" onclick="resetDestinyCard()">🔄 새로운 카드 섞기</button>
+        </div>
+
+        <!-- 게임 4: 스톱워치 저격 게임 -->
+        <div id="game4" class="game-panel">
+            <div class="panel-header"><h2>⏱️ 스톱워치 저격 게임</h2><div class="desc" id="g4Desc">목표 시간에 가장 가깝게 스톱워치를 멈추세요! 5초가 목표라면 4.99초도 5.01초도 됩니다.</div></div>
+
+            <div class="setup-row">
+                <span>🎯 목표 시간:</span>
+                <select id="stopwatchTargetSelect" onchange="onStopwatchTargetChange()">
+                    <option value="3">3.00초</option>
+                    <option value="5" selected>5.00초</option>
+                    <option value="7">7.00초</option>
+                    <option value="10">10.00초</option>
+                    <option value="15">15.00초</option>
+                    <option value="20">20.00초</option>
+                    <option value="custom">직접 입력</option>
+                </select>
+            </div>
+            <div class="setup-row" id="stopwatchCustomRow" style="display:none;">
+                <span>✏️ 초 단위 입력 (예: 5.5):</span>
+                <input type="number" id="stopwatchCustomInput" min="0.1" max="120" step="0.1" value="5" style="width:80px; text-align:center;" oninput="onStopwatchCustomInput()">
+            </div>
+
+            <div class="setup-row column-layout">
+                <label for="stopwatchPlayers">📝 참여자 명단 (쉼표 구분, 순서대로 도전):</label>
+                <input type="text" id="stopwatchPlayers" value="정회, 용원, 정렬" oninput="onStopwatchPlayersChange()" class="full-width" style="font-size:0.85rem; padding:6px; text-align:center;">
+            </div>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" id="swModeShow" onclick="setStopwatchVisibility(true)">👀 숫자 보이기</button>
+                <button class="mode-btn" id="swModeHide" onclick="setStopwatchVisibility(false)">🙈 숫자 숨기기 (감으로!)</button>
+            </div>
+
+            <div class="timer-display-wrap">
+                <div class="timer-ring" id="timerRing">
+                    <div class="timer-inner">
+                        <div class="timer-target-label" id="timerTargetLabel">목표 5.00초</div>
+                        <div class="timer-time" id="timerTimeText">00.00</div>
+                        <div class="timer-status" id="timerStatusText">대기중</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sw-ranking-box">
+                <div class="sw-ranking-title">🏆 순위 (오차 적은 순)</div>
+                <div id="stopwatchRankingList"><div class="sw-ranking-empty">아직 기록이 없습니다.</div></div>
+            </div>
+
+            <div style="display:flex; gap:8px; width:100%; margin-top:4px; flex-shrink:0;">
+                <button class="sub-btn" style="flex:1; padding:12px; font-size:0.9rem; background:#475569;" onclick="resetStopwatchGame()">🔄 새 게임</button>
+                <button class="main-btn" id="timerMainBtn" style="flex:1.5; margin-top:0;" onclick="toggleStopwatchStartStop()">▶️ 시작 (탭해서 멈추기)</button>
+            </div>
         </div>
 
         <!-- 게임 5: 진짜 왕게임 -->
@@ -394,6 +481,7 @@
                 }
                 else if (tabId === 'game2') initBombGame();
                 else if (tabId === 'game3') resetDestinyCard();
+                else if (tabId === 'game4') updateStopwatchDisplay();
                 else if (tabId === 'game6') initLadderGame();
             });
         }
@@ -693,6 +781,177 @@
 
             document.getElementById('g3Desc').innerHTML = "🔮 <strong>당신의 운명이 결정되었습니다!</strong> 지령을 수행하세요.";
             triggerVibrate([200, 100, 150]);
+        }
+
+        // ==========================================
+        // ⏱️ 게임 4: 스톱워치 저격 게임 엔진
+        // ==========================================
+        let stopwatchTargetSec = 5;
+        let stopwatchTargetMs = 5000;
+        let stopwatchElapsedMs = 0;
+        let stopwatchRunning = false;
+        let stopwatchStartPerf = 0;
+        let stopwatchRAF = null;
+        let stopwatchShowTime = true;
+        let stopwatchPlayers = [];
+        let stopwatchPlayerIdx = 0;
+        let stopwatchResults = []; // { name, elapsedMs, diffMs }
+
+        function parseStopwatchPlayers() {
+            return document.getElementById('stopwatchPlayers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+        }
+
+        function onStopwatchTargetChange() {
+            const sel = document.getElementById('stopwatchTargetSelect');
+            const customRow = document.getElementById('stopwatchCustomRow');
+            if (sel.value === 'custom') {
+                customRow.style.display = 'flex';
+                onStopwatchCustomInput();
+            } else {
+                customRow.style.display = 'none';
+                stopwatchTargetSec = parseFloat(sel.value);
+                resetStopwatchGame();
+            }
+        }
+
+        function onStopwatchCustomInput() {
+            const raw = parseFloat(document.getElementById('stopwatchCustomInput').value);
+            stopwatchTargetSec = Math.min(120, Math.max(0.1, isNaN(raw) ? 5 : raw));
+            resetStopwatchGame();
+        }
+
+        function onStopwatchPlayersChange() {
+            stopwatchPlayers = parseStopwatchPlayers();
+            updateStopwatchTurnDesc();
+        }
+
+        function setStopwatchVisibility(show) {
+            stopwatchShowTime = show;
+            document.getElementById('swModeShow').classList.toggle('active', show);
+            document.getElementById('swModeHide').classList.toggle('active', !show);
+            updateStopwatchDisplay();
+        }
+
+        function formatStopwatchTime(ms) {
+            const sec = Math.max(0, ms) / 1000;
+            return sec.toFixed(2).padStart(5, '0');
+        }
+
+        function updateStopwatchTurnDesc() {
+            const descEl = document.getElementById('g4Desc');
+            if (stopwatchPlayers.length === 0) {
+                descEl.textContent = '목표 시간에 가장 가깝게 스톱워치를 멈추세요!';
+                return;
+            }
+            const idx = stopwatchPlayerIdx % stopwatchPlayers.length;
+            const roundNum = Math.floor(stopwatchPlayerIdx / stopwatchPlayers.length) + 1;
+            descEl.innerHTML = `이번 차례: <strong>${stopwatchPlayers[idx]}</strong> (${roundNum}라운드)`;
+        }
+
+        function updateStopwatchDisplay() {
+            const ring = document.getElementById('timerRing');
+            const timeEl = document.getElementById('timerTimeText');
+            const statusEl = document.getElementById('timerStatusText');
+            const targetLabel = document.getElementById('timerTargetLabel');
+            if (!ring || !timeEl || !statusEl) return;
+
+            targetLabel.textContent = `목표 ${stopwatchTargetSec.toFixed(2)}초`;
+
+            const progress = stopwatchTargetMs > 0 ? Math.min(100, (stopwatchElapsedMs / stopwatchTargetMs) * 100) : 0;
+            ring.style.setProperty('--progress', progress);
+
+            ring.classList.remove('danger', 'hidden-mode');
+            if (stopwatchRunning && !stopwatchShowTime) {
+                ring.classList.add('hidden-mode');
+            } else if (stopwatchElapsedMs > stopwatchTargetMs) {
+                ring.classList.add('danger');
+            }
+
+            const hideNumber = stopwatchRunning && !stopwatchShowTime;
+            timeEl.textContent = hideNumber ? '??.??' : formatStopwatchTime(stopwatchElapsedMs);
+            timeEl.classList.toggle('blurred', hideNumber);
+
+            if (stopwatchRunning) {
+                statusEl.textContent = stopwatchShowTime ? '카운트 중... 목표에 맞춰 탭하세요!' : '감으로 멈춰보세요! 🤫';
+            } else if (stopwatchResults.length > 0 && stopwatchElapsedMs > 0) {
+                const last = stopwatchResults[stopwatchResults.length - 1];
+                const sign = last.diffMs >= 0 ? '+' : '';
+                statusEl.textContent = `${last.name}: ${sign}${(last.diffMs / 1000).toFixed(2)}초 차이`;
+            } else {
+                statusEl.textContent = '대기중 · 탭해서 시작';
+            }
+        }
+
+        function toggleStopwatchStartStop() {
+            const btn = document.getElementById('timerMainBtn');
+            if (!stopwatchRunning) {
+                stopwatchRunning = true;
+                stopwatchElapsedMs = 0;
+                stopwatchStartPerf = performance.now();
+                btn.textContent = '⏹ 정지 (탭해서 멈추기)';
+                triggerVibrate(20);
+                stopwatchRAF = requestAnimationFrame(stopwatchTick);
+            } else {
+                stopwatchRunning = false;
+                if (stopwatchRAF) cancelAnimationFrame(stopwatchRAF);
+                stopwatchElapsedMs = performance.now() - stopwatchStartPerf;
+                recordStopwatchResult(stopwatchElapsedMs);
+                triggerVibrate([40, 40, 80]);
+                btn.textContent = '▶️ 시작 (다음 차례)';
+            }
+            updateStopwatchDisplay();
+        }
+
+        function stopwatchTick(now) {
+            if (!stopwatchRunning) return;
+            stopwatchElapsedMs = now - stopwatchStartPerf;
+            updateStopwatchDisplay();
+            stopwatchRAF = requestAnimationFrame(stopwatchTick);
+        }
+
+        function recordStopwatchResult(elapsedMs) {
+            const diffMs = elapsedMs - stopwatchTargetMs;
+            const name = stopwatchPlayers.length > 0
+                ? stopwatchPlayers[stopwatchPlayerIdx % stopwatchPlayers.length]
+                : `참가자 ${stopwatchResults.length + 1}`;
+            stopwatchResults.push({ name, elapsedMs, diffMs });
+            stopwatchPlayerIdx++;
+            updateStopwatchTurnDesc();
+            renderStopwatchRanking();
+        }
+
+        function renderStopwatchRanking() {
+            const listEl = document.getElementById('stopwatchRankingList');
+            if (stopwatchResults.length === 0) {
+                listEl.innerHTML = '<div class="sw-ranking-empty">아직 기록이 없습니다.</div>';
+                return;
+            }
+            const sorted = [...stopwatchResults].sort((a, b) => Math.abs(a.diffMs) - Math.abs(b.diffMs));
+            const medals = ['🥇', '🥈', '🥉'];
+            listEl.innerHTML = sorted.map((r, i) => {
+                const sign = r.diffMs >= 0 ? '+' : '';
+                const rankIcon = medals[i] || `${i + 1}.`;
+                return `<div class="sw-ranking-row ${i === 0 ? 'sw-rank-1' : ''}">
+                    <span class="sw-rank-name">${rankIcon} ${r.name}</span>
+                    <span>${(r.elapsedMs / 1000).toFixed(2)}초</span>
+                    <span class="sw-rank-diff">${sign}${(r.diffMs / 1000).toFixed(2)}초</span>
+                </div>`;
+            }).join('');
+        }
+
+        function resetStopwatchGame() {
+            if (stopwatchRAF) cancelAnimationFrame(stopwatchRAF);
+            stopwatchRunning = false;
+            stopwatchElapsedMs = 0;
+            stopwatchTargetMs = Math.round(stopwatchTargetSec * 1000);
+            stopwatchResults = [];
+            stopwatchPlayerIdx = 0;
+            stopwatchPlayers = parseStopwatchPlayers();
+            const btn = document.getElementById('timerMainBtn');
+            if (btn) btn.textContent = '▶️ 시작 (탭해서 멈추기)';
+            renderStopwatchRanking();
+            updateStopwatchTurnDesc();
+            updateStopwatchDisplay();
         }
 
         // ==========================================
@@ -1134,6 +1393,7 @@
             toggleKingInputStyle();
             shuffleTruthQuestions();
             resetDestinyCard();
+            resetStopwatchGame();
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     drawNameRoulette();
