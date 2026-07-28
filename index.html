@@ -74,9 +74,9 @@
         .canvas-pointer { position: absolute; top: -12px; left: calc(50% - 14px); width: 28px; height: 28px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
         /* --- 💣 게임 2: 폭탄 찾기 --- */
-        .bomb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: auto 0; width: 100%; }
-        .tile-btn { background: #334155; border: none; border-radius: 14px; height: 60px; font-size: 1.5rem; cursor: pointer; }
-        .tile-btn.safe { background: #0b0f19; font-size: 1.1rem; color: #475569; }
+        .bomb-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: auto 0; width: 100%; }
+        .tile-btn { background: #334155; border: none; border-radius: 12px; height: 48px; font-size: 1.2rem; cursor: pointer; }
+        .tile-btn.safe { background: #0b0f19; font-size: 0.9rem; color: #475569; }
         .tile-btn.exploded { background: var(--primary); animation: shake 0.1s infinite; }
         .boom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(244, 63, 94, 0.95); z-index: 999; justify-content: center; align-items: center; flex-direction: column; animation: flash 0.3s infinite alternate; }
 
@@ -288,10 +288,24 @@
 
         <!-- 게임 2: 복불복 폭탄 찾기 -->
         <div id="game2" class="game-panel">
-            <div class="panel-header"><h2>복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
-            <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option><option value="8">8개</option></select></div>
+            <div class="panel-header"><h2 id="g2Title" ontouchstart="startCheatPress()" ontouchend="cancelCheatPress()" onmousedown="startCheatPress()" onmouseup="cancelCheatPress()" onmouseleave="cancelCheatPress()">복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
+            <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option><option value="6">6개</option><option value="8">8개</option><option value="12">12개</option></select></div>
             <div class="bomb-grid" id="bombGrid"></div>
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
+
+            <!-- 호스트 전용: 길게 눌러야 열리는 속이기 모드 패널 -->
+            <div id="cheatPanel" style="display:none; margin-top:14px; padding:12px; border-radius:12px; background:#0b0f19; border:1px dashed #475569;">
+                <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:8px;">🕵️ 호스트 전용 설정 (다른 사람에게 화면 보이지 않게 하세요)</div>
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#e2e8f0;">
+                    <input type="checkbox" id="cheatModeToggle" onchange="onCheatToggle()"> 속이기 모드 켜기
+                </label>
+                <div class="setup-row" style="margin-top:8px;">
+                    <span>🎯 폭탄 걸릴 순번:</span>
+                    <input type="number" id="cheatTargetTurn" min="1" value="1" style="width:70px; text-align:center;">
+                </div>
+                <div style="font-size:0.78rem; color:#64748b; margin-top:6px;">전체 인원이 순서대로 한 번씩 터치한다고 할 때, 몇 번째 터치에서 터질지 정하세요. (예: 3번째 순서인 사람을 노리려면 3 입력)</div>
+                <button class="sub-btn" style="margin-top:8px;" onclick="closeCheatPanel()">닫기</button>
+            </div>
         </div>
 
         <!-- 게임 3: 운명카드 게임 -->
@@ -683,15 +697,48 @@
         // 💣 게임 2: 폭탄 찾기 엔진
         // ==========================================
         let bombLocations = []; let isGameOver = false;
+        const BOMB_GRID_TOTAL = 30; // 6열 x 5행
+        let bombClickCount = 0;
+        let cheatModeOn = false;
+        let cheatPressTimer = null;
+
+        function startCheatPress() {
+            cheatPressTimer = setTimeout(() => {
+                document.getElementById('cheatPanel').style.display = 'block';
+                triggerVibrate(40);
+            }, 700);
+        }
+        function cancelCheatPress() {
+            if (cheatPressTimer) { clearTimeout(cheatPressTimer); cheatPressTimer = null; }
+        }
+        function closeCheatPanel() {
+            document.getElementById('cheatPanel').style.display = 'none';
+        }
+        function onCheatToggle() {
+            cheatModeOn = document.getElementById('cheatModeToggle').checked;
+        }
+
         function initBombGame() {
             const grid = document.getElementById('bombGrid'); if (!grid) return; grid.innerHTML = ''; isGameOver = false;
+            bombClickCount = 0;
             const cnt = parseInt(document.getElementById('bombCountInput').value) || 1; bombLocations = [];
-            while (bombLocations.length < cnt) { let r = Math.floor(Math.random() * 16); if (!bombLocations.includes(r)) bombLocations.push(r); }
-            for (let i = 0; i < 16; i++) {
+            while (bombLocations.length < cnt) { let r = Math.floor(Math.random() * BOMB_GRID_TOTAL); if (!bombLocations.includes(r)) bombLocations.push(r); }
+            for (let i = 0; i < BOMB_GRID_TOTAL; i++) {
                 const b = document.createElement('button'); b.className = 'tile-btn'; b.textContent = '❓';
                 b.onclick = () => {
                     if (isGameOver || b.classList.contains('safe')) return;
-                    if (bombLocations.includes(i)) {
+                    bombClickCount++;
+
+                    let isBomb;
+                    if (cheatModeOn) {
+                        // 속이기 모드: 어떤 상자를 누르든 상관없이, 정해진 '순번'에 폭탄이 터지도록 강제
+                        const targetTurn = parseInt(document.getElementById('cheatTargetTurn').value) || 1;
+                        isBomb = (bombClickCount === targetTurn);
+                    } else {
+                        isBomb = bombLocations.includes(i);
+                    }
+
+                    if (isBomb) {
                         isGameOver = true; b.className = 'tile-btn exploded'; b.textContent = '💥';
                         triggerVibrate([500, 100, 400]); document.getElementById('boomOverlay').style.display = 'flex';
                     } else { b.className = 'tile-btn safe'; b.textContent = '🟢'; triggerVibrate(30); }
