@@ -39,7 +39,9 @@
             display: flex; flex-direction: column; 
         }
 
-        .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .secret-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: rgba(0,0,0,0.65); z-index: 500; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .secret-modal-overlay.show { display: flex; }
+        .secret-modal-box { background: #0b0f19; border: 1px dashed #475569; border-radius: 14px; padding: 16px; max-width: 340px; width: 100%; max-height: 80vh; max-height: 80dvh; overflow-y: auto; text-align: left; } { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
@@ -298,7 +300,8 @@
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
 
             <!-- 호스트 전용: 길게 눌러야 열리는 속이기 모드 패널 -->
-            <div id="nameCheatPanel" style="display:none; margin-top:14px; padding:12px; border-radius:12px; background:#0b0f19; border:1px dashed #475569;">
+            <div id="nameCheatPanel" class="secret-modal-overlay" onclick="if(event.target===this) closeNameCheatPanel()">
+              <div class="secret-modal-box">
                 <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:8px;">🕵️ 호스트 전용 설정 (다른 사람에게 화면 보이지 않게 하세요)</div>
                 <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#e2e8f0;">
                     <input type="checkbox" id="nameCheatModeToggle" onchange="onNameCheatToggle()"> 시크릿 모드 켜기
@@ -309,6 +312,7 @@
                 </div>
                 <div style="font-size:0.78rem; color:#64748b; margin-top:6px;">1~6회차 추첨은 완전히 정상 랜덤으로 진행되고, 7회차 추첨부터 조용히 적용됩니다. 보호 대상 이름은 그 이후로 당첨되지 않습니다.</div>
                 <button class="sub-btn" style="margin-top:8px;" onclick="closeNameCheatPanel()">닫기</button>
+              </div>
             </div>
         </div>
 
@@ -320,17 +324,27 @@
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
 
             <!-- 호스트 전용: 길게 눌러야 열리는 속이기 모드 패널 -->
-            <div id="cheatPanel" style="display:none; margin-top:14px; padding:12px; border-radius:12px; background:#0b0f19; border:1px dashed #475569;">
+            <div id="cheatPanel" class="secret-modal-overlay" onclick="if(event.target===this) closeCheatPanel()">
+              <div class="secret-modal-box">
                 <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:8px;">🕵️ 호스트 전용 설정 (다른 사람에게 화면 보이지 않게 하세요)</div>
                 <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#e2e8f0;">
                     <input type="checkbox" id="cheatModeToggle" onchange="onCheatToggle()"> 속이기 모드 켜기
                 </label>
-                <div class="setup-row" style="margin-top:8px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#e2e8f0; margin-top:10px;">
+                    <input type="checkbox" id="cheatAutoToggle" onchange="onCheatAutoToggle()"> 자동 랜덤 순번 사용 (직접 순번 입력 대신, 내 순서만 피하기)
+                </label>
+                <div id="cheatManualRow" class="setup-row" style="margin-top:8px;">
                     <span>🎯 폭탄 걸릴 순번:</span>
                     <input type="number" id="cheatTargetTurn" min="1" value="1" style="width:70px; text-align:center;">
                 </div>
                 <div style="font-size:0.78rem; color:#64748b; margin-top:6px;">전체 인원이 순서대로 한 번씩 터치한다고 할 때, 몇 번째 터치에서 터질지 정하세요. (예: 3번째 순서인 사람을 노리려면 3 입력)</div>
-                <button class="sub-btn" style="margin-top:8px;" onclick="closeCheatPanel()">닫기</button>
+                <div id="cheatAutoRow" style="display:none; margin-top:10px;">
+                    <div class="setup-row"><span>👥 전체 인원수:</span><input type="number" id="cheatAutoTotal" min="2" value="4" style="width:70px; text-align:center;"></div>
+                    <div class="setup-row" style="margin-top:6px;"><span>🙋 내 순서(몇 번째):</span><input type="number" id="cheatAutoMyTurn" min="1" value="1" style="width:70px; text-align:center;"></div>
+                    <div style="font-size:0.76rem; color:#64748b; margin-top:6px;">새 게임을 시작할 때마다 내 순서만 피해서 매번 다른 순번이 자동·랜덤으로 정해져요. 직접 숫자를 안 입력해도 됩니다.</div>
+                </div>
+                <button class="sub-btn" style="margin-top:10px;" onclick="closeCheatPanel()">닫기</button>
+              </div>
             </div>
         </div>
 
@@ -644,7 +658,7 @@
 
         function startNameCheatPress() {
             nameCheatPressTimer = setTimeout(() => {
-                document.getElementById('nameCheatPanel').style.display = 'block';
+                document.getElementById('nameCheatPanel').classList.add('show');
                 triggerVibrate(40);
             }, 700);
         }
@@ -652,7 +666,7 @@
             if (nameCheatPressTimer) { clearTimeout(nameCheatPressTimer); nameCheatPressTimer = null; }
         }
         function closeNameCheatPanel() {
-            document.getElementById('nameCheatPanel').style.display = 'none';
+            document.getElementById('nameCheatPanel').classList.remove('show');
         }
         function onNameCheatToggle() {
             nameCheatOn = document.getElementById('nameCheatModeToggle').checked;
@@ -773,10 +787,11 @@
         let bombClickCount = 0;
         let cheatModeOn = false;
         let cheatPressTimer = null;
+        let resolvedCheatTurn = 1;
 
         function startCheatPress() {
             cheatPressTimer = setTimeout(() => {
-                document.getElementById('cheatPanel').style.display = 'block';
+                document.getElementById('cheatPanel').classList.add('show');
                 triggerVibrate(40);
             }, 700);
         }
@@ -784,15 +799,33 @@
             if (cheatPressTimer) { clearTimeout(cheatPressTimer); cheatPressTimer = null; }
         }
         function closeCheatPanel() {
-            document.getElementById('cheatPanel').style.display = 'none';
+            document.getElementById('cheatPanel').classList.remove('show');
         }
         function onCheatToggle() {
             cheatModeOn = document.getElementById('cheatModeToggle').checked;
+        }
+        function onCheatAutoToggle() {
+            const auto = document.getElementById('cheatAutoToggle').checked;
+            document.getElementById('cheatManualRow').style.display = auto ? 'none' : 'flex';
+            document.getElementById('cheatAutoRow').style.display = auto ? 'block' : 'none';
+        }
+        // 수동으로 순번을 직접 입력하거나, 자동 모드에서는 내 순서만 피해서 매번 랜덤으로 정함
+        function computeCheatTurn() {
+            const auto = document.getElementById('cheatAutoToggle')?.checked;
+            if (auto) {
+                const total = parseInt(document.getElementById('cheatAutoTotal').value) || 4;
+                const myTurn = parseInt(document.getElementById('cheatAutoMyTurn').value) || 1;
+                const options = [];
+                for (let i = 1; i <= total; i++) { if (i !== myTurn) options.push(i); }
+                return options.length > 0 ? options[Math.floor(Math.random() * options.length)] : 1;
+            }
+            return parseInt(document.getElementById('cheatTargetTurn').value) || 1;
         }
 
         function initBombGame() {
             const grid = document.getElementById('bombGrid'); if (!grid) return; grid.innerHTML = ''; isGameOver = false;
             bombClickCount = 0;
+            if (cheatModeOn) resolvedCheatTurn = computeCheatTurn();
             const cnt = parseInt(document.getElementById('bombCountInput').value) || 1; bombLocations = [];
             while (bombLocations.length < cnt) { let r = Math.floor(Math.random() * BOMB_GRID_TOTAL); if (!bombLocations.includes(r)) bombLocations.push(r); }
             for (let i = 0; i < BOMB_GRID_TOTAL; i++) {
@@ -804,8 +837,7 @@
                     let isBomb;
                     if (cheatModeOn) {
                         // 속이기 모드: 어떤 상자를 누르든 상관없이, 정해진 '순번'에 폭탄이 터지도록 강제
-                        const targetTurn = parseInt(document.getElementById('cheatTargetTurn').value) || 1;
-                        isBomb = (bombClickCount === targetTurn);
+                        isBomb = (bombClickCount === resolvedCheatTurn);
                     } else {
                         isBomb = bombLocations.includes(i);
                     }
