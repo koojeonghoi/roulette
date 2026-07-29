@@ -22,7 +22,10 @@
             box-sizing: border-box; margin: 0; padding: 0; 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent; user-select: none;
+            -webkit-touch-callout: none;
         }
+
+        input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
 
         html, body {
             height: 100%;
@@ -41,7 +44,8 @@
 
         .secret-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: rgba(0,0,0,0.65); z-index: 500; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         .secret-modal-overlay.show { display: flex; }
-        .secret-modal-box { background: #0b0f19; border: 1px dashed #475569; border-radius: 14px; padding: 16px; max-width: 340px; width: 100%; max-height: 80vh; max-height: 80dvh; overflow-y: auto; text-align: left; } { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .secret-modal-box { background: #0b0f19; border: 1px dashed #475569; border-radius: 14px; padding: 16px; max-width: 340px; width: 100%; max-height: 80vh; max-height: 80dvh; overflow-y: auto; text-align: left; }
+        .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
@@ -288,7 +292,7 @@
 
         <!-- 게임 1: 이름 벌칙 룰렛 -->
         <div id="game1" class="game-panel active">
-            <div class="panel-header"><h2 id="g1Title" ontouchstart="startNameCheatPress()" ontouchend="cancelNameCheatPress()" onmousedown="startNameCheatPress()" onmouseup="cancelNameCheatPress()" onmouseleave="cancelNameCheatPress()">릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
+            <div class="panel-header"><h2 id="g1Title" style="-webkit-touch-callout:none; -webkit-user-select:none; user-select:none;" ontouchstart="startNameCheatPress(event)" ontouchend="cancelNameCheatPress()" onmousedown="startNameCheatPress(event)" onmouseup="cancelNameCheatPress()" onmouseleave="cancelNameCheatPress()">릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:4px;">
@@ -318,7 +322,7 @@
 
         <!-- 게임 2: 복불복 폭탄 찾기 -->
         <div id="game2" class="game-panel">
-            <div class="panel-header"><h2 id="g2Title" ontouchstart="startCheatPress()" ontouchend="cancelCheatPress()" onmousedown="startCheatPress()" onmouseup="cancelCheatPress()" onmouseleave="cancelCheatPress()">복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
+            <div class="panel-header"><h2 id="g2Title" style="-webkit-touch-callout:none; -webkit-user-select:none; user-select:none;" ontouchstart="startCheatPress(event)" ontouchend="cancelCheatPress()" onmousedown="startCheatPress(event)" onmouseup="cancelCheatPress()" onmouseleave="cancelCheatPress()">복불복 폭탄 찾기</h2><div class="desc" id="g2Desc">상자를 골라 터치하세요! 폭탄 포착 시 벌주 당첨!</div></div>
             <div class="setup-row"><span>💣 폭탄 개수:</span><select id="bombCountInput" onchange="initBombGame()"><option value="1" selected>1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option><option value="6">6개</option><option value="8">8개</option><option value="12">12개</option></select></div>
             <div class="bomb-grid" id="bombGrid"></div>
             <button class="sub-btn" onclick="initBombGame()">새 게임 시작</button>
@@ -656,7 +660,8 @@
         let nameCheatPressTimer = null;
         let nameSpinCount = 0;
 
-        function startNameCheatPress() {
+        function startNameCheatPress(e) {
+            if (e) e.preventDefault();
             nameCheatPressTimer = setTimeout(() => {
                 document.getElementById('nameCheatPanel').classList.add('show');
                 triggerVibrate(40);
@@ -789,7 +794,8 @@
         let cheatPressTimer = null;
         let resolvedCheatTurn = 1;
 
-        function startCheatPress() {
+        function startCheatPress(e) {
+            if (e) e.preventDefault();
             cheatPressTimer = setTimeout(() => {
                 document.getElementById('cheatPanel').classList.add('show');
                 triggerVibrate(40);
