@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>초호화 술자리 패키지 오락실 | v26.7.29</title>
     <style>
         :root {
@@ -46,6 +48,8 @@
         .secret-modal-overlay.show { display: flex; }
         .secret-modal-box { background: #0b0f19; border: 1px dashed #475569; border-radius: 14px; padding: 16px; max-width: 340px; width: 100%; max-height: 80vh; max-height: 80dvh; overflow-y: auto; text-align: left; }
         .nav-tabs { display: flex; background: #111827; padding: 8px; gap: 6px; width: 100%; border-bottom: 1px solid #1e293b; flex-shrink: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .force-refresh-btn { position: fixed; top: 10px; right: 10px; z-index: 600; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(30,41,59,0.85); color: #94a3b8; font-size: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+        .force-refresh-btn:active { transform: scale(0.92); }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
@@ -277,6 +281,7 @@
     </style>
 </head>
 <body id="bodyContext">
+    <button type="button" class="force-refresh-btn" onclick="forceHardRefresh()" title="강제 새로고침" ontouchstart="event.stopPropagation()">🔄</button>
 
     <div class="nav-tabs">
         <button id="tab-game1" class="tab-btn active" onclick="switchTab('game1')">🎯 벌칙룰렛</button>
@@ -515,6 +520,23 @@
     </div>
 
     <script>
+        // 🔄 강제 새로고침: 서비스워커/캐시를 지우고 캐시버스팅 파라미터를 붙여 새로 불러온다
+        async function forceHardRefresh() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    for (const r of regs) await r.unregister();
+                }
+                if (window.caches) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                }
+            } catch (e) { /* 무시하고 진행 */ }
+            const url = new URL(window.location.href);
+            url.searchParams.set('_r', Date.now());
+            window.location.replace(url.toString());
+        }
+
         // 우클릭 및 개발자 도구 단축키 방지 기능
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('keydown', function(e) {
