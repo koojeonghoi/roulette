@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>초호화 술자리 패키지 오락실 | v26.7.18</title>
+    <title>초호화 술자리 패키지 오락실 | v26.7.29</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -74,7 +74,7 @@
         .canvas-pointer { position: absolute; top: -12px; left: calc(50% - 14px); width: 28px; height: 28px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
         /* --- 💣 게임 2: 폭탄 찾기 --- */
-        .bomb-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: auto 0; width: 100%; }
+        .bomb-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: auto 0; width: 100%; }
         .tile-btn { background: #334155; border: none; border-radius: 12px; height: 48px; font-size: 1.2rem; cursor: pointer; }
         .tile-btn.safe { background: #0b0f19; font-size: 0.9rem; color: #475569; }
         .tile-btn.exploded { background: var(--primary); animation: shake 0.1s infinite; }
@@ -147,6 +147,18 @@
         }
         .ladder-labels.top-labels span:hover { background: var(--secondary); }
         .ladder-labels.top-labels span.active-player { background: var(--primary); border-color: #fff; box-shadow: 0 0 10px var(--primary); }
+        .ladder-labels.top-labels span.completed-player {
+            background: #14532d;
+            border-color: var(--accent);
+            color: #d1fae5;
+            box-shadow: inset 0 0 0 2px rgba(16,185,129,0.25);
+            cursor: default;
+        }
+        .ladder-labels.top-labels span.completed-player::after {
+            content: ' ✓';
+            color: var(--accent);
+            font-weight: 900;
+        }
         
         .ladder-labels.bottom-labels { margin-top: 6px; margin-bottom: 6px; }
         .ladder-labels.bottom-labels span {
@@ -353,7 +365,7 @@
 
             <div class="setup-row column-layout">
                 <label for="stopwatchPlayers">📝 참여자 명단 (쉼표 구분, 순서대로 도전):</label>
-                <input type="text" id="stopwatchPlayers" value="정회, 용원, 정렬" oninput="onStopwatchPlayersChange()" class="full-width" style="font-size:0.85rem; padding:6px; text-align:center;">
+                <input type="text" id="stopwatchPlayers" value="A, B, C" oninput="onStopwatchPlayersChange()" class="full-width" style="font-size:0.85rem; padding:6px; text-align:center;">
             </div>
 
             <div class="mode-selector">
@@ -462,7 +474,7 @@
     </div>
 
     <!-- 🪜 사다리 결과 알림 오버레이 팝업 -->
-    <div id="resultPopup" class="result-popup-overlay" onclick="this.style.display='none'">
+    <div id="resultPopup" class="result-popup-overlay" onclick="event.preventDefault(); event.stopPropagation(); this.style.display='none'">
         <div class="result-popup-content">
             <h2 id="popupPlayerName" style="color:#fff; font-size:1.4rem; margin-bottom:15px;">플레이어</h2>
             <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:15px;">사다리 타기 결과</div>
@@ -697,7 +709,7 @@
         // 💣 게임 2: 폭탄 찾기 엔진
         // ==========================================
         let bombLocations = []; let isGameOver = false;
-        const BOMB_GRID_TOTAL = 30; // 6열 x 5행
+        const BOMB_GRID_TOTAL = 30; // 5열 x 6행
         let bombClickCount = 0;
         let cheatModeOn = false;
         let cheatPressTimer = null;
@@ -1233,7 +1245,7 @@
         // ==========================================
         // 🪜 게임 6: 사다리 타기 엔진
         // ==========================================
-        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false; const totalRowsSlots = 9;
+        let ladderLines = []; let ladderCount = 3; let isLadderRunning = false; const totalRowsSlots = 9; let completedLadderPlayers = new Set();
 
         function initLadderGame() {
             const mInput = document.getElementById('ladderMembers').value.split(',').map(n => n.trim()).filter(n => n.length > 0);
@@ -1280,10 +1292,10 @@
             }
         }
 
-        function resetLadderOnly() { if (isLadderRunning) return; ladderLines = []; document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다."; initLadderGame(); }
+        function resetLadderOnly() { if (isLadderRunning) return; ladderLines = []; completedLadderPlayers.clear(); document.getElementById('g6Desc').innerHTML = "이름을 터치하면 출발합니다! 기둥 사이를 누르면 자동 매칭됩니다."; initLadderGame(); }
 
         function selectLadderPlayer(playerIdx) {
-            if (isLadderRunning) return;
+            if (isLadderRunning || completedLadderPlayers.has(playerIdx)) return;
             document.querySelectorAll('.ladder-labels.top-labels span').forEach(el => el.classList.remove('active-player'));
             document.querySelectorAll('.ladder-labels.bottom-labels span').forEach(el => el.classList.remove('hit-result'));
             document.getElementById(`ladderTop-${playerIdx}`).classList.add('active-player'); runLadderTrace(playerIdx);
@@ -1344,6 +1356,12 @@
                 if (prog < 1) requestAnimationFrame(anim);
                 else {
                     const finalResultStr = rInput[curIdx] || '통과'; document.getElementById(`ladderBottom-${curIdx}`).classList.add('hit-result');
+                    completedLadderPlayers.add(targetIdx);
+                    const completedTop = document.getElementById(`ladderTop-${targetIdx}`);
+                    if (completedTop) {
+                        completedTop.classList.remove('active-player');
+                        completedTop.classList.add('completed-player');
+                    }
                     document.getElementById('g6Desc').innerHTML = `🪜 <strong>${mInput[targetIdx]}</strong> 👉 🎉 <strong>[ ${finalResultStr} ]</strong> 당첨!`;
                     
                     const popup = document.getElementById('resultPopup'); const textContainer = document.getElementById('popupResultText');
@@ -1359,7 +1377,7 @@
                     void popupContent.offsetWidth; // 강제 리플로우로 애니메이션 재시작 (모바일 사파리 대응)
                     popupContent.classList.add('popup-animate');
 
-                    showLadderResultToast(mInput[targetIdx], finalResultStr, resultIcon);
+                    // 중복 결과 팝업 방지: resultPopup 하나만 사용
 
                     triggerVibrate([150, 50, 100]); isLadderRunning = false;
                     setTimeout(() => { popup.style.display = 'none'; }, 1800);
@@ -1368,7 +1386,18 @@
             requestAnimationFrame(anim);
         }
 
-        function startLadderDraw() { if (!isLadderRunning) selectLadderPlayer(Math.floor(Math.random() * ladderCount)); }
+        function startLadderDraw() {
+            if (isLadderRunning) return;
+            const remaining = [];
+            for (let i = 0; i < ladderCount; i++) {
+                if (!completedLadderPlayers.has(i)) remaining.push(i);
+            }
+            if (remaining.length === 0) {
+                document.getElementById('g6Desc').textContent = '✅ 모든 참여자의 결과를 확인했습니다. 새 사다리를 시작해 주세요.';
+                return;
+            }
+            selectLadderPlayer(remaining[Math.floor(Math.random() * remaining.length)]);
+        }
 
         // ==========================================
         // 🔞 게임 7: 29금 진실게임 엔진
