@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -286,7 +286,7 @@
 
         <!-- 게임 1: 이름 벌칙 룰렛 -->
         <div id="game1" class="game-panel active">
-            <div class="panel-header"><h2>릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
+            <div class="panel-header"><h2 id="g1Title" ontouchstart="startNameCheatPress()" ontouchend="cancelNameCheatPress()" onmousedown="startNameCheatPress()" onmouseup="cancelNameCheatPress()" onmouseleave="cancelNameCheatPress()">릴레이 커스텀 룰렛</h2><div class="desc" id="g1Desc">참여자 명단을 쉼표로 입력해 주세요.</div></div>
             <div id="stage1" class="stage-container active">
                 <div class="stage-badge">STEP 1. 대상자 추첨</div>
                 <div style="display:flex; flex-direction:column; width:100%; text-align:left; gap:4px; margin-bottom:4px;">
@@ -296,6 +296,20 @@
             </div>
             <div id="stage2" class="stage-container"><div class="stage-badge">STEP 2. 벌칙 결정</div><div class="roulette-container"><div class="canvas-pointer"></div><canvas id="penaltyCanvas" class="roulette-canvas"></canvas></div></div>
             <button class="main-btn" id="g1Btn" onclick="runIntegratedRoulette()">1단계: 이름판 돌리기</button>
+
+            <!-- 호스트 전용: 길게 눌러야 열리는 속이기 모드 패널 -->
+            <div id="nameCheatPanel" style="display:none; margin-top:14px; padding:12px; border-radius:12px; background:#0b0f19; border:1px dashed #475569;">
+                <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:8px;">🕵️ 호스트 전용 설정 (다른 사람에게 화면 보이지 않게 하세요)</div>
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#e2e8f0;">
+                    <input type="checkbox" id="nameCheatModeToggle" onchange="onNameCheatToggle()"> 시크릿 모드 켜기
+                </label>
+                <div class="setup-row" style="margin-top:8px;">
+                    <span>🙈 보호할 이름:</span>
+                    <input type="text" id="nameCheatProtect" placeholder="참여자 명단에 적힌 것과 동일하게" style="text-align:center;">
+                </div>
+                <div style="font-size:0.78rem; color:#64748b; margin-top:6px;">1~6회차 추첨은 완전히 정상 랜덤으로 진행되고, 7회차 추첨부터 조용히 적용됩니다. 보호 대상 이름은 그 이후로 당첨되지 않습니다.</div>
+                <button class="sub-btn" style="margin-top:8px;" onclick="closeNameCheatPanel()">닫기</button>
+            </div>
         </div>
 
         <!-- 게임 2: 복불복 폭탄 찾기 -->
@@ -621,6 +635,44 @@
             ctx.restore();
         }
 
+        // ==========================================
+        // 🕵️ 게임 1: 이름 룰렛 시크릿 모드
+        // ==========================================
+        let nameCheatOn = false;
+        let nameCheatPressTimer = null;
+        let nameSpinCount = 0;
+
+        function startNameCheatPress() {
+            nameCheatPressTimer = setTimeout(() => {
+                document.getElementById('nameCheatPanel').style.display = 'block';
+                triggerVibrate(40);
+            }, 700);
+        }
+        function cancelNameCheatPress() {
+            if (nameCheatPressTimer) { clearTimeout(nameCheatPressTimer); nameCheatPressTimer = null; }
+        }
+        function closeNameCheatPanel() {
+            document.getElementById('nameCheatPanel').style.display = 'none';
+        }
+        function onNameCheatToggle() {
+            nameCheatOn = document.getElementById('nameCheatModeToggle').checked;
+        }
+
+        // 다음 당첨자의 인덱스를 결정. 시크릿 모드가 7회차 이후로 켜져 있으면
+        // 보호 대상 이름은 후보에서 제외하고 나머지 중에서만 무작위로 뽑는다.
+        function decideNameWinnerIdx(names) {
+            nameSpinCount++;
+            const protectName = (document.getElementById('nameCheatProtect')?.value || '').trim();
+            if (nameCheatOn && protectName && nameSpinCount >= 7) {
+                const candidateIdxs = [];
+                names.forEach((n, i) => { if (n.trim() !== protectName) candidateIdxs.push(i); });
+                if (candidateIdxs.length > 0) {
+                    return candidateIdxs[Math.floor(Math.random() * candidateIdxs.length)];
+                }
+            }
+            return Math.floor(Math.random() * names.length);
+        }
+
         function runIntegratedRoulette() {
             if (isG1Running) return;
             const names = parseNames();
@@ -631,7 +683,16 @@
                 isG1Running = true; btn.disabled = true;
                 let startTime = null;
                 const duration = 2500;
-                const targetRot = (Math.random() * 2 * Math.PI) + (2 * Math.PI * 6);
+
+                // 당첨자를 먼저 정하고(시크릿 모드 반영), 바퀴가 정확히 그 자리에 멈추도록
+                // 목표 각도를 역산한다. 매번 구간 안에서 위치가 미세하게 달라져 자연스럽게 보인다.
+                const arc = (2 * Math.PI) / names.length;
+                const winIdx = decideNameWinnerIdx(names);
+                const offsetFrac = 0.15 + Math.random() * 0.7;
+                const x = winIdx * arc + offsetFrac * arc;
+                const finalAngTarget = ((1.5 * Math.PI - x) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                const extraSpins = 6 + Math.floor(Math.random() * 2);
+                const targetRot = finalAngTarget + (2 * Math.PI * extraSpins);
 
                 function animName(t) {
                     if (!startTime) startTime = t;
@@ -644,7 +705,6 @@
                         requestAnimationFrame(animName);
                     } else {
                         const finalAng = curAng % (2 * Math.PI);
-                        const arc = (2 * Math.PI) / names.length;
                         let idx = Math.floor(((1.5 * Math.PI) - finalAng + 2 * Math.PI) % (2 * Math.PI) / arc);
                         currentSelectedTarget = names[idx] || names[0];
                         triggerVibrate([100, 50]);
