@@ -248,7 +248,7 @@
         .timer-display-wrap { display: flex; justify-content: center; align-items: center; margin: auto 0; width: 100%; }
         .timer-ring {
             --progress: 0;
-            width: 220px; height: 220px; border-radius: 50%;
+            width: min(220px, 55vw); height: min(220px, 55vw); border-radius: 50%;
             background: conic-gradient(var(--secondary) calc(var(--progress) * 1%), #1e293b 0);
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -261,7 +261,7 @@
             50% { box-shadow: 0 10px 42px rgba(139,92,246,0.85); }
         }
         .timer-inner {
-            width: 186px; height: 186px; border-radius: 50%; background: var(--card-bg);
+            width: 84.5%; height: 84.5%; border-radius: 50%; background: var(--card-bg);
             display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px;
         }
         .timer-time { font-size: 2.3rem; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
