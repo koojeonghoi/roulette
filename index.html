@@ -38,11 +38,13 @@
             height: 100%;
             height: -webkit-fill-available;
             height: 100dvh; 
-            width: 100vw;
+            width: 100%;
             overflow: hidden;
             background-color: var(--bg-color);
             overscroll-behavior: none; 
         }
+        /* 노치/상태바/제스처바 영역 침범 방지 (env 값이 없는 기기는 0) */
+        body { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 
         body { 
             color: var(--text); 
@@ -65,8 +67,8 @@
         .tab-btn { flex-shrink: 0; padding: 12px 16px; background: #1e293b; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: bold; border-radius: 10px; text-align: center; cursor: pointer; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(244,63,94,0.4); }
 
-        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
-        .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .main-container { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
+        .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow-x: hidden; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
         .game-panel.active { display: flex; }
 
         .panel-header { flex-shrink: 0; }
@@ -90,7 +92,7 @@
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
         
-        .roulette-container { position: relative; width: 100%; max-width: 330px; aspect-ratio: 1; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
+        .roulette-container { position: relative; width: min(100%, 330px, 38dvh); max-width: 330px; aspect-ratio: 1; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
         .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #475569; background: #0b0f19; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .canvas-pointer { position: absolute; top: -12px; left: calc(50% - 14px); width: 28px; height: 28px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
@@ -550,6 +552,7 @@
     <script>
         // 🔄 강제 새로고침: 서비스워커/캐시를 지우고 캐시버스팅 파라미터를 붙여 새로 불러온다
         async function forceHardRefresh() {
+            try { localStorage.removeItem('roulette_state_v1'); } catch (e) {}
             try {
                 if ('serviceWorker' in navigator) {
                     const regs = await navigator.serviceWorker.getRegistrations();
@@ -1686,6 +1689,175 @@
                 if (penaltyContainer) ro.observe(penaltyContainer);
             }
         });
+
+        // ==========================================
+        // 💾 상태 저장/복원 (화면 회전·앱 전환으로 페이지가 다시 로드돼도 게임 유지)
+        // 당겨서 새로고침(forceHardRefresh)을 하면 저장 상태도 함께 지워진다.
+        // ==========================================
+        (function setupStatePersistence() {
+            const KEY = 'roulette_state_v1';
+            const TTL = 12 * 60 * 60 * 1000;
+            const $ = (id) => document.getElementById(id);
+            let restoring = true;
+            let saveTimer = null;
+
+            function activeTabId() {
+                const p = document.querySelector('.game-panel.active');
+                return p ? p.id : 'game1';
+            }
+
+            function collect() {
+                const fields = {};
+                document.querySelectorAll('input[id], textarea[id], select[id]').forEach(el => {
+                    fields[el.id] = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
+                });
+                const tab = activeTabId();
+                const st = {
+                    t: Date.now(), tab, fields,
+                    g1: { step: currentStep, target: currentSelectedTarget, spin: nameSpinCount,
+                          desc: $('g1Desc').innerHTML, btnText: $('g1Btn').textContent, btnBg: $('g1Btn').style.background },
+                    sw: { sec: stopwatchTargetSec, show: stopwatchShowTime, players: stopwatchPlayers,
+                          idx: stopwatchPlayerIdx, results: stopwatchResults },
+                    king: { mode: currentKingMode, pool: kingGamePool, idx: kingGameIdx, total: totalKingPlayers,
+                            names: kingParticipantNames, locked: $('kingTypeSelect').disabled,
+                            title: $('kingStatusTitle').textContent, text: $('kingMainText').innerHTML,
+                            btn: $('g5Btn').textContent },
+                    ladder: { lines: ladderLines, done: Array.from(completedLadderPlayers), desc: $('g6Desc').innerHTML },
+                    truth: { list: shuffledQuestions, idx: truthQuestionIdx, html: $('truthDisplay').innerHTML },
+                    cheat: { name: nameCheatOn, bomb: cheatModeOn }
+                };
+                if (tab === 'game2') {
+                    st.bomb = { loc: bombLocations, clicks: bombClickCount, over: isGameOver, turn: resolvedCheatTurn,
+                                tiles: Array.from(document.querySelectorAll('#bombGrid .tile-btn')).map(b => [b.className, b.textContent]) };
+                }
+                if (tab === 'game3') {
+                    st.destiny = { flipped: isCardFlipped, text: $('cardMissionText').textContent,
+                                   tag: $('cardMissionTag').textContent, desc: $('g3Desc').innerHTML };
+                }
+                return st;
+            }
+
+            function save() {
+                if (restoring) return;
+                try { localStorage.setItem(KEY, JSON.stringify(collect())); } catch (e) { /* 저장 실패는 무시 */ }
+            }
+            function saveSoon() {
+                if (saveTimer) clearTimeout(saveTimer);
+                saveTimer = setTimeout(save, 400);
+            }
+
+            function restore() {
+                let st = null;
+                try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { st = null; }
+                if (!st || !st.t || Date.now() - st.t > TTL) return;
+                try {
+                    // 입력창/선택값
+                    Object.keys(st.fields || {}).forEach(id => {
+                        const el = $(id); if (!el) return;
+                        if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!st.fields[id];
+                        else el.value = st.fields[id];
+                    });
+                    nameCheatOn = !!(st.cheat && st.cheat.name);
+                    cheatModeOn = !!(st.cheat && st.cheat.bomb);
+                    onCheatAutoToggle();
+                    toggleKingInputStyle();
+
+                    // 게임 1: 룰렛 진행 단계
+                    if (st.g1) {
+                        nameSpinCount = st.g1.spin || 0;
+                        currentStep = st.g1.step || 1;
+                        currentSelectedTarget = st.g1.target || '';
+                        if (currentStep >= 2) {
+                            $('stage1').classList.remove('active'); $('stage2').classList.add('active');
+                            $('g1Desc').innerHTML = st.g1.desc; $('g1Btn').textContent = st.g1.btnText; $('g1Btn').style.background = st.g1.btnBg;
+                        }
+                    }
+
+                    // 게임 4: 스톱워치
+                    if (st.sw) {
+                        stopwatchTargetSec = st.sw.sec || 5;
+                        stopwatchTargetMs = Math.round(stopwatchTargetSec * 1000);
+                        $('stopwatchCustomRow').style.display = $('stopwatchTargetSelect').value === 'custom' ? 'flex' : 'none';
+                        stopwatchPlayers = st.sw.players || parseStopwatchPlayers();
+                        stopwatchPlayerIdx = st.sw.idx || 0;
+                        stopwatchResults = st.sw.results || [];
+                        stopwatchRunning = false; stopwatchElapsedMs = 0;
+                        setStopwatchVisibility(st.sw.show !== false);
+                        $('timerMainBtn').textContent = stopwatchResults.length ? '▶️ 시작 (다음 차례)' : '▶️ 시작 (탭해서 멈추기)';
+                        renderStopwatchRanking(); updateStopwatchTurnDesc(); updateStopwatchDisplay();
+                    }
+
+                    // 게임 5: 왕게임
+                    if (st.king) {
+                        const k = st.king;
+                        setKingMode(k.mode || 'normal');
+                        kingGamePool = k.pool || []; kingGameIdx = k.idx || 0; totalKingPlayers = k.total || 3; kingParticipantNames = k.names || [];
+                        if (k.locked) {
+                            $('kingTypeSelect').disabled = true;
+                            const type = $('kingTypeSelect').value;
+                            if (type !== 'master' && kingGamePool.length && (kingGameIdx < totalKingPlayers || k.btn !== '새 판 세팅')) {
+                                // 진행 중: 다음 플레이어 대기 화면으로 (역할이 노출된 상태로 복원되지 않도록)
+                                kingGameIdx = Math.min(kingGameIdx, totalKingPlayers);
+                                showIdentityWaitScreen();
+                            } else {
+                                $('kingStatusTitle').textContent = k.title; $('kingMainText').innerHTML = k.text;
+                                $('g5Btn').textContent = k.btn;
+                                $('g5Btn').onclick = () => { $('kingTypeSelect').disabled = false; toggleKingInputStyle(); };
+                            }
+                        }
+                    }
+
+                    // 게임 6: 사다리
+                    if (st.ladder) {
+                        ladderLines = st.ladder.lines || [];
+                        completedLadderPlayers = new Set(st.ladder.done || []);
+                    }
+
+                    // 게임 7: 진실게임
+                    if (st.truth && st.truth.list && st.truth.list.length) {
+                        shuffledQuestions = st.truth.list; truthQuestionIdx = st.truth.idx || 0;
+                        $('truthDisplay').innerHTML = st.truth.html;
+                    }
+
+                    // 탭 복원 (탭 전환 시 폭탄/운명카드/사다리는 원래 설계대로 초기화되므로 복원 후 덮어쓴다)
+                    const tab = st.tab || 'game1';
+                    if (tab !== 'game1') switchTab(tab);
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        try {
+                            if (tab === 'game1') { drawNameRoulette(); if (currentStep >= 2) drawPenaltyRoulette(); }
+                            if (currentStep >= 2) drawPenaltyRoulette();
+                            if (tab === 'game2' && st.bomb) {
+                                bombLocations = st.bomb.loc || bombLocations; bombClickCount = st.bomb.clicks || 0;
+                                isGameOver = !!st.bomb.over; resolvedCheatTurn = st.bomb.turn || resolvedCheatTurn;
+                                document.querySelectorAll('#bombGrid .tile-btn').forEach((b, i) => {
+                                    const t = st.bomb.tiles && st.bomb.tiles[i]; if (t) { b.className = t[0]; b.textContent = t[1]; }
+                                });
+                            }
+                            if (tab === 'game3' && st.destiny && st.destiny.flipped) {
+                                isCardFlipped = true;
+                                $('cardMissionText').textContent = st.destiny.text; $('cardMissionTag').textContent = st.destiny.tag;
+                                $('destinyCard').classList.add('flipped'); $('g3Desc').innerHTML = st.destiny.desc;
+                            }
+                            if (st.ladder) {
+                                initLadderGame();
+                                completedLadderPlayers.forEach(i => { const el = $('ladderTop-' + i); if (el) el.classList.add('completed-player'); });
+                                if (st.ladder.desc) $('g6Desc').innerHTML = st.ladder.desc;
+                            }
+                        } catch (e) { /* 복원 중 오류는 무시 */ }
+                    }));
+                } catch (e) { /* 저장 데이터가 깨졌으면 새로 시작 */ }
+            }
+
+            window.addEventListener('DOMContentLoaded', () => {
+                restore();
+                restoring = false;
+                ['click', 'input', 'change', 'touchend'].forEach(ev => document.addEventListener(ev, saveSoon, true));
+            });
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+            window.addEventListener('pagehide', save);
+            window.addEventListener('orientationchange', save);
+            window.addEventListener('resize', saveSoon);
+        })();
     </script>
 </body>
 </html>
