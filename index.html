@@ -37,7 +37,7 @@
         html, body {
             height: 100%;
             height: -webkit-fill-available;
-            height: 100dvh; 
+            height: var(--app-h, 100dvh);
             width: 100%;
             overflow: hidden;
             background-color: var(--bg-color);
@@ -70,6 +70,7 @@
         .main-container { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center; padding: 12px; width: 100%; overflow: hidden; }
         .game-panel { display: none; width: 100%; max-width: 420px; height: 100%; background: var(--card-bg); border-radius: 24px; padding: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; flex-direction: column; justify-content: space-between; overflow-x: hidden; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
         .game-panel.active { display: flex; }
+        .game-panel > .main-btn:last-of-type { margin-bottom: 2px; }
 
         .panel-header { flex-shrink: 0; }
         .panel-header h2 { font-size: 1.3rem; color: #fff; margin-bottom: 2px; }
@@ -92,7 +93,7 @@
         .stage-container.active { display: flex; }
         .stage-badge { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-bottom: 6px; background: #0b0f19; padding: 4px 12px; border-radius: 12px; }
         
-        .roulette-container { position: relative; width: min(100%, 330px, 38dvh); max-width: 330px; aspect-ratio: 1; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
+        .roulette-container { position: relative; width: min(100%, 330px, calc(var(--app-h, 100dvh) * 0.36)); max-width: 330px; aspect-ratio: 1; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
         .roulette-canvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #475569; background: #0b0f19; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .canvas-pointer { position: absolute; top: -12px; left: calc(50% - 14px); width: 28px; height: 28px; background: #ffffff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 15; }
 
@@ -294,6 +295,24 @@
     </style>
 </head>
 <body id="bodyContext">
+    <script>
+    // 실제로 보이는 화면 높이를 직접 측정해서 --app-h 로 사용 (폴드/전체화면/주소창 변화에서 dvh가 어긋나 버튼이 잘리는 문제 방지)
+    (function () {
+        function setAppHeight() {
+            const vv = window.visualViewport;
+            const h = Math.round(vv ? vv.height : window.innerHeight);
+            if (h > 0) document.documentElement.style.setProperty('--app-h', h + 'px');
+        }
+        function setAppHeightLater() { setAppHeight(); setTimeout(setAppHeight, 300); setTimeout(setAppHeight, 800); }
+        setAppHeight();
+        window.addEventListener('resize', setAppHeightLater);
+        window.addEventListener('orientationchange', setAppHeightLater);
+        window.addEventListener('pageshow', setAppHeightLater);
+        document.addEventListener('fullscreenchange', setAppHeightLater);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setAppHeightLater(); });
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', setAppHeight);
+    })();
+    </script>
     <script>
     // 매니페스트의 display:"fullscreen"을 일부 안드로이드 버전이 완전히 지키지 않는 경우를 대비한 보조 처리.
     // 홈 화면에서 설치된 앱(standalone/fullscreen)으로 실행 중일 때, 첫 터치 시 상태표시줄까지 가리는 진짜 전체화면을 한 번 더 요청한다.
